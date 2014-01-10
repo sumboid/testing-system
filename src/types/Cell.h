@@ -9,41 +9,15 @@
 
 namespace ts {
     namespace type {
-        typedef std::vector<Particle>::iterator pi_t;
         class Cell {
-            private:
-                size_t number;
-                double force[8];
-                double density;
-                std::vector<Particle*> particles;
-
-                friend class boost::serialization::access;
-                template<class Archive>
-                    void serialize(Archive & ar, const unsigned int version) {
-                        ar & number & force & mass & particles;
-                    }
-
             public:
-                Particle(size_t _number = 0): number(_number), destiny(0) { for(int i = 0, i < 8; ++i) force[i] = 0; } 
                 virtual ~Particle() {}
 
-                void setNumber(size_t _number) { number = _number; }
-                void setDensity(double _dencity) { density = _density; }
-                void setForce(double* _force) { for(int i = 0; i < 8; ++i) force[i] = _force[i]; }
+                virtual void addParticle(Particle* particle) = 0;
+                virtual void removeParticl(Particle* particle) = 0;
+                virtual void moveParticle(Particle* particle, Cell* cell) = 0;
 
-                pi_t findParticle(Particle* particle) { return find(particles.begin(), particles.end()); }
-                void addParticle(Particle* particle) { particles.push_back(particle); }
-                void removeParticle(pi_t i) { particles.erase(i, i + 1); }
-                void removeParticle(Particle* particle) {
-                    pi_t i = findParticle(particle);
-                    particles.erase(i, i + 1);
-                }
-                void moveParticle(Particle* particle, Cell* cell) {
-                    pi_d it = findParticle(particle);
-                    cell.addParticle(*it);
-                    removeParticle(it);
-                }
-
+                virtual int number() = 0;
         };
     }
 }

@@ -19,3 +19,18 @@
 
 # Dirs
 sandbox
+
+# Autohell
+Makefile.in
+autom4te.cache
+aclocal.m4
+compile
+depcomp
+install-sh
+missing
+stamp-h1
+config.status
+config.log
+Makefile
+.deps/
+.dirstamp
