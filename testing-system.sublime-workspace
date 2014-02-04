@@ -1,0 +1,362 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"printer_",
+				"printer_builder"
+			],
+			[
+				"init",
+				"init_mutex"
+			],
+			[
+				"pthread_",
+				"pthread_mutex_unlock"
+			],
+			[
+				"transla",
+				"translateAlpha"
+			],
+			[
+				"font",
+				"fontName"
+			],
+			[
+				"con",
+				"constructorBody"
+			],
+			[
+				"fo",
+				"fonttranslator"
+			],
+			[
+				"translate",
+				"translateAll"
+			],
+			[
+				"printer",
+				"printer_func_t"
+			],
+			[
+				"print",
+				"printer_func_t"
+			],
+			[
+				"spec",
+				"spec_cond_t"
+			],
+			[
+				"spec_",
+				"spec_thread_t"
+			],
+			[
+				"spe",
+				"spec_cond_t"
+			],
+			[
+				"pthread_co",
+				"pthread_cond_t"
+			],
+			[
+				"pt",
+				"pthread_cond_t"
+			],
+			[
+				"pthread",
+				"pthread_mutex_t"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "src/types/AbstractCell.h",
+			"settings":
+			{
+				"buffer_size": 506,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"contents": "#pragma once\n\n#include <boost/archive/text_oarchive.hpp>\n#include <boost/archive/text_iarchive.hpp>\n#include \"AbstractCell.h\"\n\nnamespace ts {\n  namespace type {\n    class AbstractParticle {\n      public:\n        virtual ~Particle() {}\n        virtual void push(Cell* cell) = 0;\n        virtual void force(Cell* cell) = 0;\n    };\n  }\n}CCCCCCCCCCCCCCCCCCCCC",
+			"file": "src/types/AbstractParticle.h",
+			"file_size": 335,
+			"file_write_time": 130339672217401783,
+			"settings":
+			{
+				"buffer_size": 355,
+				"line_ending": "Unix"
+			}
+		}
+	],
+	"build_system": "Packages/Makefile/Make.sublime-build",
+	"command_palette":
+	{
+		"height": 375.0,
+		"selected_items":
+		[
+			[
+				"Sublime",
+				"SublimeLinter: Lint This View"
+			],
+			[
+				"install",
+				"Package Control: Install Package"
+			],
+			[
+				"Save",
+				"Project: Save As"
+			],
+			[
+				"Insta",
+				"Package Control: Install Package"
+			],
+			[
+				"packa",
+				"Package Control: Install Package"
+			],
+			[
+				"Packa",
+				"Package Control: Install Package"
+			],
+			[
+				"Package",
+				"Package Control: List Packages"
+			]
+		],
+		"width": 453.0
+	},
+	"console":
+	{
+		"height": 126.0,
+		"history":
+		[
+			"import urllib.request,os,hashlib; h = '7183a2d3e96f11eeadd761d777e62404e330c659d4bb41d3bdf022e94cab3cd0'; pf = 'Package Control.sublime-package'; ipp = sublime.installed_packages_path(); urllib.request.install_opener( urllib.request.build_opener( urllib.request.ProxyHandler()) ); by = urllib.request.urlopen( 'http://sublime.wbond.net/' + pf.replace(' ', '%20')).read(); dh = hashlib.sha256(by).hexdigest(); print('Error validating download (got %s instead of %s), please try manual install' % (dh, h)) if dh != h else open(os.path.join( ipp, pf), 'wb' ).write(by)"
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/home/yoba/.config/sublime-text-3/Packages/Default/Preferences.sublime-settings",
+		"/home/yoba/.config/sublime-text-3/Packages/User/Default (Linux).sublime-keymap",
+		"/home/yoba/code/intel/font/symbols",
+		"/home/yoba/code/useless-printer/src/spec_thread.cpp",
+		"/home/yoba/code/useless-printer/src/spec_func.h",
+		"/home/yoba/code/useless-printer/src/main.cpp",
+		"/home/yoba/code/useless-printer/src/printer_func.cpp",
+		"/home/yoba/code/useless-printer/src/printer_func.h",
+		"/home/yoba/code/useless-printer/src/font.h",
+		"/home/yoba/code/useless-printer/src/font.cpp",
+		"/home/yoba/code/useless-printer/src/color.h",
+		"/home/yoba/.config/sublime-text-3/Packages/User/Preferences.sublime-settings",
+		"/home/yoba/code/useless-printer/src/color.cpp",
+		"/home/yoba/code/useless-printer/src/builder.h",
+		"/home/yoba/code/useless-printer/src/builder.cpp",
+		"/home/yoba/code/useless-printer/src/banner_font.h",
+		"/home/yoba/code/useless-printer/Makefile.am",
+		"/home/yoba/code/useless-printer/src/spec_thread.h",
+		"/home/yoba/code/useless-printer/configure.ac",
+		"/home/yoba/code/useless-printer/src/doom_font.h",
+		"/home/yoba/code/useless-printer/src/font/translator.sh",
+		"/home/yoba/code/useless-printer/src/font/doom_font",
+		"/home/yoba/code/useless-printer/src/font/banner_font",
+		"/home/yoba/code/useless-printer/.gitignore",
+		"/home/yoba/code/intel/src/printer_func.h",
+		"/home/yoba/code/intel/m4/pthread.m4",
+		"/home/yoba/code/intel/src/builder.h",
+		"/home/yoba/code/intel/src/main.cpp",
+		"/home/yoba/code/intel/font/translator.sh"
+	],
+	"find":
+	{
+		"height": 24.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"theme",
+			"all-recursive:",
+			"all-recur",
+			"all",
+			"CC",
+			"symbols.h",
+			"lines_number"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"height"
+		],
+		"reverse": true,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 1,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "src/types/AbstractCell.h",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 506,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								261,
+								261
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "src/types/AbstractParticle.h",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 355,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								355,
+								355
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 24.0
+	},
+	"input":
+	{
+		"height": 31.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"project": "testing-system.sublime-project",
+	"replace":
+	{
+		"height": 44.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 375.0,
+		"selected_items":
+		[
+		],
+		"width": 378.0
+	},
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 150.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
