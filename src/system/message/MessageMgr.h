@@ -12,7 +12,13 @@ namespace system {
 
 enum Tag {
   UPDATE_CELL
-}
+};
+
+struct Message {
+  void* buffer;
+  size_t size;
+  Tag tag;
+};
 
 class MessageMgr {
 private:
@@ -31,6 +37,7 @@ public:
   void setCellMgr(CellMgr* mgr) { cellMgr = mgr }
   void setSystem(System* _sys) { sys = _sys }
   void run();
+  void join();
 
   void send(NodeID node, Tag tag, AbstractCell* cell);
 

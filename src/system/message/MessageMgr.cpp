@@ -15,6 +15,11 @@ void ts::system::run() {
   receiver = thread(&MessageMgr::receiverLoop, this);
 }
 
+void ts::system::join() {
+  sender.join();
+  receiver.join();
+}
+
 void ts::system::receiverLoop() {
   while(true) {
     size_t size;
@@ -50,5 +55,12 @@ void ts::system::senderLoop() {
     comm->send(message.buffer, message.size, message.tag, message.node);
     delete message.buffer;
   }
+}
+
+void ts::system::send(NodeID node, Tag tag, AbstractCell* cell) {
+  Message message;
+  AbstractCellTools().serialize(cell, &message.buffer, &message.size);
+  message.tag = tag;
+  sendQueue.push_back(message);
 }
 
