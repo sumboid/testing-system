@@ -1,70 +1,54 @@
+#include <chrono>
 #include "MessageMgr.h"
 
-namespace ts {
-  namespace system {
+using std::thread;
+using std::this_thread;
+using std::chrono;
 
-MessageMgr::MessageMgr(int* argc, char ***argv, const int& mode) : max_request_id(0) {
-  int provided;
-  MPI_Init_thread(argc, argv, mode, &provided);
-  if (provided != mode)
-    printf("MPI Error : get only %d\n", provided);
-  MPI_Comm_size(MPI_COMM_WORLD, &size);
-  int periods = 0;  
-  //MPI_Comm_dup(MPI_COMM_WORLD, &comm);
-  MPI_Cart_create(MPI_COMM_WORLD, 1, &size, &periods, 0, &comm);
-  MPI_Comm_rank(comm, &rank); 
+ts::system::MessageMgr(): end(false) {
+  comm = new Comm(0, 0);
+  id = comm->getRank();
 }
 
-MessageMgr::~MessageMgr() { 
-  MPI_Comm_free(&comm);
-  MPI_Finalize();
+void ts::system::run() {
+  sender = thread(&MessageMgr::sendLoop, this);
+  receiver = thread(&MessageMgr::receiverLoop, this);
 }
 
-void MessageMgr::send(const void *buf, const size_t& buf_size, const unsigned int& tag, const int& dest_rank) {  
-  MPI_Send((void*)buf, buf_size, MPI_BYTE, dest_rank, tag, comm); 
-}
-
-unsigned int MessageMgr::isend(const void *buf, const size_t& buf_size, const unsigned int& tag, const int& dest_rank) { 
-  const unsigned int request_id = max_request_id++;
-  MPI_Request req;
-  MPI_Isend((void*)buf, buf_size, MPI_BYTE, dest_rank, tag, comm, &req);
-  requests[request_id] = req;
-  return request_id;
-}
-
-void MessageMgr::recv(void *buf, const size_t& buf_size, const unsigned int& tag, const int& src_rank) { 
-  MPI_Recv(buf, buf_size, MPI_BYTE, src_rank, tag, comm, MPI_STATUS_IGNORE);  
-}
-
-bool MessageMgr::test(const unsigned int& request_id) {
-  int is_finished = 0;
-  MPI_Test(&requests[request_id], &is_finished, MPI_STATUSES_IGNORE);
-  if (is_finished) {
-    requests.erase(request_id);
-    return true;
+void ts::system::receiverLoop() {
+  while(true) {
+    size_t size;
+    unsigned int tag;
+    int node;
+    if(comm->iprobeAny(&size, &tag, &node)) {
+      void* buffer = new void[size];
+      comm.recv(buffer, size, tag, node);
+      switch(tag) {
+        case UPDATE_CELL:
+          auto cell = AbstractCellTools().deserialize(buffer, size);
+          cellMgr->updateExternalCell(cell);
+          break;
+        default:
+          break;
+      }
+    }
+    else {
+      if(end) return;
+      this_thread::sleep_for(chrono::seconds(1));
+    }
   }
-  return false;
 }
 
-void MessageMgr::barrier() {
-  MPI_Barrier(comm);
-}
-
-bool MessageMgr::iprobeAny(size_t& size, unsigned int& tag, int& node) {
-  int flag = 0;
-  MPI_Status stat;
-  MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, comm, &flag, &stat);
-  if (flag) {
-    int sz;
-    MPI_Get_count(&stat, MPI_BYTE, &sz);    
-    size = sz;
-    tag = stat.MPI_TAG;
-    node = stat.MPI_SOURCE;
-    return true;
+void ts::system::senderLoop() {
+  while(true) {
+    if(end) return;
+    if(sendQueue.empty()) {
+      this_thread::sleep_for(chrono::seconds(1));
+      continue;
+    }
+    auto message = sendQueue.pop_front();
+    comm->send(message.buffer, message.size, message.tag, message.node);
+    delete message.buffer;
   }
-  return false;
-}
-
-}
 }
 

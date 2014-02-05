@@ -1,45 +1,44 @@
 #pragma once
+#include <thread>
+#include <atomic>
 
-#include <mpi.h>
-#include <map>
+#include "comm/Comm.h"
+#include "../cell/CellMgr.h"
+#include "../System.h"
+#include "../../types/AbstractCell.h"
 
 namespace ts {
-  namespace system {
+namespace system {
 
-/**
- * Implementation of communicator with usage of MPI
- */
+enum Tag {
+  UPDATE_CELL
+}
+
 class MessageMgr {
 private:
-  int rank;
-  int size;
-  MPI_Comm comm;  
-  std::map<unsigned int, MPI_Request> requests;
-  unsigned int max_request_id;
-
+  Comm* comm;
+  CellMgr* cellMgr;
+  System* sys;
+  NodeID id;
+  std::thread sender;
+  std::thread receiver;
+  std::atomic<bool> end;
+  std::atomic<std::queue<Message> > sendQueue;
 public:
-  MessageMgr(int* argc, char ***argv, const int& mode = MPI_THREAD_SINGLE);
+  MessageMgr();
   ~MessageMgr();
-  
-  void send(const void *buf, const size_t& buf_size, const unsigned int& tag, const int& dst_rank);
-  unsigned int isend(const void *buf, const size_t& buf_size, const unsigned int& tag, const int& dst_rank);
 
-  void recv(void *buf, const size_t& buf_size, const unsigned int& tag, const int& src_rank);
+  void setCellMgr(CellMgr* mgr) { cellMgr = mgr }
+  void setSystem(System* _sys) { sys = _sys }
+  void run();
 
-  bool iprobeAny(size_t& size, unsigned int& tag, int& node);
+  void send(NodeID node, Tag tag, AbstractCell* cell);
 
-  bool test(const unsigned int& request_id);
+  NodeID getNodeID() { return id; }
 
-  void barrier();
-
-  int getRank() const {
-    return rank;
-  }
-
-  int getSize() const {
-    return size;
-  }
+private:
+  void sendLoop();
+  void receiveLoop();
 };
-
 }
 }

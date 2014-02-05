@@ -9,18 +9,18 @@ namespace ts {
 /**
  * Implementation of communicator with usage of MPI
  */
-class MessageMgr {
+class Comm {
 private:
   int rank;
   int size;
-  MPI_Comm comm;  
+  MPI_Comm comm;
   std::map<unsigned int, MPI_Request> requests;
   unsigned int max_request_id;
 
 public:
-  MessageMgr(int* argc, char ***argv, const int& mode = MPI_THREAD_SINGLE);
-  ~MessageMgr();
-  
+  Comm(int* argc, char ***argv, const int& mode = MPI_THREAD_SINGLE);
+  ~Comm();
+
   void send(const void *buf, const size_t& buf_size, const unsigned int& tag, const int& dst_rank);
   unsigned int isend(const void *buf, const size_t& buf_size, const unsigned int& tag, const int& dst_rank);
 
