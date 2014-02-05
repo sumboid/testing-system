@@ -6,7 +6,7 @@
 #include <map>
 #include <pair>
 
-#include "../types/Cell.h"
+#include "../types/AbstractCell.h"
 #include "MessageMgr.h"
 
 namespace ts {
@@ -15,8 +15,8 @@ namespace system {
   private:
     MessageMgr* messageMgr;
 
-    std::vector<Cell*> externalCells;
-    std::map<Cell*, bool> cells;
+    std::vector<AbstractCell*> externalCells;
+    std::map<AbstractCell*, bool> cells;
     pthread_rwlock_t* cellsLock;
 
   public:
@@ -26,12 +26,10 @@ namespace system {
 
     void setMessageMgr(MessageMgr*);
 
-    void addCell(Cell* cell);
-    std::vector<std::pair<Cell*, std::vector<Cell*> > >
+    void addCell(AbstractCell* cell);
+    std::vector<std::pair<AbstractCell*, std::vector<AbstractCell*> > >
       getCells(int amount);
-    void unlock(Cell* cell);
-
-  private:
-    std::map<Cell*, bool> filter();
+    void unlock(AbstractCell* cell);
+    void updateExternalCell(AbstractCell* cell);
   };
 }}
