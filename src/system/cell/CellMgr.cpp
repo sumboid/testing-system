@@ -68,12 +68,16 @@ void ts::system::unlock(AbstractCell* cell) {
 
 void ts::system::updateExternalCell(AbstractCell* cell) {
   pthread_rwlock_rdlock(cellsLock);
+  bool newCell = true;
   for(auto fcell: externalCells) {
     if(fcell->id() == cell->id()) {
       auto it = externalCells.find(fcell);
       delete *it;
       *it = cell;
+      newCell = false;
       break;
     }
   }
+  externalCells.push_back(cell);
+  pthread_rwlock_unlock(cellsLock);
 }

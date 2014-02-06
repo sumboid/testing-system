@@ -25,6 +25,8 @@ private:
   Comm* comm;
   CellMgr* cellMgr;
   System* sys;
+  AbstractCellTools* cellTool;
+
   NodeID id;
   std::thread sender;
   std::thread receiver;
@@ -34,8 +36,10 @@ public:
   MessageMgr();
   ~MessageMgr();
 
-  void setCellMgr(CellMgr* mgr) { cellMgr = mgr }
-  void setSystem(System* _sys) { sys = _sys }
+  void setCellMgr(CellMgr* mgr) { cellMgr = mgr; }
+  void setSystem(System* _sys) { sys = _sys; }
+  void setCellTool(AbstractCellTools* tool) { cellTool = tool; }
+
   void run();
   void join();
 

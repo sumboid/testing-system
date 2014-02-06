@@ -59,7 +59,7 @@ void ts::system::senderLoop() {
 
 void ts::system::send(NodeID node, Tag tag, AbstractCell* cell) {
   Message message;
-  AbstractCellTools().serialize(cell, &message.buffer, &message.size);
+  AbstractCellTools().serialize(cell, message.buffer, message.size);
   message.tag = tag;
   sendQueue.push_back(message);
 }
