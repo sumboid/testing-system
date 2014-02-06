@@ -18,10 +18,10 @@ namespace type {
   class AbstractCell {
   public:
     // General
-    AbstractCell(): _iteration(0), 
+    AbstractCell(): _iteration(0),
                     _progress(0),
                     _reduce(false),
-                    _reduced(false) {}
+                    _reduced(true) {}
     virtual ~AbstractCell() {}
     virtual void addParticle(Particle* particle) = 0;
     virtual void removeParticle(Particle* particle) = 0;
@@ -57,28 +57,35 @@ namespace type {
     }
 
     // Reduce
+  private:
     bool _reduce;
     bool _reduced;
+
+  public:
     virtual ReduceData* reduce() = 0;
     virtual ReduceData* reduce(ReduceData* data) = 0;
     virtual void reduceStep(ReduceData* data) = 0;
 
     ReduceData* _reduce() {
       _reduce = false;
+      _reduced = false;
       return reduce();
     }
 
     ReduceData* _reduce(ReduceData* data) {
       _reduce = false;
+      _reduced = false;
+      return reduce(data);
     }
+
     void _reduceStep(ReduceData* data) {
-      _reduce = false;
       _reduced = true;
       reduceStep(data);
       ++_progress;
     }
 
-
+    bool needReduce() { return _reduce;  }
+    bool wasReduced() { return _reduced; }
     //Serialization
     virtual ExternalInfo* serialize() = 0;
     virtual void deserialize(ExternalInfo* info) = 0;
@@ -90,7 +97,7 @@ namespace type {
     unsigned int _progress;
 
   public:
-    unsigned int iteration() { 
+    unsigned int iteration() {
       return _iteration;
     }
 
@@ -105,7 +112,7 @@ namespace type {
       return state[0];
     }
 
-    void nextIteration() { 
+    void nextIteration() {
       if(_iteration > 1) delete state[0];
       state[0] = state[1];
       state[1] = serialize();
@@ -113,8 +120,9 @@ namespace type {
       _progress = 0;
     }
 
-    void _run() {
+    void _runStep() {
       run();
+      ++_progress;
     }
   };
 }}

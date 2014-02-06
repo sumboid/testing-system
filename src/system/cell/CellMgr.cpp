@@ -1,5 +1,6 @@
 #include "CellMgr.h"
 
+using std::pair;
 using std::vector;
 using std::map;
 
@@ -26,16 +27,23 @@ void ts::system::addCell(AbstractCell* cell) {
 }
 
 typedef pair<AbstractCell*, vector<AbstractCell*> > WorkCell;
-vector<WorkCell>
-ts::system::getCells(int amount) {
+vector<WorkCell> ts::system::getCells(int amount) {
   pthread_rwlock_wrlock(cellsLock);
   vector<WorkCell> result;
+  vector<WorkCell> reduceResult;
+  int reduceCount = 0;
 
   vector<AbstractCell*> fcells;
   for(auto cell: cells)
     if(!cell.second) fcells.push_back(cell.first);
 
   for(auto cell: fcells) {
+    bool notReduced = false;
+    if(!cell->needReduce() && !cell->wasReduced()) {
+      ++reduceCount;
+      notReduced = true;
+    }
+
     vector<AbstractCell::ID> neighboursID = cell.neighbours();
     vector<AbstractCell*> neighbours;
 
@@ -51,11 +59,16 @@ ts::system::getCells(int amount) {
       neighbours.push_back(*cellit.first);
     }
 
-    if(neighbours.size() == neighboursID.size())
-      result.push_back(pair(cell, neighbours));
+    if(neighbours.size() == neighboursID.size()) {
+      if(notReduced)
+        reduceResult.push_back(pair(cell, neighbours));
+      else
+        result.push_back(pair(cell, neighbours));
+    }
   }
   pthread_rwlock_unlock(cellsLock);
-  return result;
+  if(reduceCount == cells.size()) return reduceResult;
+  else return result;
 }
 
 void ts::system::unlock(AbstractCell* cell) {
