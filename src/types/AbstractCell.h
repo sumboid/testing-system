@@ -108,6 +108,7 @@ namespace type {
     ExternalInfo* currentState() {
       return state[1];
     }
+
     ExternalInfo* prevState() {
       return state[0];
     }
