@@ -14,7 +14,12 @@ namespace type {
     virtual AbstractCell* deserialize(void*& buf, size_t& size) = 0;
   };
 
-  template <class ID, class ReduceData, class ExternalInfo>
+  class ReduceData {
+  public:
+    virtual ~ReduceData() {}
+  };
+
+  template <class ID, class ExternalInfo>
   class AbstractCell {
   public:
     // General
