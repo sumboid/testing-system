@@ -5,22 +5,22 @@ using std::thread;
 using std::this_thread;
 using std::chrono;
 
-ts::system::MessageMgr(): end(false) {
+ts::system::MessageMgr::MessageMgr(): end(false) {
   comm = new Comm(0, 0);
   id = comm->getRank();
 }
 
-void ts::system::run() {
+void ts::system::MessageMgr::run() {
   sender = thread(&MessageMgr::sendLoop, this);
   receiver = thread(&MessageMgr::receiverLoop, this);
 }
 
-void ts::system::join() {
+void ts::system::MessageMgr::join() {
   sender.join();
   receiver.join();
 }
 
-void ts::system::receiverLoop() {
+void ts::system::MessageMgr::receiverLoop() {
   while(true) {
     size_t size;
     unsigned int tag;
@@ -44,7 +44,7 @@ void ts::system::receiverLoop() {
   }
 }
 
-void ts::system::senderLoop() {
+void ts::system::MessageMgr::senderLoop() {
   while(true) {
     if(end) return;
     if(sendQueue.empty()) {
@@ -57,10 +57,13 @@ void ts::system::senderLoop() {
   }
 }
 
-void ts::system::send(NodeID node, Tag tag, AbstractCell* cell) {
+void ts::system::MessageMgr::send(NodeID node, Tag tag, AbstractCell* cell) {
   Message message;
   AbstractCellTools().serialize(cell, message.buffer, message.size);
   message.tag = tag;
   sendQueue.push_back(message);
 }
 
+void ts::system::MessageMgr::stop() {
+  end = true;
+}

@@ -1,4 +1,4 @@
-#pragma once 
+#pragma once
 
 #include <thread>
 #include <mutex>
@@ -31,6 +31,7 @@ namespace system {
 
     void run();
     void join();
+    void stop();
 
     void add(const std::vector<WorkCell>& cells);
 

@@ -42,11 +42,11 @@ public:
 
   void run();
   void join();
+  void stop();
 
   void send(NodeID node, Tag tag, AbstractCell* cell);
 
   NodeID getNodeID() { return id; }
-
 private:
   void sendLoop();
   void receiveLoop();

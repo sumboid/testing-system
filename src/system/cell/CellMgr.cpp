@@ -4,30 +4,30 @@ using std::pair;
 using std::vector;
 using std::map;
 
-ts::system::CellMgr() {
+ts::system::CellMgr::CellMgr() {
   cellsLock = new pthread_rwlock_t;
   pthread_rwlock_init(cellsLock);
 }
 
-ts::system::CellMgr(MessageMgr* msgMgr):
+ts::system::CellMgr::CellMgr(MessageMgr* msgMgr):
   messageMgr(msgMgr) {
   cellsLock = new pthread_rwlock_t;
   pthread_rwlock_init(cellsLock);
 }
 
-ts::system::~CellMgr() {
+ts::system::CellMgr::~CellMgr() {
   pthread_rwlock_destroy(cellsLock);
   delete cellsLock;
 }
 
-void ts::system::addCell(AbstractCell* cell) {
+void ts::system::CellMgr::addCell(AbstractCell* cell) {
   pthread_rwlock_wrlock(cellsLock);
   cells[cell] = false;
   pthread_rwlock_unlock(cellsLock);
 }
 
 typedef pair<AbstractCell*, vector<AbstractCell*> > WorkCell;
-vector<WorkCell> ts::system::getCells(int amount) {
+vector<WorkCell> ts::system::CellMgr::getCells(int amount) {
   pthread_rwlock_wrlock(cellsLock);
   vector<WorkCell> result;
   vector<WorkCell> reduceResult;
@@ -71,7 +71,7 @@ vector<WorkCell> ts::system::getCells(int amount) {
   else return result;
 }
 
-void ts::system::unlock(AbstractCell* cell) {
+void ts::system::CellMgr::unlock(AbstractCell* cell) {
   pthread_rwlock_wrlock(cellsLock);
   cells[cell] = false;
   pthread_rwlock_unlock(cellsLock);
@@ -79,7 +79,7 @@ void ts::system::unlock(AbstractCell* cell) {
   for(auto node: nodes) messageMgr->send(node, UPDATE_CELL, cell->serialize());
 }
 
-void ts::system::updateExternalCell(AbstractCell* cell) {
+void ts::system::CellMgr::updateExternalCell(AbstractCell* cell) {
   pthread_rwlock_rdlock(cellsLock);
   bool newCell = true;
   for(auto fcell: externalCells) {

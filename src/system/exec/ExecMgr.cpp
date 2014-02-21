@@ -8,15 +8,19 @@ using std::this_thread;
 using std::chrono;
 
 
-void ts::system::run() {
-  loopThread = thread(&ExecMgr::loop, this); 
+void ts::system::ExecMgr::run() {
+  loopThread = thread(&ExecMgr::loop, this);
 }
 
-void ts::system::join() {
+void ts::system::ExecMgr::join() {
   loopThread.join();
 }
 
-void ts::system::add(const vector<WorkCell>& cells) {
+void ts::system::ExecMgr::stop() {
+  end = true;
+}
+
+void ts::system::ExecMgr::add(const vector<WorkCell>& cells) {
   queueMutex.lock();
   for(auto cell: cells) {
     cellQueue.push_back(cell);
@@ -24,7 +28,7 @@ void ts::system::add(const vector<WorkCell>& cells) {
   queueMutex.unlock();
 }
 
-void ts::system::loop() {
+void ts::system::ExecMgr::loop() {
   while(true) {
     queueMutex.lock();
     if(cellQueue.empty()) {
@@ -40,6 +44,6 @@ void ts::system::loop() {
   }
 }
 
-void ts::system::compute(WorkCell& cell) {
-  
+void ts::system::ExecMgr::compute(WorkCell& cell) {
+
 }

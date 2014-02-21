@@ -1,17 +1,15 @@
 #pragma once
 
+#include <utility>
 #include <vector>
 #include <algorithm>
 
-#include "Particle.h"
-
 namespace ts {
 namespace type {
-  class AbstractCellTools {
+  typedef int NodeID;
+  class ID {
   public:
-    virtual ~AbstractCellTools() {}
-    virtual void serialize(AbstractCell* cell, void* buf, size_t size) = 0;
-    virtual AbstractCell* deserialize(void*& buf, size_t& size) = 0;
+    virtual ~ID() {}
   };
 
   class ReduceData {
@@ -19,17 +17,26 @@ namespace type {
     virtual ~ReduceData() {}
   };
 
-  template <class ID, class ExternalInfo>
+  class Data {
+  public:
+    virtual std::pair<void*, size_t> serialize();
+  };
+
+  class Deserializer {
+  public:
+    virtual Data* deserialize(void* buf, size_t size);
+  };
+
   class AbstractCell {
   public:
     // General
     AbstractCell(): _iteration(0),
                     _progress(0),
-                    _reduce(false),
-                    _reduced(true) {}
+                    _vreduce(false),
+                    _vreduced(true) {}
     virtual ~AbstractCell() {}
-    virtual void addParticle(Particle* particle) = 0;
-    virtual void removeParticle(Particle* particle) = 0;
+    // virtual void addParticle(Particle* particle) = 0;
+    // virtual void removeParticle(Particle* particle) = 0;
 
     virtual void run() = 0;
     virtual ID id() = 0;
@@ -40,7 +47,7 @@ namespace type {
     std::map<ID, NodeID> neighboursLocation;
 
   public:
-    vector<NodeID> noticeList() {
+    std::vector<NodeID> noticeList() {
       std::vector<NodeID> result;
       for(auto neighbour: neighboursLocation) {
         if(neighbour.second != nodeID)
@@ -63,8 +70,8 @@ namespace type {
 
     // Reduce
   private:
-    bool _reduce;
-    bool _reduced;
+    bool _vreduce;
+    bool _vreduced;
 
   public:
     virtual ReduceData* reduce() = 0;
@@ -72,32 +79,33 @@ namespace type {
     virtual void reduceStep(ReduceData* data) = 0;
 
     ReduceData* _reduce() {
-      _reduce = false;
-      _reduced = false;
+      _vreduce = false;
+      _vreduced = false;
       return reduce();
     }
 
     ReduceData* _reduce(ReduceData* data) {
-      _reduce = false;
-      _reduced = false;
+      _vreduce = false;
+      _vreduced = false;
       return reduce(data);
     }
 
     void _reduceStep(ReduceData* data) {
-      _reduced = true;
+      _vreduced = true;
       reduceStep(data);
       ++_progress;
     }
 
-    bool needReduce() { return _reduce;  }
-    bool wasReduced() { return _reduced; }
+    bool needReduce() { return _vreduce;  }
+    bool wasReduced() { return _vreduced; }
+
     //Serialization
-    virtual ExternalInfo* serialize() = 0;
-    virtual void deserialize(ExternalInfo* info) = 0;
+    virtual Data* serialize() = 0;
+    virtual void deserialize(Data* info) = 0;
 
     // Iteration state
   private:
-    ExternalInfo* state[2];
+    Data* state[2];
     unsigned int _iteration;
     unsigned int _progress;
 
@@ -110,11 +118,11 @@ namespace type {
       return _progress;
     }
 
-    ExternalInfo* currentState() {
+    Data* currentState() {
       return state[1];
     }
 
-    ExternalInfo* prevState() {
+    Data* prevState() {
       return state[0];
     }
 
@@ -130,5 +138,12 @@ namespace type {
       run();
       ++_progress;
     }
+  };
+
+  class AbstractCellTools {
+  public:
+    virtual ~AbstractCellTools() {}
+    virtual void serialize(AbstractCell* cell, void* buf, size_t size) = 0;
+    virtual AbstractCell* deserialize(void*& buf, size_t& size) = 0;
   };
 }}
