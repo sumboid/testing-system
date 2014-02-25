@@ -2,6 +2,7 @@
 
 #include <thread>
 #include <mutex>
+#include <atomic>
 
 #include <vector>
 #include <utility>
@@ -11,6 +12,7 @@
 #include "../System.h"
 namespace ts {
 namespace system {
+  class System;
   typedef std::pair<ts::type::AbstractCell*, std::vector<ts::type::AbstractCell*> > WorkCell;
   class ExecMgr {
   private:

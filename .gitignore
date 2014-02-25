@@ -16,6 +16,7 @@
 *.exe
 *.out
 *.app
+ts
 
 # Dirs
 sandbox

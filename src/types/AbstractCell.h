@@ -3,6 +3,7 @@
 #include <utility>
 #include <vector>
 #include <algorithm>
+#include <map>
 
 namespace ts {
 namespace type {
@@ -159,6 +160,6 @@ namespace type {
   public:
     virtual ~AbstractCellTools() {}
     virtual void serialize(AbstractCell* cell, void* buf, size_t size) = 0;
-    virtual AbstractCell* deserialize(void*& buf, size_t& size) = 0;
+    virtual AbstractCell* deserialize(char*& buf, size_t& size) = 0;
   };
 }}

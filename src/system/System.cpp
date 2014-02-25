@@ -1,37 +1,38 @@
 #include "System.h"
 
-ts::system::System::System() {
-  messageMgr = new MessageMgr;
+using ts::type::AbstractCellTools;
+
+ts::system::System::System(AbstractCellTools* cellTools) {
+  msgMgr = new MessageMgr;
   cellMgr = new CellMgr;
   execMgr = new ExecMgr;
 
-  messageMgr.setCellMgr(cellMgr);
-  messageMgr.setSystem(this);
-  setCellTool(); //XXX
+  msgMgr->setCellMgr(cellMgr);
+  msgMgr->setSystem(this);
+  msgMgr->setCellTool(cellTools);
 
-  cellMgr.setMessageMgr(messageMgr);
+  cellMgr->setMessageMgr(msgMgr);
 
-  execMgr.setSystem(this);
+  execMgr->setSystem(this);
 
-  messageMgr.run();
-  execMgr.run();
+  msgMgr->run();
+  execMgr->run();
 }
 
 ts::system::System::~System() {
-  messageMgr.stop();
-  execMgr.stop();
-  messageMgr.join();
-  execMgr.join();
+  msgMgr->stop();
+  execMgr->stop();
+  msgMgr->join();
+  execMgr->join();
 
-  delete messageMgr;
+  delete msgMgr;
   delete execMgr;
   delete cellMgr;
 }
 
 void ts::system::System::run() {
   while(true) {
-    auto cells = cellMgr.getCells(359);
-    for(auto cell: cells)
-      execMgr.add(cell)
+    auto cells = cellMgr->getCells(359);
+    execMgr->add(cells);
   }
 }

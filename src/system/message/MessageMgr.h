@@ -16,10 +16,14 @@ enum Tag {
 };
 
 struct Message {
-  void* buffer;
+  char* buffer;
   size_t size;
   Tag tag;
+  ts::type::NodeID node;
 };
+
+class System;
+class CellMgr;
 
 class MessageMgr {
 private:
@@ -36,7 +40,7 @@ private:
   std::mutex queueMutex;
 public:
   MessageMgr();
-  ~MessageMgr();
+  ~MessageMgr() {};
 
   void setCellMgr(CellMgr* mgr) { cellMgr = mgr; }
   void setSystem(System* _sys) { sys = _sys; }

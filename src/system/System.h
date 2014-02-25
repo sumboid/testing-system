@@ -3,9 +3,14 @@
 #include "exec/ExecMgr.h"
 #include "message/MessageMgr.h"
 #include "cell/CellMgr.h"
+#include "../types/AbstractCell.h"
 
 namespace ts {
 namespace system {
+
+class CellMgr;
+class MessageMgr;
+class ExecMgr;
 
 class System {
 private:
@@ -14,7 +19,7 @@ private:
   ExecMgr* execMgr;
 
 public:
-  System();
+  System(ts::type::AbstractCellTools*);
   ~System();
 
   void run();
