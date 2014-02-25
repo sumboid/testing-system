@@ -2,7 +2,7 @@
 
 #include "exec/ExecMgr.h"
 #include "message/MessageMgr.h"
-#include "cell/CellManager.h"
+#include "cell/CellMgr.h"
 
 namespace ts {
 namespace system {
@@ -17,7 +17,7 @@ public:
   System();
   ~System();
 
-  run();
+  void run();
 
   //put(Message* message);
 };

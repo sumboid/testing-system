@@ -4,6 +4,9 @@
 using std::thread;
 using std::this_thread;
 using std::chrono;
+using ts::types::AbstractCell;
+using ts::types::NodeID;
+using ts::types::AbstractCellTools;
 
 ts::system::MessageMgr::MessageMgr(): end(false) {
   comm = new Comm(0, 0);
@@ -47,11 +50,14 @@ void ts::system::MessageMgr::receiverLoop() {
 void ts::system::MessageMgr::senderLoop() {
   while(true) {
     if(end) return;
+    queueMutex.lock();
     if(sendQueue.empty()) {
+      queueMutex.unlock();
       this_thread::sleep_for(chrono::seconds(1));
       continue;
     }
     auto message = sendQueue.pop_front();
+    queueMutex.unlock();
     comm->send(message.buffer, message.size, message.tag, message.node);
     delete message.buffer;
   }
@@ -61,7 +67,9 @@ void ts::system::MessageMgr::send(NodeID node, Tag tag, AbstractCell* cell) {
   Message message;
   AbstractCellTools().serialize(cell, message.buffer, message.size);
   message.tag = tag;
+  queueMutex.lock();
   sendQueue.push_back(message);
+  queueMutex.unlock();
 }
 
 void ts::system::MessageMgr::stop() {

@@ -15,8 +15,8 @@ namespace system {
   private:
     MessageMgr* messageMgr;
 
-    std::vector<AbstractCell*> externalCells;
-    std::map<AbstractCell*, bool> cells;
+    std::vector<ts::type::AbstractCell*> externalCells;
+    std::map<ts::type::AbstractCell*, bool> cells;
     pthread_rwlock_t* cellsLock;
 
   public:
@@ -26,10 +26,10 @@ namespace system {
 
     void setMessageMgr(MessageMgr*);
 
-    void addCell(AbstractCell* cell);
-    std::vector<std::pair<AbstractCell*, std::vector<AbstractCell*> > >
+    void addCell(ts::type::AbstractCell* cell);
+    std::vector<std::pair<ts::type::AbstractCell*, std::vector<ts::type::AbstractCell*> > >
       getCells(int amount);
-    void unlock(AbstractCell* cell);
-    void updateExternalCell(AbstractCell* cell);
+    void unlock(ts::type::AbstractCell* cell);
+    void updateExternalCell(ts::type::AbstractCell* cell);
   };
 }}

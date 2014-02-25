@@ -6,7 +6,7 @@ using std::vector;
 using std::thread;
 using std::this_thread;
 using std::chrono;
-
+using ts::type::AbstractCell;
 
 void ts::system::ExecMgr::run() {
   loopThread = thread(&ExecMgr::loop, this);

@@ -1,6 +1,7 @@
 #pragma once
 #include <thread>
 #include <atomic>
+#include <mutex>
 
 #include "comm/Comm.h"
 #include "../cell/CellMgr.h"
@@ -25,28 +26,29 @@ private:
   Comm* comm;
   CellMgr* cellMgr;
   System* sys;
-  AbstractCellTools* cellTool;
+  ts::type::AbstractCellTools* cellTool;
 
-  NodeID id;
+  ts::type::NodeID id;
   std::thread sender;
   std::thread receiver;
   std::atomic<bool> end;
-  std::atomic<std::queue<Message> > sendQueue;
+  std::queue<Message> sendQueue;
+  std::mutex queueMutex;
 public:
   MessageMgr();
   ~MessageMgr();
 
   void setCellMgr(CellMgr* mgr) { cellMgr = mgr; }
   void setSystem(System* _sys) { sys = _sys; }
-  void setCellTool(AbstractCellTools* tool) { cellTool = tool; }
+  void setCellTool(ts::type::AbstractCellTools* tool) { cellTool = tool; }
 
   void run();
   void join();
   void stop();
 
-  void send(NodeID node, Tag tag, AbstractCell* cell);
+  void send(ts::type::NodeID node, Tag tag, ts::type::AbstractCell* cell);
 
-  NodeID getNodeID() { return id; }
+  ts::type::NodeID getNodeID() { return id; }
 private:
   void sendLoop();
   void receiveLoop();

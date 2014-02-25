@@ -4,17 +4,17 @@
 #include <mutex>
 
 #include <vector>
-#include <pair>
+#include <utility>
 #include <queue>
 
-#include "../types/AbstractCell.h"
-
+#include "../../types/AbstractCell.h"
+#include "../System.h"
 namespace ts {
 namespace system {
-  typedef std::pair<AbstractCell*, std::vector<AbstractCell*> > WorkCell;
+  typedef std::pair<ts::type::AbstractCell*, std::vector<ts::type::AbstractCell*> > WorkCell;
   class ExecMgr {
   private:
-    ReduceData* reduceData;
+    ts::type::ReduceData* reduceData;
     std::queue<WorkCell> cellQueue;
 
     System* system;

@@ -8,8 +8,26 @@ namespace ts {
 namespace type {
   typedef int NodeID;
   class ID {
+  private:
+    enum {X = 0, Y = 1, Z = 2};
+    unsigned int c[3];
   public:
+    ID(int x = 0, int y = 0, int z = 0) {
+      c[X] = x;
+      c[Y] = y;
+      c[Z] = z;
+    }
+
     virtual ~ID() {}
+    bool operator<(const ID& other) const {
+      return true; //XXX: Need to check map behaviour
+    }
+    bool operator>(const ID& other) const {
+      return false; //XXX: Need to check map behaviour
+    }
+    bool operator==(const ID& other) {
+      return c[X] == other.c[X] && c[Y] == other.c[Y] && c[Z] == other.c[Z];
+    }
   };
 
   class ReduceData {
@@ -28,18 +46,21 @@ namespace type {
   };
 
   class AbstractCell {
+  private:
+      ID _id;
   public:
     // General
-    AbstractCell(): _iteration(0),
+    AbstractCell(ID id): _iteration(0),
                     _progress(0),
                     _vreduce(false),
-                    _vreduced(true) {}
+                    _vreduced(true),
+                    _id(id) {}
     virtual ~AbstractCell() {}
     // virtual void addParticle(Particle* particle) = 0;
     // virtual void removeParticle(Particle* particle) = 0;
 
     virtual void run() = 0;
-    virtual ID id() = 0;
+    ID id() { return _id; };
 
     // Neighbours and their location
   private:
@@ -65,7 +86,7 @@ namespace type {
 
     void updateNeighbour(ID id, NodeID node) {
       // TODO: check id
-      neighbours[id] = node;
+      neighboursLocation[id] = node;
     }
 
     // Reduce
@@ -100,7 +121,7 @@ namespace type {
     bool wasReduced() { return _vreduced; }
 
     //Serialization
-    virtual Data* serialize() = 0;
+    virtual AbstractCell* serialize() = 0;
     virtual void deserialize(Data* info) = 0;
 
     // Iteration state
@@ -118,18 +139,10 @@ namespace type {
       return _progress;
     }
 
-    Data* currentState() {
-      return state[1];
-    }
-
-    Data* prevState() {
-      return state[0];
-    }
-
     void nextIteration() {
-      if(_iteration > 1) delete state[0];
-      state[0] = state[1];
-      state[1] = serialize();
+      //if(_iteration > 1) delete state[0];
+      //state[0] = state[1];
+      //state[1] = serialize();
       ++_iteration;
       _progress = 0;
     }
@@ -138,6 +151,8 @@ namespace type {
       run();
       ++_progress;
     }
+    bool operator==(const AbstractCell& other) { return _id == other._id; }
+    bool operator==(const ID& other) { return _id == other; }
   };
 
   class AbstractCellTools {

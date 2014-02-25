@@ -3,16 +3,18 @@
 using std::pair;
 using std::vector;
 using std::map;
+using ts::type::AbstractCell;
+using ts::type::ID;
 
 ts::system::CellMgr::CellMgr() {
   cellsLock = new pthread_rwlock_t;
-  pthread_rwlock_init(cellsLock);
+  pthread_rwlock_init(cellsLock, NULL);
 }
 
 ts::system::CellMgr::CellMgr(MessageMgr* msgMgr):
   messageMgr(msgMgr) {
   cellsLock = new pthread_rwlock_t;
-  pthread_rwlock_init(cellsLock);
+  pthread_rwlock_init(cellsLock, NULL);
 }
 
 ts::system::CellMgr::~CellMgr() {
@@ -44,26 +46,31 @@ vector<WorkCell> ts::system::CellMgr::getCells(int amount) {
       notReduced = true;
     }
 
-    vector<AbstractCell::ID> neighboursID = cell.neighbours();
+    vector<ID> neighboursID = cell->neighbours();
     vector<AbstractCell*> neighbours;
 
     for(auto i: neighboursID) {
-      auto cellit = cells.find(i);
+      AbstractCell* findedCell;
+      auto cellit = find_if(cells.begin(), cells.end(), [&i](pair<AbstractCell*, bool> cell){ return *cell.first == i; });
       if (cells.end() == cellit) {
-        cellit = externalCells.find(i);
-        if (cells.end() == cellit)
+        auto cellit = find_if(externalCells.begin(), externalCells.end(), [&i](AbstractCell* cell){ return *cell == i; });
+        if (externalCells.end() == cellit)
           break;
+        else 
+          findedCell = *cellit;
+      } else {
+        findedCell = cellit->first;
       }
-      if(*cellit.first.iteration() < cell.iteration()) break;
+      if(findedCell->iteration() < cell->iteration()) break;
 
-      neighbours.push_back(*cellit.first);
+      neighbours.push_back(findedCell);
     }
 
     if(neighbours.size() == neighboursID.size()) {
       if(notReduced)
-        reduceResult.push_back(pair(cell, neighbours));
+        reduceResult.push_back(pair<AbstractCell*, vector<AbstractCell*>>(cell, neighbours));
       else
-        result.push_back(pair(cell, neighbours));
+        result.push_back(pair<AbstractCell*, vector<AbstractCell*>>(cell, neighbours));
     }
   }
   pthread_rwlock_unlock(cellsLock);
@@ -84,7 +91,7 @@ void ts::system::CellMgr::updateExternalCell(AbstractCell* cell) {
   bool newCell = true;
   for(auto fcell: externalCells) {
     if(fcell->id() == cell->id()) {
-      auto it = externalCells.find(fcell);
+      auto it = find(externalCells.begin(), externalCells.end(), fcell);
       delete *it;
       *it = cell;
       newCell = false;

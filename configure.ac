@@ -3,7 +3,7 @@ AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_CONFIG_MACRO_DIR([m4/])
 AC_PREFIX_DEFAULT([./build])
 
-AC_PROG_CXX
+AC_PROG_CXX([mpic++])
 
 SPECFLAGS="-std=c++11"
 
