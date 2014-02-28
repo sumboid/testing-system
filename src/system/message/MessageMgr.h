@@ -12,6 +12,7 @@ namespace ts {
 namespace system {
 
 enum Tag {
+  UNDEFINED,
   UPDATE_CELL
 };
 
@@ -20,6 +21,11 @@ struct Message {
   size_t size;
   Tag tag;
   ts::type::NodeID node;
+  Message() {
+    buffer = 0;
+    size = 0;
+    tag = UNDEFINED;
+  }
 };
 
 class System;

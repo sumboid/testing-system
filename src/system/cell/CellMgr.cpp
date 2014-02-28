@@ -33,7 +33,7 @@ vector<WorkCell> ts::system::CellMgr::getCells(int amount) {
   pthread_rwlock_wrlock(cellsLock);
   vector<WorkCell> result;
   vector<WorkCell> reduceResult;
-  int reduceCount = 0;
+  size_t reduceCount = 0;
 
   vector<AbstractCell*> fcells;
   for(auto cell: cells)
@@ -88,13 +88,13 @@ void ts::system::CellMgr::unlock(AbstractCell* cell) {
 
 void ts::system::CellMgr::updateExternalCell(AbstractCell* cell) {
   pthread_rwlock_rdlock(cellsLock);
-  bool newCell = true;
+  //bool newCell = true;
   for(auto fcell: externalCells) {
     if(fcell->id() == cell->id()) {
       auto it = find(externalCells.begin(), externalCells.end(), fcell);
       delete *it;
       *it = cell;
-      newCell = false;
+      //newCell = false;
       break;
     }
   }

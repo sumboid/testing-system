@@ -5,7 +5,7 @@ AC_PREFIX_DEFAULT([./build])
 
 AC_PROG_CXX([mpic++])
 
-SPECFLAGS="-std=c++11"
+SPECFLAGS="-std=c++11 -Wall"
 
 #########
 

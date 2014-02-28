@@ -3275,7 +3275,7 @@ fi
 
 
 
-SPECFLAGS="-std=c++11"
+SPECFLAGS="-std=c++11 -Wall"
 
 #########
 

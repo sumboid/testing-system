@@ -58,11 +58,14 @@ namespace type {
       ID _id;
   public:
     // General
-    AbstractCell(ID id): _iteration(0),
-                    _progress(0),
-                    _vreduce(false),
-                    _vreduced(true),
-                    _id(id) {}
+    AbstractCell(ID id) {
+      _iteration = 0;
+      _progress = 0;
+      _vreduce = false;
+      _vreduced = true;
+      _id = id;
+      _vneedUpdate = false;
+    }
     virtual ~AbstractCell() {}
     // virtual void addParticle(Particle* particle) = 0;
     // virtual void removeParticle(Particle* particle) = 0;
