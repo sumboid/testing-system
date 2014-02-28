@@ -19,7 +19,7 @@ private:
   ExecMgr* execMgr;
 
 public:
-  System(ts::type::AbstractCellTools*);
+  System(ts::type::AbstractCellTools*, ts::type::ReduceDataTools*);
   ~System();
 
   void run();

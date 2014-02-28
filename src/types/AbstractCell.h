@@ -36,6 +36,13 @@ namespace type {
     virtual ~ReduceData() {}
   };
 
+  class ReduceDataTools {
+  public:
+    virtual ~ReduceDataTools() {}
+    virtual void serialize(void*& buf, size_t& size) = 0;
+    virtual void deserialize(void* buf, size_t size) = 0;
+  };
+
   class Data {
   public:
     virtual std::pair<void*, size_t> serialize();
@@ -98,6 +105,8 @@ namespace type {
   public:
     virtual ReduceData* reduce() = 0;
     virtual ReduceData* reduce(ReduceData* data) = 0;
+    virtual ReduceData* reduce(ReduceData* data1, ReduceData* data2) = 0;
+
     virtual void reduceStep(ReduceData* data) = 0;
 
     ReduceData* _reduce() {
@@ -121,29 +130,37 @@ namespace type {
     bool needReduce() { return _vreduce;  }
     bool wasReduced() { return _vreduced; }
 
-    //Serialization
-    virtual AbstractCell* serialize() = 0;
-    virtual void deserialize(Data* info) = 0;
+    //Serialization external data
+  private:
+    bool _vneedUpdate;
+
+  public:
+    bool needUpdate() { return _vneedUpdate; }
+
+    virtual void serialize(void*& buf, size_t& size) = 0;
+    virtual void deserialize(void* buf, size_t size) = 0;
+
+    void _serialize(void*& buf, size_t& size) {
+      _vneedUpdate = false;
+      return serialize(buf, size);
+    }
 
     // Iteration state
   private:
-    Data* state[2];
-    unsigned int _iteration;
-    unsigned int _progress;
+    size_t _iteration;
+    size_t _progress;
 
   public:
-    unsigned int iteration() {
+    size_t iteration() {
       return _iteration;
     }
 
-    unsigned int progress() {
+    size_t progress() {
       return _progress;
     }
 
+
     void nextIteration() {
-      //if(_iteration > 1) delete state[0];
-      //state[0] = state[1];
-      //state[1] = serialize();
       ++_iteration;
       _progress = 0;
     }

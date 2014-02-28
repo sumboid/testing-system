@@ -56,7 +56,7 @@ vector<WorkCell> ts::system::CellMgr::getCells(int amount) {
         auto cellit = find_if(externalCells.begin(), externalCells.end(), [&i](AbstractCell* cell){ return *cell == i; });
         if (externalCells.end() == cellit)
           break;
-        else 
+        else
           findedCell = *cellit;
       } else {
         findedCell = cellit->first;
@@ -83,7 +83,7 @@ void ts::system::CellMgr::unlock(AbstractCell* cell) {
   cells[cell] = false;
   pthread_rwlock_unlock(cellsLock);
   auto nodes = cell->noticeList();
-  for(auto node: nodes) messageMgr->send(node, UPDATE_CELL, cell->serialize());
+  for(auto node: nodes) messageMgr->send(node, UPDATE_CELL, cell);
 }
 
 void ts::system::CellMgr::updateExternalCell(AbstractCell* cell) {

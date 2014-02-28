@@ -1,8 +1,9 @@
 #include "System.h"
 
 using ts::type::AbstractCellTools;
+using ts::type::ReduceDataTools;
 
-ts::system::System::System(AbstractCellTools* cellTools) {
+ts::system::System::System(AbstractCellTools* cellTools, ReduceDataTools* reduceTools) {
   msgMgr = new MessageMgr;
   cellMgr = new CellMgr;
   execMgr = new ExecMgr;
@@ -10,6 +11,7 @@ ts::system::System::System(AbstractCellTools* cellTools) {
   msgMgr->setCellMgr(cellMgr);
   msgMgr->setSystem(this);
   msgMgr->setCellTool(cellTools);
+  msgMgr->setReduceTool(reduceTools);
 
   cellMgr->setMessageMgr(msgMgr);
 

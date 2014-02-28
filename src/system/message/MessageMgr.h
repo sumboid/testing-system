@@ -31,6 +31,7 @@ private:
   CellMgr* cellMgr;
   System* sys;
   ts::type::AbstractCellTools* cellTool;
+  ts::type::ReduceDataTools* reduceTool;
 
   ts::type::NodeID id;
   std::thread sender;
@@ -45,6 +46,7 @@ public:
   void setCellMgr(CellMgr* mgr) { cellMgr = mgr; }
   void setSystem(System* _sys) { sys = _sys; }
   void setCellTool(ts::type::AbstractCellTools* tool) { cellTool = tool; }
+  void setReduceTool(ts::type::ReduceDataTools* tool) { reduceTool = tool; }
 
   void run();
   void join();
