@@ -3,7 +3,8 @@
 using ts::type::AbstractCellTools;
 using ts::type::ReduceDataTools;
 
-ts::system::System::System(AbstractCellTools* cellTools, ReduceDataTools* reduceTools) {
+ts::system::System::System(AbstractCellTools* cellTools, ReduceDataTools* reduceTools):
+  inputReduceData(0) {
   msgMgr = new MessageMgr;
   cellMgr = new CellMgr;
   execMgr = new ExecMgr(reduceTools);
@@ -36,5 +37,17 @@ void ts::system::System::run() {
   while(true) {
     auto cells = cellMgr->getCells(359);
     execMgr->add(cells);
+  }
+}
+
+void ts::system::System::spreadReduceData(ts::type::ReduceData* data) {
+  msgMgr->send(data);
+}
+
+void ts::system::System::putReduceData(ts::type::ReduceData* data) {
+  execMgr->reduce(data);
+  if(++inputReduceData == msgMgr->size()) {
+    inputReduceData = 0;
+    execMgr->endGlobalReduce();
   }
 }

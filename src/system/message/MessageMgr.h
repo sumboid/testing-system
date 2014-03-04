@@ -13,7 +13,8 @@ namespace system {
 
 enum Tag {
   UNDEFINED,
-  UPDATE_CELL
+  UPDATE_CELL,
+  REDUCE_DATA
 };
 
 struct Message {
@@ -39,7 +40,8 @@ private:
   ts::type::AbstractCellTools* cellTool;
   ts::type::ReduceDataTools* reduceTool;
 
-  ts::type::NodeID id;
+  size_t id;
+  size_t _size;
   std::thread sender;
   std::thread receiver;
   std::atomic<bool> end;
@@ -58,8 +60,10 @@ public:
   void join();
   void stop();
 
-  void send(ts::type::NodeID node, Tag tag, ts::type::AbstractCell* cell);
+  size_t size() { return _size; }
 
+  void send(ts::type::NodeID node, Tag tag, ts::type::AbstractCell* cell);
+  void send(ts::type::ReduceData* reduceData);
   ts::type::NodeID getNodeID() { return id; }
 private:
   void sendLoop();

@@ -18,12 +18,15 @@ private:
   CellMgr* cellMgr;
   ExecMgr* execMgr;
 
+  size_t inputReduceData;
+
 public:
   System(ts::type::AbstractCellTools*, ts::type::ReduceDataTools*);
   ~System();
 
   void run();
-  void spreadReduceData(ts::type::ReduceData* data) {}
+  void spreadReduceData(ts::type::ReduceData* data);
+  void putReduceData(ts::type::ReduceData* data);
 
   //put(Message* message);
 };

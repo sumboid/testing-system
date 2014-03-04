@@ -7,10 +7,13 @@ using std::chrono::seconds;
 using ts::type::AbstractCell;
 using ts::type::NodeID;
 using ts::type::AbstractCellTools;
+using ts::type::ReduceDataTools;
+using ts::type::ReduceData;
 
 ts::system::MessageMgr::MessageMgr(): end(false) {
   comm = new Comm(0, 0);
   id = comm->getRank();
+  _size = comm->getSize();
 }
 
 void ts::system::MessageMgr::run() {
@@ -34,6 +37,9 @@ void ts::system::MessageMgr::receiveLoop() {
       switch(tag) {
         case UPDATE_CELL:
           cellMgr->updateExternalCell(cellTool->deserialize(buffer, size));
+          break;
+        case REDUCE_DATA:
+          sys->putReduceData(reduceTool->deserialize(buffer, size));
           break;
         default:
           break;
@@ -66,8 +72,23 @@ void ts::system::MessageMgr::send(NodeID node, Tag tag, AbstractCell* cell) {
   Message message;
   cellTool->serialize(cell, message.buffer, message.size);
   message.tag = tag;
+  message.node = node;
   queueMutex.lock();
   sendQueue.push(message);
+  queueMutex.unlock();
+}
+
+void ts::system::MessageMgr::send(ReduceData* reduceData) {
+  Message message;
+  reduceTool->serialize(reduceData, message.buffer, message.size);
+  message.tag = REDUCE_DATA;
+  queueMutex.lock();
+  for(size_t i = 0; i < _size; ++i) {
+    if(i != id) {
+      message.node = i;
+      sendQueue.push(message);
+    }
+  }
   queueMutex.unlock();
 }
 
