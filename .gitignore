@@ -21,6 +21,9 @@ ts
 # Dirs
 sandbox
 
+# Files
+.tags*
+
 # Autohell
 Makefile.in
 autom4te.cache
