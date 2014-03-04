@@ -6,7 +6,7 @@ using ts::type::ReduceDataTools;
 ts::system::System::System(AbstractCellTools* cellTools, ReduceDataTools* reduceTools) {
   msgMgr = new MessageMgr;
   cellMgr = new CellMgr;
-  execMgr = new ExecMgr;
+  execMgr = new ExecMgr(reduceTools);
 
   msgMgr->setCellMgr(cellMgr);
   msgMgr->setSystem(this);

@@ -90,19 +90,22 @@ void ts::system::CellMgr::unlock(AbstractCell* cell) {
 
 void ts::system::CellMgr::updateExternalCell(AbstractCell* cell) {
   pthread_rwlock_rdlock(cellsLock);
+
   bool newCell = true;
   for(auto fcell: externalCells) {
     if(fcell->id() == cell->id()) {
       auto it = find(externalCells.begin(), externalCells.end(), fcell);
+
       pthread_rwlock_unlock(cellsLock);
       pthread_rwlock_wrlock(cellsLock);
-      delete *it;
-      *it = cell;
-      newCell = false;
+
+      (*it)->update(cell);
+
       pthread_rwlock_unlock(cellsLock);
       return;
     }
   }
+
   pthread_rwlock_unlock(cellsLock);
   pthread_rwlock_wrlock(cellsLock);
   if(newCell) externalCells.push_back(cell);

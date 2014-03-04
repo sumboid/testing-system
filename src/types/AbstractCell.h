@@ -41,6 +41,7 @@ namespace type {
     virtual ~ReduceDataTools() {}
     virtual void serialize(void*& buf, size_t& size) = 0;
     virtual void deserialize(void* buf, size_t size) = 0;
+    virtual ReduceData* reduce(ReduceData*, ReduceData*) = 0;
   };
 
   class Data {
@@ -70,8 +71,8 @@ namespace type {
     // virtual void addParticle(Particle* particle) = 0;
     // virtual void removeParticle(Particle* particle) = 0;
 
-    virtual void run() = 0;
-    ID id() { return _id; };
+    virtual void run(std::vector<AbstractCell*>) = 0;
+    ID id() { return _id; }
 
     // Neighbours and their location
   private:
@@ -148,6 +149,7 @@ namespace type {
       return serialize(buf, size);
     }
 
+    virtual void update(AbstractCell*) = 0;
     // Iteration state
   private:
     size_t _iteration;
@@ -168,8 +170,8 @@ namespace type {
       _progress = 0;
     }
 
-    void _runStep() {
-      run();
+    void _runStep(std::vector<AbstractCell*> neighbours) {
+      run(neighbours);
       ++_progress;
     }
     bool operator==(const AbstractCell& other) { return _id == other._id; }

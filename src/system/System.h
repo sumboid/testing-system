@@ -23,6 +23,7 @@ public:
   ~System();
 
   void run();
+  void spreadReduceData(ts::type::ReduceData* data) {}
 
   //put(Message* message);
 };
