@@ -21,7 +21,7 @@ private:
   enum ReduceState { LOCAL_REDUCING, PRE_GLOBAL_REDUCING, GLOBAL_REDUCING };
 
   ts::type::ReduceData* reduceData;
-  ts::type::ReduceData* storedReduceData[2];
+  ts::type::ReduceData* storedReduceData;
   std::queue<WorkCell> cellQueue;
 
   System* system;
@@ -43,14 +43,12 @@ public:
                                           reduceTools(_reduceTools),
                                           reduceDataFetched(false) {
     reduceData = 0;
-    storedReduceData[0] = 0;
-    storedReduceData[1] = 0;
+    storedReduceData = 0;
   }
 
   ~ExecMgr() {
     delete reduceData;
-    delete storedReduceData[0];
-    delete storedReduceData[1];
+    delete storedReduceData;
   }
 
   void setSystem(System* _system) { system = _system; }

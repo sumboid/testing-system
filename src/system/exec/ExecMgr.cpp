@@ -74,9 +74,8 @@ void ts::system::ExecMgr::reduce(ReduceData* rdata) {
 
 void ts::system::ExecMgr::endGlobalReduce() {
   reduceDataFetched = true;
-  delete storedReduceData[1];
-  storedReduceData[1] = storedReduceData[0];
-  storedReduceData[0] = reduceData;
+  delete storedReduceData;
+  storedReduceData = reduceData;
   fetchReduceData.notify_all();
 }
 
@@ -98,7 +97,7 @@ bool ts::system::ExecMgr::compute(WorkCell& cell) {
       rstate = PRE_GLOBAL_REDUCING;
       return false;
     }
-    cell.first->_reduceStep(storedReduceData[0]);
+    cell.first->_reduceStep(storedReduceData);
   }
   else {
     justcompute(cell);
