@@ -82,22 +82,29 @@ void ts::system::CellMgr::unlock(AbstractCell* cell) {
   pthread_rwlock_wrlock(cellsLock);
   cells[cell] = false;
   pthread_rwlock_unlock(cellsLock);
-  auto nodes = cell->noticeList();
-  for(auto node: nodes) messageMgr->send(node, UPDATE_CELL, cell);
+  if(cell->needUpdate()) {
+    auto nodes = cell->noticeList();
+    for(auto node: nodes) messageMgr->send(node, UPDATE_CELL, cell);
+  }
 }
 
 void ts::system::CellMgr::updateExternalCell(AbstractCell* cell) {
   pthread_rwlock_rdlock(cellsLock);
-  //bool newCell = true;
+  bool newCell = true;
   for(auto fcell: externalCells) {
     if(fcell->id() == cell->id()) {
       auto it = find(externalCells.begin(), externalCells.end(), fcell);
+      pthread_rwlock_unlock(cellsLock);
+      pthread_rwlock_wrlock(cellsLock);
       delete *it;
       *it = cell;
-      //newCell = false;
-      break;
+      newCell = false;
+      pthread_rwlock_unlock(cellsLock);
+      return;
     }
   }
-  externalCells.push_back(cell);
+  pthread_rwlock_unlock(cellsLock);
+  pthread_rwlock_wrlock(cellsLock);
+  if(newCell) externalCells.push_back(cell);
   pthread_rwlock_unlock(cellsLock);
 }

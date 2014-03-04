@@ -27,7 +27,7 @@ namespace system {
     CellMgr(MessageMgr* msgMgr);
     ~CellMgr();
 
-    void setMessageMgr(MessageMgr* mgr) { messageMgr = mgr; };
+    void setMessageMgr(MessageMgr* mgr) { messageMgr = mgr; }
 
     void addCell(ts::type::AbstractCell* cell);
     std::vector<std::pair<ts::type::AbstractCell*, std::vector<ts::type::AbstractCell*> > >
