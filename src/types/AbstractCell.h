@@ -8,11 +8,9 @@
 namespace ts {
 namespace type {
   typedef int NodeID;
-  class ID {
-  private:
+  struct ID {
     enum {X = 0, Y = 1, Z = 2};
     unsigned int c[3];
-  public:
     ID(int x = 0, int y = 0, int z = 0) {
       c[X] = x;
       c[Y] = y;
@@ -55,7 +53,7 @@ namespace type {
   };
 
   class AbstractCell {
-  private:
+  protected:
       ID _id;
   public:
     // General
@@ -102,14 +100,13 @@ namespace type {
     }
 
     // Reduce
-  private:
+  protected:
     bool _vreduce;
     bool _vreduced;
 
   public:
     virtual ReduceData* reduce() = 0;
     virtual ReduceData* reduce(ReduceData* data) = 0;
-    virtual ReduceData* reduce(ReduceData* data1, ReduceData* data2) = 0;
 
     virtual void reduceStep(ReduceData* data) = 0;
 
@@ -141,17 +138,17 @@ namespace type {
   public:
     bool needUpdate() { return _vneedUpdate; }
 
-    virtual void serialize(void*& buf, size_t& size) = 0;
-    virtual void deserialize(void* buf, size_t size) = 0;
+    //virtual void serialize(void*& buf, size_t& size) = 0;
+    ///virtual void deserialize(void* buf, size_t size) = 0;
 
-    void _serialize(void*& buf, size_t& size) {
-      _vneedUpdate = false;
-      return serialize(buf, size);
-    }
+    //void _serialize(void*& buf, size_t& size) {
+    //  _vneedUpdate = false;
+    //  return serialize(buf, size);
+    //}
 
     virtual void update(AbstractCell*) = 0;
     // Iteration state
-  private:
+  protected:
     size_t _iteration;
     size_t _progress;
 
@@ -181,7 +178,7 @@ namespace type {
   class AbstractCellTools {
   public:
     virtual ~AbstractCellTools() {}
-    virtual void serialize(AbstractCell* cell, void* buf, size_t size) = 0;
-    virtual AbstractCell* deserialize(char*& buf, size_t& size) = 0;
+    virtual void serialize(AbstractCell* cell, char*& buf, size_t& size) = 0;
+    virtual AbstractCell* deserialize(char* buf, size_t size) = 0;
   };
 }}

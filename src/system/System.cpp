@@ -51,3 +51,15 @@ void ts::system::System::putReduceData(ts::type::ReduceData* data) {
     execMgr->endGlobalReduce();
   }
 }
+
+void ts::system::System::addCell(ts::type::AbstractCell* cell) {
+  cellMgr->addCell(cell);
+}
+
+int ts::system::System::id() {
+  return msgMgr->getNodeID();
+}
+
+int ts::system::System::size() {
+  return msgMgr->size();
+}

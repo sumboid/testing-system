@@ -1,4 +1,4 @@
-AC_INIT([ts], [0.1], [ilya.sumb@gmail.com])
+AC_INIT([ts],[0.1],[ilya.sumb@gmail.com])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign silent-rules])
 AM_SILENT_RULES([yes])
 
@@ -7,8 +7,13 @@ AC_PREFIX_DEFAULT([./build])
 
 AC_PROG_CXX([mpic++])
 
-SPECFLAGS="-O3 -std=c++11 -Wall"
+SPECFLAGS="-O0 -g -std=c++11 -Wall"
 
+#AM_PROG_AR
+#LT_INIT
+#AC_ENABLE_SHARED
+#AC_DISABLE_STATIC
+#LT_INIT
 #########
 
 # pthread

@@ -11,6 +11,8 @@
 namespace ts {
 namespace system {
 
+typedef int NodeID;
+
 enum Tag {
   UNDEFINED,
   UPDATE_CELL,
@@ -21,7 +23,7 @@ struct Message {
   char* buffer;
   size_t size;
   Tag tag;
-  ts::type::NodeID node;
+  NodeID node;
   Message() {
     buffer = 0;
     size = 0;
@@ -31,6 +33,7 @@ struct Message {
 
 class System;
 class CellMgr;
+
 
 class MessageMgr {
 private:
@@ -49,7 +52,7 @@ private:
   std::mutex queueMutex;
 public:
   MessageMgr();
-  ~MessageMgr() {};
+  ~MessageMgr() {}
 
   void setCellMgr(CellMgr* mgr) { cellMgr = mgr; }
   void setSystem(System* _sys) { sys = _sys; }
@@ -62,9 +65,9 @@ public:
 
   size_t size() { return _size; }
 
-  void send(ts::type::NodeID node, Tag tag, ts::type::AbstractCell* cell);
+  void send(NodeID node, Tag tag, ts::type::AbstractCell* cell);
   void send(ts::type::ReduceData* reduceData);
-  ts::type::NodeID getNodeID() { return id; }
+  NodeID getNodeID() { return id; }
 private:
   void sendLoop();
   void receiveLoop();

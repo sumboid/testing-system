@@ -14,6 +14,7 @@
 
 namespace ts {
 namespace system {
+
 class System;
 typedef std::pair<ts::type::AbstractCell*, std::vector<ts::type::AbstractCell*> > WorkCell;
 class ExecMgr {

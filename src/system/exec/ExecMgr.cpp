@@ -2,6 +2,7 @@
 
 #include <thread>
 #include <chrono>
+#include <iostream>
 
 using std::vector;
 using std::thread;
@@ -46,6 +47,7 @@ void ts::system::ExecMgr::loop() {
         std::unique_lock<std::mutex> lock(fetchReduceDataMutex);
         fetchReduceData.wait(lock, [=](){ bool _ = reduceDataFetched; return _; });
       }
+      reduceDataFetched = false;
     }
 
     queueMutex.lock();
@@ -74,25 +76,31 @@ void ts::system::ExecMgr::reduce(ReduceData* rdata) {
 
 void ts::system::ExecMgr::endGlobalReduce() {
   reduceDataFetched = true;
-  delete storedReduceData;
+  if(storedReduceData != 0)
+    delete storedReduceData;
   storedReduceData = reduceData;
   fetchReduceData.notify_all();
 }
 
 bool ts::system::ExecMgr::compute(WorkCell& cell) {
-  if(cell.first->needReduce() && !cell.first->wasReduced()) {
+  std::cout << cell.first->needReduce() << " " << cell.first->wasReduced() << std::endl;
+  if(cell.first->needReduce() && cell.first->wasReduced()) {
+    std::cout << "REDUCING" << std::endl;
     if(rstate == GLOBAL_REDUCING) {
-      reduceData = cell.first->reduce();
+      std::cout << "change reduce state" << std::endl;
+      reduceData = cell.first->_reduce();
       rstate = LOCAL_REDUCING;
     }
     else if(rstate == LOCAL_REDUCING) {
       auto tmp = reduceData;
-      reduceData = cell.first->reduce(reduceData);
+      reduceData = cell.first->_reduce(reduceData);
+      std::cout << cell.first->needReduce() << " " << cell.first->wasReduced() << std::endl;
       delete tmp;
     }
     else exit(4); // XXX
   }
   else if(!cell.first->needReduce() && !cell.first->wasReduced()) {
+    std::cout << "NEXT REDUCING" << std::endl;
     if(rstate == LOCAL_REDUCING) {
       rstate = PRE_GLOBAL_REDUCING;
       return false;
@@ -100,6 +108,7 @@ bool ts::system::ExecMgr::compute(WorkCell& cell) {
     cell.first->_reduceStep(storedReduceData);
   }
   else {
+    std::cout << cell.first->needReduce() << std::endl;
     justcompute(cell);
   }
   return true;

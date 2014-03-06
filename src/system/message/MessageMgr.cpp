@@ -5,7 +5,6 @@ using std::thread;
 using std::this_thread::sleep_for;
 using std::chrono::seconds;
 using ts::type::AbstractCell;
-using ts::type::NodeID;
 using ts::type::AbstractCellTools;
 using ts::type::ReduceDataTools;
 using ts::type::ReduceData;
@@ -64,7 +63,7 @@ void ts::system::MessageMgr::sendLoop() {
     auto message = sendQueue.front();
     queueMutex.unlock();
     comm->send(message.buffer, message.size, message.tag, message.node);
-    delete message.buffer;
+    delete[] message.buffer;
   }
 }
 
