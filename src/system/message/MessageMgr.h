@@ -48,7 +48,7 @@ private:
   std::thread sender;
   std::thread receiver;
   std::atomic<bool> end;
-  std::queue<Message> sendQueue;
+  std::queue<Message*> sendQueue;
   std::mutex queueMutex;
 public:
   MessageMgr();

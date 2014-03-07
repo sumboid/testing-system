@@ -62,29 +62,30 @@ void ts::system::MessageMgr::sendLoop() {
     }
     auto message = sendQueue.front();
     queueMutex.unlock();
-    comm->send(message.buffer, message.size, message.tag, message.node);
-    delete[] message.buffer;
+    comm->send(message->buffer, message->size, message->tag, message->node);
+    delete[] message->buffer;
+    delete message;
   }
 }
 
 void ts::system::MessageMgr::send(NodeID node, Tag tag, AbstractCell* cell) {
-  Message message;
-  cellTool->serialize(cell, message.buffer, message.size);
-  message.tag = tag;
-  message.node = node;
+  Message* message = new Message;
+  cellTool->serialize(cell, message->buffer, message->size);
+  message->tag = tag;
+  message->node = node;
   queueMutex.lock();
   sendQueue.push(message);
   queueMutex.unlock();
 }
 
 void ts::system::MessageMgr::send(ReduceData* reduceData) {
-  Message message;
-  reduceTool->serialize(reduceData, message.buffer, message.size);
-  message.tag = REDUCE_DATA;
+  Message* message = new Message;
+  reduceTool->serialize(reduceData, message->buffer, message->size);
+  message->tag = REDUCE_DATA;
   queueMutex.lock();
   for(size_t i = 0; i < _size; ++i) {
     if(i != id) {
-      message.node = i;
+      message->node = i;
       sendQueue.push(message);
     }
   }

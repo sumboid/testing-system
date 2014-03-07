@@ -22,6 +22,7 @@ private:
   enum ReduceState { LOCAL_REDUCING, PRE_GLOBAL_REDUCING, GLOBAL_REDUCING };
 
   ts::type::ReduceData* reduceData;
+  ts::type::ReduceData* localReduceData;
   ts::type::ReduceData* storedReduceData;
   std::queue<WorkCell> cellQueue;
 
@@ -45,6 +46,7 @@ public:
                                           reduceDataFetched(false) {
     reduceData = 0;
     storedReduceData = 0;
+    localReduceData = 0;
   }
 
   ~ExecMgr() {

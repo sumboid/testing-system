@@ -48,6 +48,10 @@ void ts::system::ExecMgr::loop() {
         fetchReduceData.wait(lock, [=](){ bool _ = reduceDataFetched; return _; });
       }
       reduceDataFetched = false;
+      if (storedReduceData != 0) delete storedReduceData;
+      storedReduceData = reduceTools->reduce(localReduceData, reduceData);
+      delete reduceData;
+      delete localReduceData;
     }
 
     queueMutex.lock();
@@ -69,32 +73,32 @@ void ts::system::ExecMgr::loop() {
 }
 
 void ts::system::ExecMgr::reduce(ReduceData* rdata) {
-  auto tmp = reduceData;
-  reduceData = reduceTools->reduce(rdata, reduceData);
-  delete tmp;
+  if(reduceData == 0) {
+    reduceData = rdata;
+  }
+  else {
+    auto tmp = reduceData;
+    reduceData = reduceTools->reduce(rdata, reduceData);
+    delete tmp;
+  }
 }
 
 void ts::system::ExecMgr::endGlobalReduce() {
   reduceDataFetched = true;
-  if(storedReduceData != 0)
-    delete storedReduceData;
-  storedReduceData = reduceData;
   fetchReduceData.notify_all();
 }
 
 bool ts::system::ExecMgr::compute(WorkCell& cell) {
-  std::cout << cell.first->needReduce() << " " << cell.first->wasReduced() << std::endl;
   if(cell.first->needReduce() && cell.first->wasReduced()) {
     std::cout << "REDUCING" << std::endl;
     if(rstate == GLOBAL_REDUCING) {
       std::cout << "change reduce state" << std::endl;
-      reduceData = cell.first->_reduce();
+      localReduceData = cell.first->_reduce();
       rstate = LOCAL_REDUCING;
     }
     else if(rstate == LOCAL_REDUCING) {
-      auto tmp = reduceData;
-      reduceData = cell.first->_reduce(reduceData);
-      std::cout << cell.first->needReduce() << " " << cell.first->wasReduced() << std::endl;
+      auto tmp = localReduceData;
+      localReduceData = cell.first->_reduce(localReduceData);
       delete tmp;
     }
     else exit(4); // XXX

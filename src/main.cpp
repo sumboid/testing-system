@@ -21,17 +21,17 @@ public:
   void serialize(ts::type::ReduceData* data, char*& buf, size_t& size) {
     size = 1;
     buf = new char[sizeof(char)];
-    buf[0] = static_cast<ReduceData*>(data)->getNumber();
+    buf[0] = ((ReduceData*) data)->getNumber();
   }
 
   ts::type::ReduceData* deserialize(void* buf, size_t size) {
-    return new ReduceData(static_cast<char*>(buf)[0]);
+    return new ReduceData(((char*) buf)[0]);
   }
 
   ts::type::ReduceData* reduce(ts::type::ReduceData* d1,
                                  ts::type::ReduceData* d2) {
-    return new ReduceData(static_cast<ReduceData*>(d1)->getNumber() +
-                            static_cast<ReduceData*>(d2)->getNumber());
+    return new ReduceData(((ReduceData*) d1)->getNumber() +
+                            ((ReduceData*) d2)->getNumber());
   }
 };
 
@@ -58,12 +58,12 @@ public:
   }
 
   ReduceData* reduce(ts::type::ReduceData* data) {
-    return new ReduceData(_iteration + static_cast<ReduceData*>(data)->getNumber());
+    return new ReduceData(_iteration + ((ReduceData*) data)->getNumber());
   }
 
 
   void reduceStep(ts::type::ReduceData* data) {
-    file << static_cast<ReduceData*>(data)->getNumber() << " reduced" << std::endl;
+    file << (int) ((ReduceData*) data)->getNumber() << " reduced" << std::endl;
   }
 
   void update(ts::type::AbstractCell* cell) {
