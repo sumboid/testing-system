@@ -1,5 +1,6 @@
 #include <string>
 #include <fstream>
+#include <cassert>
 #include "system/System.h"
 #include "types/AbstractCell.h"
 
@@ -92,10 +93,27 @@ int main() {
   switch(system->id()) {
     case 0:
       system->addCell(new Cell(ts::type::ID(0,0,0)));
+      system->addCell(new Cell(ts::type::ID(0,1,0)));
+      system->addCell(new Cell(ts::type::ID(0,2,0)));
+      system->addCell(new Cell(ts::type::ID(0,3,0)));
+      system->addCell(new Cell(ts::type::ID(0,4,0)));
+      system->addCell(new Cell(ts::type::ID(0,5,0)));
       break;
     case 1:
       system->addCell(new Cell(ts::type::ID(1,0,0)));
+      system->addCell(new Cell(ts::type::ID(1,1,0)));
+      system->addCell(new Cell(ts::type::ID(1,2,0)));
+      system->addCell(new Cell(ts::type::ID(1,3,0)));
+      system->addCell(new Cell(ts::type::ID(1,4,0)));
+      system->addCell(new Cell(ts::type::ID(1,5,0)));
       break;
+    case 2:
+      system->addCell(new Cell(ts::type::ID(2,0,0)));
+      system->addCell(new Cell(ts::type::ID(2,1,0)));
+      system->addCell(new Cell(ts::type::ID(2,2,0)));
+      system->addCell(new Cell(ts::type::ID(2,3,0)));
+      system->addCell(new Cell(ts::type::ID(2,4,0)));
+      system->addCell(new Cell(ts::type::ID(2,5,0)));
   }
 
   system->run();

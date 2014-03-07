@@ -46,7 +46,8 @@ void ts::system::System::spreadReduceData(ts::type::ReduceData* data) {
 
 void ts::system::System::putReduceData(ts::type::ReduceData* data) {
   execMgr->reduce(data);
-  if(++inputReduceData == msgMgr->size()) {
+  ++inputReduceData;
+  if(inputReduceData == msgMgr->size() - 1) {
     inputReduceData = 0;
     execMgr->endGlobalReduce();
   }

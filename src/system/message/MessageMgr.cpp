@@ -1,4 +1,5 @@
 #include <chrono>
+#include <cassert>
 #include "MessageMgr.h"
 
 using std::thread;
@@ -61,6 +62,8 @@ void ts::system::MessageMgr::sendLoop() {
       continue;
     }
     auto message = sendQueue.front();
+    sendQueue.pop();
+
     queueMutex.unlock();
     comm->send(message->buffer, message->size, message->tag, message->node);
     delete[] message->buffer;
@@ -79,12 +82,12 @@ void ts::system::MessageMgr::send(NodeID node, Tag tag, AbstractCell* cell) {
 }
 
 void ts::system::MessageMgr::send(ReduceData* reduceData) {
-  Message* message = new Message;
-  reduceTool->serialize(reduceData, message->buffer, message->size);
-  message->tag = REDUCE_DATA;
   queueMutex.lock();
   for(size_t i = 0; i < _size; ++i) {
     if(i != id) {
+      Message* message = new Message;
+      reduceTool->serialize(reduceData, message->buffer, message->size);
+      message->tag = REDUCE_DATA;
       message->node = i;
       sendQueue.push(message);
     }

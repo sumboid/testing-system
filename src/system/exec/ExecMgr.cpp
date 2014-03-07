@@ -3,6 +3,7 @@
 #include <thread>
 #include <chrono>
 #include <iostream>
+#include <cassert>
 
 using std::vector;
 using std::thread;
@@ -41,17 +42,22 @@ void ts::system::ExecMgr::add(const WorkCell& cell) {
 void ts::system::ExecMgr::loop() {
   while(true) {
     if(rstate == PRE_GLOBAL_REDUCING) {
-      system->spreadReduceData(reduceData);
+      system->spreadReduceData(localReduceData);
+
       rstate = GLOBAL_REDUCING;
+      std::unique_lock<std::mutex> lock(fetchReduceDataMutex);
       if(!reduceDataFetched) {
-        std::unique_lock<std::mutex> lock(fetchReduceDataMutex);
         fetchReduceData.wait(lock, [=](){ bool _ = reduceDataFetched; return _; });
       }
       reduceDataFetched = false;
+      lock.unlock();
+
       if (storedReduceData != 0) delete storedReduceData;
       storedReduceData = reduceTools->reduce(localReduceData, reduceData);
       delete reduceData;
+      reduceData = 0;
       delete localReduceData;
+      localReduceData = 0;
     }
 
     queueMutex.lock();
@@ -84,15 +90,14 @@ void ts::system::ExecMgr::reduce(ReduceData* rdata) {
 }
 
 void ts::system::ExecMgr::endGlobalReduce() {
+  std::lock_guard<std::mutex> lock(fetchReduceDataMutex);
   reduceDataFetched = true;
   fetchReduceData.notify_all();
 }
 
 bool ts::system::ExecMgr::compute(WorkCell& cell) {
   if(cell.first->needReduce() && cell.first->wasReduced()) {
-    std::cout << "REDUCING" << std::endl;
     if(rstate == GLOBAL_REDUCING) {
-      std::cout << "change reduce state" << std::endl;
       localReduceData = cell.first->_reduce();
       rstate = LOCAL_REDUCING;
     }
@@ -104,7 +109,6 @@ bool ts::system::ExecMgr::compute(WorkCell& cell) {
     else exit(4); // XXX
   }
   else if(!cell.first->needReduce() && !cell.first->wasReduced()) {
-    std::cout << "NEXT REDUCING" << std::endl;
     if(rstate == LOCAL_REDUCING) {
       rstate = PRE_GLOBAL_REDUCING;
       return false;
@@ -112,7 +116,6 @@ bool ts::system::ExecMgr::compute(WorkCell& cell) {
     cell.first->_reduceStep(storedReduceData);
   }
   else {
-    std::cout << cell.first->needReduce() << std::endl;
     justcompute(cell);
   }
   return true;
