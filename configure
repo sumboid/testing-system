@@ -3317,13 +3317,7 @@ fi
 
 SPECFLAGS="-O0 -g -std=c++11 -Wall"
 
-#AM_PROG_AR
-#LT_INIT
-#AC_ENABLE_SHARED
-#AC_DISABLE_STATIC
-#LT_INIT
-#########
-
+################################################################################
 # pthread
 
 PTHREAD_LIBS+=-lpthread
@@ -4572,8 +4566,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 LIBS="$PTHREAD_LIBS $LIBS"
 CXXFLAGS="$CXXFLAGS $SPECFLAGS $PTHREAD_CFLAGS"
 
-##########
-
+################################################################################
 # MPI
 
 
@@ -4763,9 +4756,19 @@ $as_echo "#define HAVE_MPI 1" >>confdefs.h
 fi
 
 
+################################################################################
+# Doxygen
 
-##########
+#AC_CHECK_PROGS([DOXYGEN], [doxygen])
+#if test -z "$DOXYGEN";
+#   then AC_MSG_WARN([Doxygen not found - continuing without Doxygen support])
+#fi
 
+#AM_CONDITIONAL([HAVE_DOXYGEN],
+#[test -n "$DOXYGEN"])AM_COND_IF([HAVE_DOXYGEN],
+#                                [AC_CONFIG_FILES([docs/Doxyfile])])
+
+################################################################################
 # Output
 
 ac_config_files="$ac_config_files Makefile"

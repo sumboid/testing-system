@@ -21,7 +21,38 @@ class ExecMgr {
 private:
   enum ReduceState { LOCAL_REDUCING, PRE_GLOBAL_REDUCING, GLOBAL_REDUCING };
 
-  ts::type::ReduceData* reduceData;
+  struct Listener {
+    std::condition_variable listener;
+    std::mutex mutex;
+    std::atomic<bool> condition;
+
+    Listener(bool begin  = false) {
+      condition = begin;
+    }
+
+    void wait() {
+      std::unique_lock<std::mutex> lock(mutex);
+      if(!condition) {
+        listener.wait(lock, [=](){ bool _ = condition; return _; });
+      }
+      condition = false;
+      lock.unlock();
+    }
+
+    void notifyAll() {
+      std::lock_guard<std::mutex> lock(mutex);
+      condition = true;
+      listener.notify_all();
+    }
+
+    void notifyOne() {
+      std::lock_guard<std::mutex> lock(mutex);
+      condition = true;
+      listener.notify_one();
+    }
+  };
+
+  ts::type::ReduceData* externalReduceData;
   ts::type::ReduceData* localReduceData;
   ts::type::ReduceData* storedReduceData;
   std::queue<WorkCell> cellQueue;
@@ -35,22 +66,22 @@ private:
   std::atomic<ReduceState> rstate;
   ts::type::ReduceDataTools* reduceTools;
 
-  std::condition_variable fetchReduceData;
-  std::mutex fetchReduceDataMutex;
-  std::atomic<bool> reduceDataFetched;
+  Listener ERDListener; ///< External reduce data listener
+  Listener globalReduceListener; ///< Global reduce step listener
+  Listener queueListener; ///< Queue listener
 public:
-  ExecMgr(ts::type::ReduceDataTools* _reduceTools): reduceData(0),
+  ExecMgr(ts::type::ReduceDataTools* _reduceTools): externalReduceData(0),
                                           end(false),
                                           rstate(GLOBAL_REDUCING),
                                           reduceTools(_reduceTools),
-                                          reduceDataFetched(false) {
-    reduceData = 0;
+                                          globalReduceListener(true) {
+    externalReduceData = 0;
     storedReduceData = 0;
     localReduceData = 0;
   }
 
   ~ExecMgr() {
-    delete reduceData;
+    delete externalReduceData;
     delete storedReduceData;
   }
 

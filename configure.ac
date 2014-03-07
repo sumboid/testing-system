@@ -9,13 +9,7 @@ AC_PROG_CXX([mpic++])
 
 SPECFLAGS="-O0 -g -std=c++11 -Wall"
 
-#AM_PROG_AR
-#LT_INIT
-#AC_ENABLE_SHARED
-#AC_DISABLE_STATIC
-#LT_INIT
-#########
-
+################################################################################
 # pthread
 
 PTHREAD_LIBS+=-lpthread
@@ -25,15 +19,24 @@ AX_PTHREAD([],[AC_MSG_ERROR(You need the pthread libraries.)])
 LIBS="$PTHREAD_LIBS $LIBS"
 CXXFLAGS="$CXXFLAGS $SPECFLAGS $PTHREAD_CFLAGS"
 
-##########
-
+################################################################################
 # MPI
 
 AX_MPI([], [AC_MSG_ERROR(You need an MPI realization.)])
 
+################################################################################
+# Doxygen
 
-##########
+#AC_CHECK_PROGS([DOXYGEN], [doxygen])
+#if test -z "$DOXYGEN";
+#   then AC_MSG_WARN([Doxygen not found - continuing without Doxygen support])
+#fi
 
+#AM_CONDITIONAL([HAVE_DOXYGEN],
+#[test -n "$DOXYGEN"])AM_COND_IF([HAVE_DOXYGEN],
+#                                [AC_CONFIG_FILES([docs/Doxyfile])])
+
+################################################################################
 # Output
 
 AC_CONFIG_FILES([Makefile])

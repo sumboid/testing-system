@@ -32,67 +32,92 @@ void ts::system::ExecMgr::add(const vector<WorkCell>& cells) {
     cellQueue.push(cell);
   }
   queueMutex.unlock();
+  queueListener.notifyAll();
 }
 void ts::system::ExecMgr::add(const WorkCell& cell) {
   queueMutex.lock();
   cellQueue.push(cell);
   queueMutex.unlock();
+  queueListener.notifyAll();
 }
+
+/**
+ * @brief ts::system::ExecMgr::loop
+ * Main loop of Execution Manager. It has two missions:
+ * 1. Handling cells: running cell step
+ * 2. Ending reduce step
+ */
 
 void ts::system::ExecMgr::loop() {
   while(true) {
     if(rstate == PRE_GLOBAL_REDUCING) {
+
+      /// Send reduce data to other nodes
       system->spreadReduceData(localReduceData);
-
       rstate = GLOBAL_REDUCING;
-      std::unique_lock<std::mutex> lock(fetchReduceDataMutex);
-      if(!reduceDataFetched) {
-        fetchReduceData.wait(lock, [=](){ bool _ = reduceDataFetched; return _; });
-      }
-      reduceDataFetched = false;
-      lock.unlock();
 
+      /// Waiting for all external reduce data
+      ERDListener.wait();
+
+      /// Reduce ExecMgr::localReduceData and ExecMgr::reduceData and store it
+      /// to ExecMgr::storedReduceData
       if (storedReduceData != 0) delete storedReduceData;
-      storedReduceData = reduceTools->reduce(localReduceData, reduceData);
-      delete reduceData;
-      reduceData = 0;
+      storedReduceData = reduceTools->reduce(localReduceData,
+                                             externalReduceData);
+
+      /// Clean up ExecMgr::reduceData
+      delete externalReduceData;
+      externalReduceData = 0;
+
+      /// Clean up ExecMgr::localReduceData
       delete localReduceData;
       localReduceData = 0;
+
+      /// Notify that global reduce step is finished
+      globalReduceListener.notifyAll();
     }
 
     queueMutex.lock();
-    if(cellQueue.empty()) {
-      queueMutex.unlock();
+    bool emptyQueue = cellQueue.empty();
+    queueMutex.unlock();
 
+    if(emptyQueue) {
       if(end) return;
-
-      sleep_for(seconds(1));
-      continue;
+      queueListener.wait();
     }
 
-    WorkCell cell = cellQueue.front();
-    queueMutex.unlock();
-    if (!compute(cell)) {
-      add(cell);
+    while(!cellQueue.empty()) {
+
+      queueMutex.lock();
+      auto cell = cellQueue.front();
+      cellQueue.pop();
+      queueMutex.unlock();
+
+      if (!compute(cell)) {
+        add(cell);
+      }
     }
   }
 }
 
 void ts::system::ExecMgr::reduce(ReduceData* rdata) {
-  if(reduceData == 0) {
-    reduceData = rdata;
+  /// Wating for global reduce step ending
+  globalReduceListener.wait();
+  if(externalReduceData == 0) {
+    externalReduceData = rdata;
   }
   else {
-    auto tmp = reduceData;
-    reduceData = reduceTools->reduce(rdata, reduceData);
+    auto tmp = externalReduceData;
+    externalReduceData = reduceTools->reduce(rdata, externalReduceData);
     delete tmp;
   }
 }
 
 void ts::system::ExecMgr::endGlobalReduce() {
-  std::lock_guard<std::mutex> lock(fetchReduceDataMutex);
-  reduceDataFetched = true;
-  fetchReduceData.notify_all();
+
+  /// Stop sending external reduce data, while global reduce finish
+  globalReduceListener.condition = false;
+  ERDListener.notifyAll();
 }
 
 bool ts::system::ExecMgr::compute(WorkCell& cell) {
