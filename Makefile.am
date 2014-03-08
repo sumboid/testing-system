@@ -14,19 +14,3 @@ ts_SOURCES = src/main.cpp \
 			 src/system/System.cpp \
 			 src/system/System.h \
 			 src/types/AbstractCell.h
-
-#if HAVE_DOXYGEN
-#directory = $(top_srcdir)/docs/
-
-#$(directory)/html: doxyfile.stamp
-
-#doxygeneration:
-#	$(DOXYGEN) Doxyfile
-#	echo Timestamp > doxyfile.stamp
-
-#CLEANFILES = doxyfile.stamp
-
-#all-local: doxygeneration
-#	clean-local:
-#	rm -rf $(top_srcdir)/docs/man
-#endif

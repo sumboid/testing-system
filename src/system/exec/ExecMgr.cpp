@@ -87,7 +87,6 @@ void ts::system::ExecMgr::loop() {
     }
 
     while(!cellQueue.empty()) {
-
       queueMutex.lock();
       auto cell = cellQueue.front();
       cellQueue.pop();
@@ -95,6 +94,7 @@ void ts::system::ExecMgr::loop() {
 
       if (!compute(cell)) {
         add(cell);
+        break;
       }
     }
   }
