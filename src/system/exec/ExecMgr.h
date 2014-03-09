@@ -11,6 +11,7 @@
 
 #include "../../types/AbstractCell.h"
 #include "../System.h"
+#include "../util/Listener.h"
 
 namespace ts {
 namespace system {
@@ -20,38 +21,6 @@ typedef std::pair<ts::type::AbstractCell*, std::vector<ts::type::AbstractCell*> 
 class ExecMgr {
 private:
   enum ReduceState { LOCAL_REDUCING, PRE_GLOBAL_REDUCING, GLOBAL_REDUCING };
-
-  struct Listener {
-    std::condition_variable listener;
-    std::mutex mutex;
-    std::atomic<bool> condition;
-
-    Listener(bool begin  = false) {
-      condition = begin;
-    }
-
-    void wait() {
-      std::unique_lock<std::mutex> lock(mutex);
-      if(!condition) {
-        listener.wait(lock, [=](){ bool _ = condition; return _; });
-      }
-      condition = false;
-      lock.unlock();
-    }
-
-    void notifyAll() {
-      std::lock_guard<std::mutex> lock(mutex);
-      condition = true;
-      listener.notify_all();
-    }
-
-    void notifyOne() {
-      std::lock_guard<std::mutex> lock(mutex);
-      condition = true;
-      listener.notify_one();
-    }
-  };
-
   ts::type::ReduceData* externalReduceData;
   ts::type::ReduceData* localReduceData;
   ts::type::ReduceData* storedReduceData;

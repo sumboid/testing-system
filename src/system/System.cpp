@@ -4,7 +4,7 @@ using ts::type::AbstractCellTools;
 using ts::type::ReduceDataTools;
 
 ts::system::System::System(AbstractCellTools* cellTools, ReduceDataTools* reduceTools):
-  inputReduceData(0), _end(false) {
+  inputReduceData(0), _end(false), cellListener(true) {
   msgMgr = new MessageMgr;
   cellMgr = new CellMgr;
   execMgr = new ExecMgr(reduceTools);
@@ -40,6 +40,10 @@ void ts::system::System::run() {
     if(_end) {
       return;
     }
+    else if(cells.empty()) {
+      cellListener.wait();
+    }
+
     execMgr->add(cells);
   }
 }
@@ -76,4 +80,5 @@ int ts::system::System::size() {
 
 void ts::system::System::unlockCell(ts::type::AbstractCell* cell) {
   cellMgr->unlock(cell);
+  cellListener.notifyAll();
 }

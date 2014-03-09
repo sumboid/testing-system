@@ -4,6 +4,7 @@
 #include "message/MessageMgr.h"
 #include "cell/CellMgr.h"
 #include "../types/AbstractCell.h"
+#include "util/Listener.h"
 
 namespace ts {
 namespace system {
@@ -20,6 +21,8 @@ private:
 
   size_t inputReduceData;
   bool _end;
+
+  Listener cellListener;
 
 public:
   System(ts::type::AbstractCellTools*, ts::type::ReduceDataTools*);
