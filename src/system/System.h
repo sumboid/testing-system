@@ -19,6 +19,7 @@ private:
   ExecMgr* execMgr;
 
   size_t inputReduceData;
+  bool _end;
 
 public:
   System(ts::type::AbstractCellTools*, ts::type::ReduceDataTools*);
@@ -30,6 +31,7 @@ public:
   void run();
   void spreadReduceData(ts::type::ReduceData* data);
   void putReduceData(ts::type::ReduceData* data);
+  void end() { _end = true; }
 
   //put(Message* message);
 };

@@ -14,6 +14,7 @@ public:
   virtual ~ReduceData() {}
 
   char getNumber() { return n; }
+  virtual ts::type::ReduceData* copy() { return new ReduceData(n); }
 };
 
 class ReduceDataTools: public ts::type::ReduceDataTools {
@@ -50,7 +51,12 @@ public:
 
   void run(std::vector<ts::type::AbstractCell*> neighbours) {
     file << _iteration << " iteration" << std::endl;
-    _vreduce = true;
+    if(_iteration == 3) {
+      end();
+    }
+    else {
+      _vreduce = true;
+    }
     nextIteration();
   }
 
@@ -117,5 +123,6 @@ int main() {
   }
 
   system->run();
+  delete system;
   return 0;
 }

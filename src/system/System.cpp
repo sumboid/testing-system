@@ -4,7 +4,7 @@ using ts::type::AbstractCellTools;
 using ts::type::ReduceDataTools;
 
 ts::system::System::System(AbstractCellTools* cellTools, ReduceDataTools* reduceTools):
-  inputReduceData(0) {
+  inputReduceData(0), _end(false) {
   msgMgr = new MessageMgr;
   cellMgr = new CellMgr;
   execMgr = new ExecMgr(reduceTools);
@@ -15,6 +15,7 @@ ts::system::System::System(AbstractCellTools* cellTools, ReduceDataTools* reduce
   msgMgr->setReduceTool(reduceTools);
 
   cellMgr->setMessageMgr(msgMgr);
+  cellMgr->setSystem(this);
 
   execMgr->setSystem(this);
 
@@ -36,11 +37,16 @@ ts::system::System::~System() {
 void ts::system::System::run() {
   while(true) {
     auto cells = cellMgr->getCells(359);
+    if(_end) return;
     execMgr->add(cells);
   }
 }
 
 void ts::system::System::spreadReduceData(ts::type::ReduceData* data) {
+  if(msgMgr->size() == 1) {
+    execMgr->endGlobalReduce();
+    return;
+  }
   msgMgr->send(data);
 }
 
@@ -51,6 +57,7 @@ void ts::system::System::putReduceData(ts::type::ReduceData* data) {
     inputReduceData = 0;
     execMgr->endGlobalReduce();
   }
+  delete data;
 }
 
 void ts::system::System::addCell(ts::type::AbstractCell* cell) {

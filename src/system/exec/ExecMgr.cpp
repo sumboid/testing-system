@@ -4,6 +4,7 @@
 #include <chrono>
 #include <iostream>
 #include <cassert>
+#include <cstdlib>
 
 using std::vector;
 using std::thread;
@@ -24,6 +25,7 @@ void ts::system::ExecMgr::join() {
 
 void ts::system::ExecMgr::stop() {
   end = true;
+  queueListener.notifyAll();
 }
 
 void ts::system::ExecMgr::add(const vector<WorkCell>& cells) {
@@ -51,7 +53,6 @@ void ts::system::ExecMgr::add(const WorkCell& cell) {
 void ts::system::ExecMgr::loop() {
   while(true) {
     if(rstate == PRE_GLOBAL_REDUCING) {
-
       /// Send reduce data to other nodes
       system->spreadReduceData(localReduceData);
       rstate = GLOBAL_REDUCING;
@@ -62,16 +63,20 @@ void ts::system::ExecMgr::loop() {
       /// Reduce ExecMgr::localReduceData and ExecMgr::reduceData and store it
       /// to ExecMgr::storedReduceData
       if (storedReduceData != 0) delete storedReduceData;
-      storedReduceData = reduceTools->reduce(localReduceData,
+      if (externalReduceData != 0) {
+        storedReduceData = reduceTools->reduce(localReduceData,
                                              externalReduceData);
+        /// Clean up ExecMgr::reduceData
+        delete externalReduceData;
+        externalReduceData = 0;
 
-      /// Clean up ExecMgr::reduceData
-      delete externalReduceData;
-      externalReduceData = 0;
-
-      /// Clean up ExecMgr::localReduceData
-      delete localReduceData;
-      localReduceData = 0;
+        /// Clean up ExecMgr::localReduceData
+        delete localReduceData;
+        localReduceData = 0;
+      }
+      else {
+        storedReduceData = localReduceData;
+      }
 
       /// Notify that global reduce step is finished
       globalReduceListener.notifyAll();
@@ -104,7 +109,7 @@ void ts::system::ExecMgr::reduce(ReduceData* rdata) {
   /// Wating for global reduce step ending
   globalReduceListener.wait();
   if(externalReduceData == 0) {
-    externalReduceData = rdata;
+    externalReduceData = rdata->copy();
   }
   else {
     auto tmp = externalReduceData;

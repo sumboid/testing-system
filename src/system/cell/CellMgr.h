@@ -8,6 +8,7 @@
 
 #include "../../types/AbstractCell.h"
 #include "../message/MessageMgr.h"
+#include "../System.h"
 
 namespace ts {
 namespace system {
@@ -17,6 +18,7 @@ namespace system {
   class CellMgr {
   private:
     MessageMgr* messageMgr;
+    System* system;
 
     std::vector<ts::type::AbstractCell*> externalCells;
     std::map<ts::type::AbstractCell*, bool> cells;
@@ -28,6 +30,7 @@ namespace system {
     ~CellMgr();
 
     void setMessageMgr(MessageMgr* mgr) { messageMgr = mgr; }
+    void setSystem(System* _system) { system = _system; }
 
     void addCell(ts::type::AbstractCell* cell);
     std::vector<std::pair<ts::type::AbstractCell*, std::vector<ts::type::AbstractCell*> > >

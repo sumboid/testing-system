@@ -32,6 +32,7 @@ namespace type {
   class ReduceData {
   public:
     virtual ~ReduceData() {}
+    virtual ReduceData* copy() = 0;
   };
 
   class ReduceDataTools {
@@ -64,6 +65,7 @@ namespace type {
       _vreduced = true;
       _id = id;
       _vneedUpdate = false;
+      _vend = false;
     }
     virtual ~AbstractCell() {}
     // virtual void addParticle(Particle* particle) = 0;
@@ -173,6 +175,19 @@ namespace type {
     }
     bool operator==(const AbstractCell& other) { return _id == other._id; }
     bool operator==(const ID& other) { return _id == other; }
+
+    // End
+  private:
+    bool _vend;
+
+  public:
+    void end() {
+      _vend = true;
+    }
+
+    bool isEnd() {
+      return _vend;
+    }
   };
 
   class AbstractCellTools {

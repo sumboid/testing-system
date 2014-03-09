@@ -34,10 +34,23 @@ vector<WorkCell> ts::system::CellMgr::getCells(int amount) {
   vector<WorkCell> result;
   vector<WorkCell> reduceResult;
   size_t reduceCount = 0;
+  size_t endCount = 0;
 
   vector<AbstractCell*> fcells;
   for(auto cell: cells)
-    if(!cell.second) fcells.push_back(cell.first);
+    if(!cell.second) {
+      if(!cell.first->isEnd()) {
+        fcells.push_back(cell.first);
+      }
+      else {
+        ++endCount;
+      }
+    }
+
+  if(endCount == cells.size()) {
+    system->end();
+    return vector<WorkCell>();
+  }
 
   for(auto cell: fcells) {
     bool notReduced = false;
