@@ -37,7 +37,9 @@ ts::system::System::~System() {
 void ts::system::System::run() {
   while(true) {
     auto cells = cellMgr->getCells(359);
-    if(_end) return;
+    if(_end) {
+      return;
+    }
     execMgr->add(cells);
   }
 }
@@ -70,4 +72,8 @@ int ts::system::System::id() {
 
 int ts::system::System::size() {
   return msgMgr->size();
+}
+
+void ts::system::System::unlockCell(ts::type::AbstractCell* cell) {
+  cellMgr->unlock(cell);
 }

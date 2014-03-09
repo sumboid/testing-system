@@ -29,9 +29,12 @@ public:
   int id(); // { return msgMgr->getNodeID(); }
   int size(); // { return msgMgr->getNodeID(); }
   void run();
+  void end() { _end = true; }
+
+  /// ExecMgr part
   void spreadReduceData(ts::type::ReduceData* data);
   void putReduceData(ts::type::ReduceData* data);
-  void end() { _end = true; }
+  void unlockCell(ts::type::AbstractCell* cell);
 
   //put(Message* message);
 };

@@ -87,8 +87,8 @@ void ts::system::ExecMgr::loop() {
     queueMutex.unlock();
 
     if(emptyQueue) {
-      if(end) return;
       queueListener.wait();
+      if(end) return;
     }
 
     while(!cellQueue.empty()) {

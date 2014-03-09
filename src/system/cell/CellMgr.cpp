@@ -32,21 +32,25 @@ typedef pair<AbstractCell*, vector<AbstractCell*> > WorkCell;
 vector<WorkCell> ts::system::CellMgr::getCells(int amount) {
   pthread_rwlock_wrlock(cellsLock);
   vector<WorkCell> result;
+  vector<pair<AbstractCell*, bool>*> srcResult;
   vector<WorkCell> reduceResult;
+  vector<pair<AbstractCell*, bool>*> srcReduceResult;
   size_t reduceCount = 0;
   size_t endCount = 0;
 
-  vector<AbstractCell*> fcells;
+  /// Find all non-blocked cells without end state.
+  vector<pair<AbstractCell*, bool>> fcells;
   for(auto cell: cells)
     if(!cell.second) {
       if(!cell.first->isEnd()) {
-        fcells.push_back(cell.first);
+        fcells.push_back(cell);
       }
       else {
         ++endCount;
       }
     }
 
+  /// If all of cells are free with end state shut down the System
   if(endCount == cells.size()) {
     system->end();
     return vector<WorkCell>();
@@ -54,14 +58,17 @@ vector<WorkCell> ts::system::CellMgr::getCells(int amount) {
 
   for(auto cell: fcells) {
     bool notReduced = false;
-    if(!cell->needReduce() && !cell->wasReduced()) {
+    auto rcell = cell.first;
+    /// Check cell waiting for final reduce step
+    if(!rcell->needReduce() && !rcell->wasReduced()) {
       ++reduceCount;
       notReduced = true;
     }
 
-    vector<ID> neighboursID = cell->neighbours();
+    vector<ID> neighboursID = rcell->neighbours();
     vector<AbstractCell*> neighbours;
 
+    /// Find all neighbours of current cell
     for(auto i: neighboursID) {
       AbstractCell* findedCell;
       auto cellit = find_if(cells.begin(), cells.end(), [&i](pair<AbstractCell*, bool> cell){ return *cell.first == i; });
@@ -69,26 +76,45 @@ vector<WorkCell> ts::system::CellMgr::getCells(int amount) {
         auto cellit = find_if(externalCells.begin(), externalCells.end(), [&i](AbstractCell* cell){ return *cell == i; });
         if (externalCells.end() == cellit)
           break;
-        else
+        else {
           findedCell = *cellit;
+        }
       } else {
         findedCell = cellit->first;
       }
-      if(findedCell->iteration() < cell->iteration()) break;
+      if(findedCell->iteration() < rcell->iteration()) break;
 
       neighbours.push_back(findedCell);
     }
 
     if(neighbours.size() == neighboursID.size()) {
-      if(notReduced)
-        reduceResult.push_back(pair<AbstractCell*, vector<AbstractCell*>>(cell, neighbours));
-      else
-        result.push_back(pair<AbstractCell*, vector<AbstractCell*>>(cell, neighbours));
+      if(notReduced) {
+        srcReduceResult.push_back(&cell);
+        reduceResult.push_back(pair<AbstractCell*, vector<AbstractCell*>>(rcell, neighbours));
+      }
+      else {
+        srcResult.push_back(&cell);
+        result.push_back(pair<AbstractCell*, vector<AbstractCell*>>(rcell, neighbours));
+      }
     }
   }
-  pthread_rwlock_unlock(cellsLock);
-  if(reduceCount == cells.size()) return reduceResult;
-  else return result;
+
+  if(reduceCount == cells.size()) {
+    for(auto src: srcReduceResult)
+      src->second = true;
+
+    pthread_rwlock_unlock(cellsLock);
+
+    return reduceResult;
+  }
+  else {
+    for(auto src: srcResult)
+      src->second = true;
+
+    pthread_rwlock_unlock(cellsLock);
+
+    return result;
+  }
 }
 
 void ts::system::CellMgr::unlock(AbstractCell* cell) {
