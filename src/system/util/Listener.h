@@ -16,6 +16,7 @@ struct Listener {
   void wait();
   void notifyAll();
   void notifyOne();
+  void invert();
 };
 
 }}

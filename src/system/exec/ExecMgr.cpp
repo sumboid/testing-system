@@ -111,6 +111,7 @@ void ts::system::ExecMgr::loop() {
 void ts::system::ExecMgr::reduce(ReduceData* rdata) {
   /// Wating for global reduce step ending
   globalReduceListener.wait();
+  globalReduceListener.invert();
   if(externalReduceData == 0) {
     externalReduceData = rdata->copy();
   }
@@ -124,7 +125,7 @@ void ts::system::ExecMgr::reduce(ReduceData* rdata) {
 void ts::system::ExecMgr::endGlobalReduce() {
 
   /// Stop sending external reduce data, while global reduce finish
-  globalReduceListener.condition = false;
+  globalReduceListener.invert();
   ERDListener.notifyAll();
 }
 

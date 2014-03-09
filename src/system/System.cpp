@@ -1,3 +1,4 @@
+#include <iostream>
 #include "System.h"
 
 using ts::type::AbstractCellTools;
@@ -59,6 +60,7 @@ void ts::system::System::spreadReduceData(ts::type::ReduceData* data) {
 void ts::system::System::putReduceData(ts::type::ReduceData* data) {
   execMgr->reduce(data);
   ++inputReduceData;
+
   if(inputReduceData == msgMgr->size() - 1) {
     inputReduceData = 0;
     execMgr->endGlobalReduce();

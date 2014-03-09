@@ -1,3 +1,4 @@
+#include <iostream>
 #include <chrono>
 #include <cassert>
 #include "MessageMgr.h"
@@ -44,6 +45,7 @@ void ts::system::MessageMgr::receiveLoop() {
         default:
           break;
       }
+      delete buffer;
     }
     else {
       if(end.load()) return;
