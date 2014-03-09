@@ -24,7 +24,7 @@ void ts::system::ExecMgr::join() {
 }
 
 void ts::system::ExecMgr::stop() {
-  end = true;
+  end.store(true);
   queueListener.notifyAll();
 }
 
@@ -88,7 +88,7 @@ void ts::system::ExecMgr::loop() {
 
     if(emptyQueue) {
       queueListener.wait();
-      if(end) return;
+      if(end.load()) return;
     }
 
     while(!cellQueue.empty()) {

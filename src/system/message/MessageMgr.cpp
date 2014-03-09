@@ -46,7 +46,7 @@ void ts::system::MessageMgr::receiveLoop() {
       }
     }
     else {
-      if(end) return;
+      if(end.load()) return;
       sleep_for(seconds(1));
     }
   }
@@ -54,7 +54,7 @@ void ts::system::MessageMgr::receiveLoop() {
 
 void ts::system::MessageMgr::sendLoop() {
   while(true) {
-    if(end) return;
+    if(end.load()) return;
     queueMutex.lock();
     if(sendQueue.empty()) {
       queueMutex.unlock();
@@ -96,5 +96,5 @@ void ts::system::MessageMgr::send(ReduceData* reduceData) {
 }
 
 void ts::system::MessageMgr::stop() {
-  end = true;
+  end.store(true);
 }
