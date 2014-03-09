@@ -58,9 +58,7 @@ void ts::system::ExecMgr::loop() {
       rstate = GLOBAL_REDUCING;
 
       /// Waiting for all external reduce data
-      std::cout << "waiting for ERD" << std::endl;
       ERDListener.wait();
-      std::cout << "stop waiting for ERD" << std::endl;
 
       /// Reduce ExecMgr::localReduceData and ExecMgr::reduceData and store it
       /// to ExecMgr::storedReduceData
@@ -89,11 +87,8 @@ void ts::system::ExecMgr::loop() {
     queueMutex.unlock();
 
     if(emptyQueue) {
-      std::cout << "waiting for new cells" << std::endl;
       queueListener.wait();
-      std::cout << "stop waiting for new cells" << std::endl;
       if(end.load()) {
-        std::cout << "it's end here" << std::endl;
         return;
       }
     }
