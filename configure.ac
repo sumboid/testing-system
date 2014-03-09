@@ -7,7 +7,7 @@ AC_PREFIX_DEFAULT([./build])
 
 AC_PROG_CXX([mpic++])
 
-SPECFLAGS="-O0 -g -std=c++11 -Wall"
+SPECFLAGS="-O3 -std=c++11 -Wall"
 
 ################################################################################
 # pthread

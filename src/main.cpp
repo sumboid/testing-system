@@ -51,7 +51,7 @@ public:
 
   void run(std::vector<ts::type::AbstractCell*> neighbours) {
     file << _iteration << " iteration" << std::endl;
-    if(_iteration == 3) {
+    if(_iteration == 30) {
       end();
     }
     else {
@@ -120,6 +120,20 @@ int main() {
       system->addCell(new Cell(ts::type::ID(2,3,0)));
       system->addCell(new Cell(ts::type::ID(2,4,0)));
       system->addCell(new Cell(ts::type::ID(2,5,0)));
+    case 3:
+      system->addCell(new Cell(ts::type::ID(3,0,0)));
+      system->addCell(new Cell(ts::type::ID(3,1,0)));
+      system->addCell(new Cell(ts::type::ID(3,2,0)));
+      system->addCell(new Cell(ts::type::ID(3,3,0)));
+      system->addCell(new Cell(ts::type::ID(3,4,0)));
+      system->addCell(new Cell(ts::type::ID(3,5,0)));
+    case 4:
+      system->addCell(new Cell(ts::type::ID(4,0,0)));
+      system->addCell(new Cell(ts::type::ID(4,1,0)));
+      system->addCell(new Cell(ts::type::ID(4,2,0)));
+      system->addCell(new Cell(ts::type::ID(4,3,0)));
+      system->addCell(new Cell(ts::type::ID(4,4,0)));
+      system->addCell(new Cell(ts::type::ID(4,5,0)));
   }
 
   system->run();
