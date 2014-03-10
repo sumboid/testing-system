@@ -3,11 +3,16 @@ AM_INIT_AUTOMAKE([-Wall -Werror foreign silent-rules])
 AM_SILENT_RULES([yes])
 
 AC_CONFIG_MACRO_DIR([m4/])
-AC_PREFIX_DEFAULT([./build])
 
 AC_PROG_CXX([mpic++])
 
 SPECFLAGS="-O3 -std=c++11 -Wall"
+
+AM_PROG_AR
+AC_ENABLE_SHARED
+AC_DISABLE_STATIC
+LT_INIT
+
 
 ################################################################################
 # pthread
