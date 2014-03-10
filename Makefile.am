@@ -18,5 +18,23 @@ libts_la_SOURCES =  src/system/cell/CellMgr.cpp \
                     src/distr/Distributor.h \
                     src/types/AbstractCell.h
 
-include_HEADERS =  src/system/System.h \
-                   src/types/AbstractCell.h
+tssystemdir = $(includedir)/ts/system
+tssystem_HEADERS =  src/system/System.h
+
+tssystemexecdir = $(includedir)/ts/system/exec
+tssystemexec_HEADERS = src/system/exec/ExecMgr.h
+
+tssystemcelldir = $(includedir)/ts/system/cell
+tssystemcell_HEADERS = src/system/cell/CellMgr.h
+
+tssystemmsgdir = $(includedir)/ts/system/message
+tssystemmsg_HEADERS = src/system/message/MessageMgr.h
+
+tssystemmsgcommdir = $(includedir)/ts/system/message/comm
+tssystemmsgcomm_HEADERS = src/system/message/comm/Comm.h
+
+tstypesdir = $(includedir)/ts/types
+tstypes_HEADERS = src/types/AbstractCell.h
+
+tssystemutildir = $(includedir)/ts/system/util
+tssystemutil_HEADERS = src/system/util/Listener.h
