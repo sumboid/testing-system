@@ -45,7 +45,7 @@ void ts::system::MessageMgr::receiveLoop() {
         default:
           break;
       }
-      delete buffer;
+      delete[] buffer;
     }
     else {
       if(end.load()) return;
