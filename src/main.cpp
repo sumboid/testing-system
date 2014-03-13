@@ -120,6 +120,7 @@ int main() {
       system->addCell(new Cell(ts::type::ID(2,3,0)));
       system->addCell(new Cell(ts::type::ID(2,4,0)));
       system->addCell(new Cell(ts::type::ID(2,5,0)));
+      break;
     case 3:
       system->addCell(new Cell(ts::type::ID(3,0,0)));
       system->addCell(new Cell(ts::type::ID(3,1,0)));
@@ -127,6 +128,7 @@ int main() {
       system->addCell(new Cell(ts::type::ID(3,3,0)));
       system->addCell(new Cell(ts::type::ID(3,4,0)));
       system->addCell(new Cell(ts::type::ID(3,5,0)));
+      break;
     case 4:
       system->addCell(new Cell(ts::type::ID(4,0,0)));
       system->addCell(new Cell(ts::type::ID(4,1,0)));
@@ -134,6 +136,8 @@ int main() {
       system->addCell(new Cell(ts::type::ID(4,3,0)));
       system->addCell(new Cell(ts::type::ID(4,4,0)));
       system->addCell(new Cell(ts::type::ID(4,5,0)));
+      system->addCell(new Cell(ts::type::ID(4,6,0)));
+      break;
   }
 
   system->run();
