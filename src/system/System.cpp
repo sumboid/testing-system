@@ -1,7 +1,10 @@
 #include <iostream>
+#include <vector>
 #include "System.h"
 
+using std::vector;
 using ts::type::AbstractCellTools;
+using ts::type::AbstractCell;
 using ts::type::ReduceDataTools;
 
 ts::system::System::System(AbstractCellTools* cellTools, ReduceDataTools* reduceTools):
@@ -84,3 +87,5 @@ void ts::system::System::unlockCell(ts::type::AbstractCell* cell) {
   cellMgr->unlock(cell);
   cellListener.notifyAll();
 }
+
+vector<AbstractCell*> ts::system::System::getCells() { return cellMgr->getCells(); }

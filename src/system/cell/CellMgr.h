@@ -37,5 +37,7 @@ namespace system {
       getCells(int amount);
     void unlock(ts::type::AbstractCell* cell);
     void updateExternalCell(ts::type::AbstractCell* cell);
+
+    std::vector<ts::type::AbstractCell*> getCells();
   };
 }}

@@ -7,193 +7,182 @@
 
 namespace ts {
 namespace type {
-  typedef int NodeID;
-  struct ID {
-    enum {X = 0, Y = 1, Z = 2};
-    unsigned int c[3];
-    ID(int x = 0, int y = 0, int z = 0) {
-      c[X] = x;
-      c[Y] = y;
-      c[Z] = z;
+typedef int NodeID;
+
+struct ID {
+  enum {X = 0, Y = 1, Z = 2};
+  unsigned int c[3];
+  ID(int x = 0, int y = 0, int z = 0) {
+    c[X] = x;
+    c[Y] = y;
+    c[Z] = z;
+  }
+
+  virtual ~ID() {}
+  bool operator<(const ID&) const {
+    return true; //XXX: Need to check map behaviour
+  }
+  bool operator>(const ID&) const {
+    return false; //XXX: Need to check map behaviour
+  }
+  bool operator==(const ID& other) {
+    return c[X] == other.c[X] && c[Y] == other.c[Y] && c[Z] == other.c[Z];
+  }
+};
+
+class ReduceData {
+public:
+  virtual ~ReduceData() {}
+  virtual ReduceData* copy() = 0;
+};
+
+class ReduceDataTools {
+public:
+  virtual ~ReduceDataTools() {}
+  virtual void serialize(ReduceData* data, char*& buf, size_t& size) = 0;
+  virtual ReduceData* deserialize(void* buf, size_t size) = 0;
+  virtual ReduceData* reduce(ReduceData*, ReduceData*) = 0;
+};
+
+class AbstractCell {
+protected:
+    ID _id;
+public:
+  // General
+  AbstractCell(ID id) {
+    _iteration = 0;
+    _progress = 0;
+    _vreduce = false;
+    _vreduced = true;
+    _id = id;
+    _vneedUpdate = false;
+    _vend = false;
+  }
+  virtual ~AbstractCell() {}
+  virtual void run(std::vector<AbstractCell*>) = 0;
+  ID id() { return _id; }
+
+  // Neighbours and their location
+private:
+  NodeID nodeID;
+  std::map<ID, NodeID> neighboursLocation;
+
+public:
+  std::vector<NodeID> noticeList() {
+    std::vector<NodeID> result;
+    for(auto neighbour: neighboursLocation) {
+      if(neighbour.second != nodeID)
+        result.push_back(neighbour.second);
     }
+    return result;
+  }
 
-    virtual ~ID() {}
-    bool operator<(const ID& other) const {
-      return true; //XXX: Need to check map behaviour
-    }
-    bool operator>(const ID& other) const {
-      return false; //XXX: Need to check map behaviour
-    }
-    bool operator==(const ID& other) {
-      return c[X] == other.c[X] && c[Y] == other.c[Y] && c[Z] == other.c[Z];
-    }
-  };
+  std::vector<ID> neighbours() {
+    std::vector<ID> result;
+    for(auto neighbour: neighboursLocation)
+        result.push_back(neighbour.first);
+    return result;
+  }
 
-  class ReduceData {
-  public:
-    virtual ~ReduceData() {}
-    virtual ReduceData* copy() = 0;
-  };
+  void updateNeighbour(ID id, NodeID node) {
+    // TODO: check id
+    neighboursLocation[id] = node;
+  }
 
-  class ReduceDataTools {
-  public:
-    virtual ~ReduceDataTools() {}
-    virtual void serialize(ReduceData* data, char*& buf, size_t& size) = 0;
-    virtual ReduceData* deserialize(void* buf, size_t size) = 0;
-    virtual ReduceData* reduce(ReduceData*, ReduceData*) = 0;
-  };
+  // Reduce
+protected:
+  bool _vreduce;
+  bool _vreduced;
 
-  class Data {
-  public:
-    virtual std::pair<void*, size_t> serialize();
-  };
+public:
+  virtual ReduceData* reduce() = 0;
+  virtual ReduceData* reduce(ReduceData* data) = 0;
 
-  class Deserializer {
-  public:
-    virtual Data* deserialize(void* buf, size_t size);
-  };
+  virtual void reduceStep(ReduceData* data) = 0;
 
-  class AbstractCell {
-  protected:
-      ID _id;
-  public:
-    // General
-    AbstractCell(ID id) {
-      _iteration = 0;
-      _progress = 0;
-      _vreduce = false;
-      _vreduced = true;
-      _id = id;
-      _vneedUpdate = false;
-      _vend = false;
-    }
-    virtual ~AbstractCell() {}
-    // virtual void addParticle(Particle* particle) = 0;
-    // virtual void removeParticle(Particle* particle) = 0;
+  ReduceData* _reduce() {
+    _vreduce = false;
+    _vreduced = false;
+    return reduce();
+  }
 
-    virtual void run(std::vector<AbstractCell*>) = 0;
-    ID id() { return _id; }
+  ReduceData* _reduce(ReduceData* data) {
+    _vreduce = false;
+    _vreduced = false;
+    return reduce(data);
+  }
 
-    // Neighbours and their location
-  private:
-    NodeID nodeID;
-    std::map<ID, NodeID> neighboursLocation;
+  void _reduceStep(ReduceData* data) {
+    _vreduced = true;
+    reduceStep(data);
+    ++_progress;
+  }
 
-  public:
-    std::vector<NodeID> noticeList() {
-      std::vector<NodeID> result;
-      for(auto neighbour: neighboursLocation) {
-        if(neighbour.second != nodeID)
-          result.push_back(neighbour.second);
-      }
-      return result;
-    }
+  bool needReduce() { return _vreduce;  }
+  bool wasReduced() { return _vreduced; }
 
-    std::vector<ID> neighbours() {
-      std::vector<ID> result;
-      for(auto neighbour: neighboursLocation)
-          result.push_back(neighbour.first);
-      return result;
-    }
+  //Serialization external data
+private:
+  bool _vneedUpdate;
 
-    void updateNeighbour(ID id, NodeID node) {
-      // TODO: check id
-      neighboursLocation[id] = node;
-    }
+public:
+  bool needUpdate() { return _vneedUpdate; }
+  
 
-    // Reduce
-  protected:
-    bool _vreduce;
-    bool _vreduced;
+  virtual void serialize(void*& buf, size_t& size) = 0;
+  virtual void deserialize(void* buf, size_t size) = 0;
 
-  public:
-    virtual ReduceData* reduce() = 0;
-    virtual ReduceData* reduce(ReduceData* data) = 0;
+  void _serialize(void*& buf, size_t& size) {
+    _vneedUpdate = false;
+    return serialize(buf, size);
+  }
 
-    virtual void reduceStep(ReduceData* data) = 0;
+  virtual void update(AbstractCell*) = 0;
+  // Iteration state
+private:
+  size_t _iteration;
+  size_t _progress;
 
-    ReduceData* _reduce() {
-      _vreduce = false;
-      _vreduced = false;
-      return reduce();
-    }
+public:
+  size_t iteration() {
+    return _iteration;
+  }
 
-    ReduceData* _reduce(ReduceData* data) {
-      _vreduce = false;
-      _vreduced = false;
-      return reduce(data);
-    }
-
-    void _reduceStep(ReduceData* data) {
-      _vreduced = true;
-      reduceStep(data);
-      ++_progress;
-    }
-
-    bool needReduce() { return _vreduce;  }
-    bool wasReduced() { return _vreduced; }
-
-    //Serialization external data
-  private:
-    bool _vneedUpdate;
-
-  public:
-    bool needUpdate() { return _vneedUpdate; }
-
-    //virtual void serialize(void*& buf, size_t& size) = 0;
-    ///virtual void deserialize(void* buf, size_t size) = 0;
-
-    //void _serialize(void*& buf, size_t& size) {
-    //  _vneedUpdate = false;
-    //  return serialize(buf, size);
-    //}
-
-    virtual void update(AbstractCell*) = 0;
-    // Iteration state
-  protected:
-    size_t _iteration;
-    size_t _progress;
-
-  public:
-    size_t iteration() {
-      return _iteration;
-    }
-
-    size_t progress() {
-      return _progress;
-    }
+  size_t progress() {
+    return _progress;
+  }
 
 
-    void nextIteration() {
-      ++_iteration;
-      _progress = 0;
-    }
+  void nextIteration() {
+    ++_iteration;
+    _progress = 0;
+  }
 
-    void _runStep(std::vector<AbstractCell*> neighbours) {
-      run(neighbours);
-      ++_progress;
-    }
-    bool operator==(const AbstractCell& other) { return _id == other._id; }
-    bool operator==(const ID& other) { return _id == other; }
+  void _runStep(std::vector<AbstractCell*> neighbours) {
+    run(neighbours);
+    ++_progress;
+  }
+  bool operator==(const AbstractCell& other) { return _id == other._id; }
+  bool operator==(const ID& other) { return _id == other; }
 
-    // End
-  private:
-    bool _vend;
+  // End
+private:
+  bool _vend;
 
-  public:
-    void end() {
-      _vend = true;
-    }
+public:
+  void end() {
+    _vend = true;
+  }
 
-    bool isEnd() {
-      return _vend;
-    }
-  };
+  bool isEnd() {
+    return _vend;
+  }
+};
 
-  class AbstractCellTools {
-  public:
-    virtual ~AbstractCellTools() {}
-    virtual void serialize(AbstractCell* cell, char*& buf, size_t& size) = 0;
-    virtual AbstractCell* deserialize(char* buf, size_t size) = 0;
-  };
+class AbstractCellTools {
+public:
+  virtual ~AbstractCellTools() {}
+  virtual void serialize(AbstractCell* cell, char*& buf, size_t& size) = 0;
+  virtual AbstractCell* deserialize(char* buf, size_t size) = 0;
+};
 }}

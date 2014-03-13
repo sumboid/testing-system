@@ -69,9 +69,23 @@ vector<WorkCell> ts::system::CellMgr::getCells(int amount) {
     /// Find all neighbours of current cell
     for(auto i: neighboursID) {
       AbstractCell* findedCell;
-      auto cellit = find_if(cells.begin(), cells.end(), [&i](pair<AbstractCell*, bool> cell){ return *cell.first == i; });
+
+      /// Find neighbour cell in local cells
+      auto cellit = find_if(cells.begin(), cells.end(),
+                           [&i](pair<AbstractCell*, bool> cell){
+        return *cell.first == i;
+      });
+
       if (cells.end() == cellit) {
-        auto cellit = find_if(externalCells.begin(), externalCells.end(), [&i](AbstractCell* cell){ return *cell == i; });
+        /// If neighbour cell doesn't exist in local cells
+        /// try to find it in external cells
+
+        auto cellit = find_if(externalCells.begin(),
+                              externalCells.end(), 
+                              [&i](AbstractCell* cell) {
+          return *cell == i;
+        });
+
         if (externalCells.end() == cellit)
           break;
         else
@@ -79,8 +93,12 @@ vector<WorkCell> ts::system::CellMgr::getCells(int amount) {
       } else {
         findedCell = cellit->first;
       }
-      if(findedCell->iteration() < cell->iteration()) break;
 
+      if(findedCell->iteration() < cell->iteration()) {
+        /// It means that finded copy of external cell has
+        /// too old state
+        break;
+      }
       neighbours.push_back(findedCell);
     }
 
@@ -139,4 +157,14 @@ void ts::system::CellMgr::updateExternalCell(AbstractCell* cell) {
   pthread_rwlock_wrlock(cellsLock);
   if(newCell) externalCells.push_back(cell);
   pthread_rwlock_unlock(cellsLock);
+}
+
+vector<AbstractCell*> ts::system::CellMgr::getCells() {
+  vector<AbstractCell*> result;
+
+  for(auto cell : cells) {
+    result.push_back(cell.first);
+  }
+
+  return result;
 }
