@@ -4,6 +4,8 @@
 #include "message/MessageMgr.h"
 #include "cell/CellMgr.h"
 #include "../types/AbstractCell.h"
+#include "../types/ReduceDataTools.h"
+#include "../types/AbstractCellTools.h"
 #include "util/Listener.h"
 
 namespace ts {

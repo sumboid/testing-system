@@ -10,6 +10,8 @@
 #include <queue>
 
 #include "../../types/AbstractCell.h"
+#include "../../types/ReduceData.h"
+#include "../../types/ReduceDataTools.h"
 #include "../System.h"
 #include "../util/Listener.h"
 

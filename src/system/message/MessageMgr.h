@@ -7,6 +7,8 @@
 #include "../cell/CellMgr.h"
 #include "../System.h"
 #include "../../types/AbstractCell.h"
+#include "../../types/AbstractCellTools.h"
+#include "../../types/ReduceDataTools.h"
 
 namespace ts {
 namespace system {
