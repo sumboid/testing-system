@@ -1,5 +1,7 @@
 #include "CellMgr.h"
 
+#include <algorithm>
+
 using std::pair;
 using std::vector;
 using std::map;
