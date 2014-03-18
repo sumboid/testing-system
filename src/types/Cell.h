@@ -57,13 +57,11 @@ public:
   void updateNeighbour(ID id, NodeID node);
 
   //Serialization external data
-  virtual void serialize(void*& buf, size_t& size) = 0;
-  virtual void deserialize(void* buf, size_t size) = 0;
+  //virtual void serialize(void*& buf, size_t& size) = 0;
+  //virtual void deserialize(void* buf, size_t size) = 0;
 
   // ID(int, int, int) (iteration, progress) (size) (data) from serialize()
-  void _serialize(void*& buf, size_t& size);
-
-  virtual void update(Cell*) = 0;
+  //void _serialize(void*& buf, size_t& size);
 
   // Cell steps defined by user
   virtual ReduceData* reduce() = 0;

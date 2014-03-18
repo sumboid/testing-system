@@ -72,10 +72,10 @@ bool Cell::wasReduced() { return _vreduced; }
 bool Cell::needUpdate() { return _vupdate; }
 
 
-void Cell::_serialize(void*& buf, size_t& size) {
-  _vupdate = false;
-  return serialize(buf, size);
-}
+//void Cell::_serialize(void*& buf, size_t& size) {
+//  _vupdate = false;
+//  return serialize(buf, size);
+//}
 
 uint64_t Cell::iteration() {
   return _viteration;
@@ -136,6 +136,7 @@ void Cell::saveState(Cell* cell) {
 }
 
 Cell* Cell::getLastState() {
+  _vupdate = false;
   return _vlaststate;
 }
 
