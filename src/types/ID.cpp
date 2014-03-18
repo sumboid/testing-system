@@ -3,7 +3,7 @@
 namespace ts {
 namespace type {
 
-ID::ID(int x, int y, int z) {
+ID::ID(uint64_t x, uint64_t y, uint64_t z) {
   c[X] = x;
   c[Y] = y;
   c[Z] = z;

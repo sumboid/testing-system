@@ -6,8 +6,8 @@
 #include "comm/Comm.h"
 #include "../cell/CellMgr.h"
 #include "../System.h"
-#include "../../types/AbstractCell.h"
-#include "../../types/AbstractCellTools.h"
+#include "../../types/Cell.h"
+#include "../../types/CellTools.h"
 #include "../../types/ReduceDataTools.h"
 
 namespace ts {
@@ -42,7 +42,7 @@ private:
   Comm* comm;
   CellMgr* cellMgr;
   System* sys;
-  ts::type::AbstractCellTools* cellTool;
+  ts::type::CellTools* cellTool;
   ts::type::ReduceDataTools* reduceTool;
 
   size_t id;
@@ -58,7 +58,7 @@ public:
 
   void setCellMgr(CellMgr* mgr) { cellMgr = mgr; }
   void setSystem(System* _sys) { sys = _sys; }
-  void setCellTool(ts::type::AbstractCellTools* tool) { cellTool = tool; }
+  void setCellTool(ts::type::CellTools* tool) { cellTool = tool; }
   void setReduceTool(ts::type::ReduceDataTools* tool) { reduceTool = tool; }
 
   void run();
@@ -67,7 +67,7 @@ public:
 
   size_t size() { return _size; }
 
-  void send(NodeID node, Tag tag, ts::type::AbstractCell* cell);
+  void send(NodeID node, Tag tag, ts::type::Cell* cell);
   void send(ts::type::ReduceData* reduceData);
   NodeID getNodeID() { return id; }
 private:

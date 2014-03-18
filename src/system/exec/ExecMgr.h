@@ -9,7 +9,7 @@
 #include <utility>
 #include <queue>
 
-#include "../../types/AbstractCell.h"
+#include "../../types/Cell.h"
 #include "../../types/ReduceData.h"
 #include "../../types/ReduceDataTools.h"
 #include "../System.h"
@@ -19,7 +19,7 @@ namespace ts {
 namespace system {
 
 class System;
-typedef std::pair<ts::type::AbstractCell*, std::vector<ts::type::AbstractCell*> > WorkCell;
+typedef std::pair<ts::type::Cell*, std::vector<ts::type::Cell*> > WorkCell;
 class ExecMgr {
 private:
   enum ReduceState { LOCAL_REDUCING, PRE_GLOBAL_REDUCING, GLOBAL_REDUCING };

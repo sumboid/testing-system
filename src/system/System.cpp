@@ -3,11 +3,11 @@
 #include "System.h"
 
 using std::vector;
-using ts::type::AbstractCellTools;
-using ts::type::AbstractCell;
+using ts::type::CellTools;
+using ts::type::Cell;
 using ts::type::ReduceDataTools;
 
-ts::system::System::System(AbstractCellTools* cellTools, ReduceDataTools* reduceTools):
+ts::system::System::System(CellTools* cellTools, ReduceDataTools* reduceTools):
   inputReduceData(0), _end(false), cellListener(true) {
   msgMgr = new MessageMgr;
   cellMgr = new CellMgr;
@@ -71,7 +71,7 @@ void ts::system::System::putReduceData(ts::type::ReduceData* data) {
   delete data;
 }
 
-void ts::system::System::addCell(ts::type::AbstractCell* cell) {
+void ts::system::System::addCell(ts::type::Cell* cell) {
   cellMgr->addCell(cell);
 }
 
@@ -83,9 +83,9 @@ int ts::system::System::size() {
   return msgMgr->size();
 }
 
-void ts::system::System::unlockCell(ts::type::AbstractCell* cell) {
+void ts::system::System::unlockCell(ts::type::Cell* cell) {
   cellMgr->unlock(cell);
   cellListener.notifyAll();
 }
 
-vector<AbstractCell*> ts::system::System::getCells() { return cellMgr->getCells(); }
+vector<Cell*> ts::system::System::getCells() { return cellMgr->getCells(); }

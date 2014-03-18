@@ -3,9 +3,9 @@
 #include "exec/ExecMgr.h"
 #include "message/MessageMgr.h"
 #include "cell/CellMgr.h"
-#include "../types/AbstractCell.h"
+#include "../types/Cell.h"
 #include "../types/ReduceDataTools.h"
-#include "../types/AbstractCellTools.h"
+#include "../types/CellTools.h"
 #include "util/Listener.h"
 
 namespace ts {
@@ -27,20 +27,20 @@ private:
   Listener cellListener;
 
 public:
-  System(ts::type::AbstractCellTools*, ts::type::ReduceDataTools*);
+  System(ts::type::CellTools*, ts::type::ReduceDataTools*);
   ~System();
 
-  void addCell(ts::type::AbstractCell* cell);
+  void addCell(ts::type::Cell* cell);
   int id();
   int size();
   void run();
   void end() { _end = true; }
-  std::vector<ts::type::AbstractCell*> getCells();
+  std::vector<ts::type::Cell*> getCells();
 
   /// ExecMgr part
   void spreadReduceData(ts::type::ReduceData* data);
   void putReduceData(ts::type::ReduceData* data);
-  void unlockCell(ts::type::AbstractCell* cell);
+  void unlockCell(ts::type::Cell* cell);
 
   //put(Message* message);
 };

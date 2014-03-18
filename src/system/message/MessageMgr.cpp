@@ -6,8 +6,8 @@
 using std::thread;
 using std::this_thread::sleep_for;
 using std::chrono::seconds;
-using ts::type::AbstractCell;
-using ts::type::AbstractCellTools;
+using ts::type::Cell;
+using ts::type::CellTools;
 using ts::type::ReduceDataTools;
 using ts::type::ReduceData;
 
@@ -73,7 +73,7 @@ void ts::system::MessageMgr::sendLoop() {
   }
 }
 
-void ts::system::MessageMgr::send(NodeID node, Tag tag, AbstractCell* cell) {
+void ts::system::MessageMgr::send(NodeID node, Tag tag, Cell* cell) {
   Message* message = new Message;
   cellTool->serialize(cell, message->buffer, message->size);
   message->tag = tag;

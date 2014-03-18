@@ -12,7 +12,7 @@ using std::this_thread::sleep_for;
 using std::mutex;
 using std::unique_lock;
 using std::chrono::seconds;
-using ts::type::AbstractCell;
+using ts::type::Cell;
 using ts::type::ReduceData;
 
 void ts::system::ExecMgr::run() {

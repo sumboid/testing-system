@@ -5,7 +5,7 @@
 using std::pair;
 using std::vector;
 using std::map;
-using ts::type::AbstractCell;
+using ts::type::Cell;
 using ts::type::ID;
 
 ts::system::CellMgr::CellMgr() {
@@ -24,13 +24,13 @@ ts::system::CellMgr::~CellMgr() {
   delete cellsLock;
 }
 
-void ts::system::CellMgr::addCell(AbstractCell* cell) {
+void ts::system::CellMgr::addCell(Cell* cell) {
   pthread_rwlock_wrlock(cellsLock);
   cells[cell] = false;
   pthread_rwlock_unlock(cellsLock);
 }
 
-typedef pair<AbstractCell*, vector<AbstractCell*> > WorkCell;
+typedef pair<Cell*, vector<Cell*> > WorkCell;
 vector<WorkCell> ts::system::CellMgr::getCells(int amount) {
   pthread_rwlock_wrlock(cellsLock);
   vector<WorkCell> result;
@@ -39,7 +39,7 @@ vector<WorkCell> ts::system::CellMgr::getCells(int amount) {
   size_t endCount = 0;
 
   /// Find all non-blocked cells without end state.
-  vector<AbstractCell*> fcells;
+  vector<Cell*> fcells;
   for(auto cell: cells)
     if(!cell.second) {
       if(!cell.first->isEnd()) {
@@ -57,24 +57,28 @@ vector<WorkCell> ts::system::CellMgr::getCells(int amount) {
   }
 
   for(auto cell: fcells) {
-    bool notReduced = false;
-
     /// Check cell waiting for final reduce step
     if(!cell->needReduce() && !cell->wasReduced()) {
       ++reduceCount;
-      notReduced = true;
+      reduceResult.push_back(WorkCell(cell, vector<Cell*>()));
+      break;
+    }
+
+    if(!cell->needNeighbours()) {
+      result.push_back(WorkCell(cell, vector<Cell*>()));
+      break;
     }
 
     vector<ID> neighboursID = cell->neighbours();
-    vector<AbstractCell*> neighbours;
+    vector<Cell*> neighbours;
 
     /// Find all neighbours of current cell
     for(auto i: neighboursID) {
-      AbstractCell* findedCell;
+      Cell* findedCell;
 
       /// Find neighbour cell in local cells
       auto cellit = find_if(cells.begin(), cells.end(),
-                           [&i](pair<AbstractCell*, bool> cell){
+                           [&i](pair<Cell*, bool> cell){
         return *cell.first == i;
       });
 
@@ -84,7 +88,7 @@ vector<WorkCell> ts::system::CellMgr::getCells(int amount) {
 
         auto cellit = find_if(externalCells.begin(),
                               externalCells.end(), 
-                              [&i](AbstractCell* cell) {
+                              [&i](Cell* cell) {
           return *cell == i;
         });
 
@@ -96,7 +100,7 @@ vector<WorkCell> ts::system::CellMgr::getCells(int amount) {
         findedCell = cellit->first;
       }
 
-      if(findedCell->iteration() < cell->iteration()) {
+      if(findedCell->iteration() < cell->iteration() || findedCell->iteration() < cell->iteration()) {
         /// It means that finded copy of external cell has
         /// too old state
         break;
@@ -105,10 +109,7 @@ vector<WorkCell> ts::system::CellMgr::getCells(int amount) {
     }
 
     if(neighbours.size() == neighboursID.size()) {
-      if(notReduced)
-        reduceResult.push_back(pair<AbstractCell*, vector<AbstractCell*>>(cell, neighbours));
-      else
-        result.push_back(pair<AbstractCell*, vector<AbstractCell*>>(cell, neighbours));
+        result.push_back(pair<Cell*, vector<Cell*>>(cell, neighbours));
     }
   }
 
@@ -127,17 +128,17 @@ vector<WorkCell> ts::system::CellMgr::getCells(int amount) {
   }
 }
 
-void ts::system::CellMgr::unlock(AbstractCell* cell) {
+void ts::system::CellMgr::unlock(Cell* cell) {
+  if(cell->needUpdate()) {
+    auto nodes = cell->noticeList();
+    for(auto node: nodes) messageMgr->send(node, UPDATE_CELL, cell->getLastState());
+  }
   pthread_rwlock_wrlock(cellsLock);
   cells[cell] = false;
   pthread_rwlock_unlock(cellsLock);
-  if(cell->needUpdate()) {
-    auto nodes = cell->noticeList();
-    for(auto node: nodes) messageMgr->send(node, UPDATE_CELL, cell);
-  }
 }
 
-void ts::system::CellMgr::updateExternalCell(AbstractCell* cell) {
+void ts::system::CellMgr::updateExternalCell(Cell* cell) {
   pthread_rwlock_rdlock(cellsLock);
 
   bool newCell = true;
@@ -148,7 +149,7 @@ void ts::system::CellMgr::updateExternalCell(AbstractCell* cell) {
       pthread_rwlock_unlock(cellsLock);
       pthread_rwlock_wrlock(cellsLock);
 
-      (*it)->update(cell);
+      (*it)->saveState(cell);
 
       pthread_rwlock_unlock(cellsLock);
       return;
@@ -161,8 +162,8 @@ void ts::system::CellMgr::updateExternalCell(AbstractCell* cell) {
   pthread_rwlock_unlock(cellsLock);
 }
 
-vector<AbstractCell*> ts::system::CellMgr::getCells() {
-  vector<AbstractCell*> result;
+vector<Cell*> ts::system::CellMgr::getCells() {
+  vector<Cell*> result;
 
   for(auto cell : cells) {
     result.push_back(cell.first);

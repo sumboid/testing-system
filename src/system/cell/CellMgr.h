@@ -6,7 +6,7 @@
 #include <map>
 #include <utility>
 
-#include "../../types/AbstractCell.h"
+#include "../../types/Cell.h"
 #include "../message/MessageMgr.h"
 #include "../System.h"
 
@@ -20,8 +20,8 @@ namespace system {
     MessageMgr* messageMgr;
     System* system;
 
-    std::vector<ts::type::AbstractCell*> externalCells;
-    std::map<ts::type::AbstractCell*, bool> cells;
+    std::vector<ts::type::Cell*> externalCells;
+    std::map<ts::type::Cell*, bool> cells;
     pthread_rwlock_t* cellsLock;
 
   public:
@@ -32,12 +32,12 @@ namespace system {
     void setMessageMgr(MessageMgr* mgr) { messageMgr = mgr; }
     void setSystem(System* _system) { system = _system; }
 
-    void addCell(ts::type::AbstractCell* cell);
-    std::vector<std::pair<ts::type::AbstractCell*, std::vector<ts::type::AbstractCell*> > >
+    void addCell(ts::type::Cell* cell);
+    std::vector<std::pair<ts::type::Cell*, std::vector<ts::type::Cell*> > >
       getCells(int amount);
-    void unlock(ts::type::AbstractCell* cell);
-    void updateExternalCell(ts::type::AbstractCell* cell);
+    void unlock(ts::type::Cell* cell);
+    void updateExternalCell(ts::type::Cell* cell);
 
-    std::vector<ts::type::AbstractCell*> getCells();
+    std::vector<ts::type::Cell*> getCells();
   };
 }}
