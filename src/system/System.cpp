@@ -88,4 +88,8 @@ void ts::system::System::unlockCell(ts::type::Cell* cell) {
   cellListener.notifyAll();
 }
 
+void ts::system::System::notify() {
+  cellListener.notifyAll();
+}
+
 vector<Cell*> ts::system::System::getCells() { return cellMgr->getCells(); }

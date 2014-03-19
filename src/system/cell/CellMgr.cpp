@@ -139,6 +139,7 @@ void ts::system::CellMgr::unlock(Cell* cell) {
 }
 
 void ts::system::CellMgr::updateExternalCell(Cell* cell) {
+  std::cout << "Ok, it's new external cell here" << std::endl;
   pthread_rwlock_rdlock(cellsLock);
 
   bool newCell = true;
@@ -152,6 +153,7 @@ void ts::system::CellMgr::updateExternalCell(Cell* cell) {
       (*it)->saveState(cell);
 
       pthread_rwlock_unlock(cellsLock);
+      system->notify();
       return;
     }
   }
@@ -160,6 +162,7 @@ void ts::system::CellMgr::updateExternalCell(Cell* cell) {
   pthread_rwlock_wrlock(cellsLock);
   if(newCell) externalCells.push_back(cell);
   pthread_rwlock_unlock(cellsLock);
+  system->notify();
 }
 
 vector<Cell*> ts::system::CellMgr::getCells() {

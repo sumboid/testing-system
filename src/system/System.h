@@ -35,6 +35,7 @@ public:
   int size();
   void run();
   void end() { _end = true; }
+  void notify();
   std::vector<ts::type::Cell*> getCells();
 
   /// ExecMgr part

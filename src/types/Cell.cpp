@@ -85,6 +85,13 @@ uint64_t Cell::progress() {
   return _vprogress;
 }
 
+void Cell::iteration(uint64_t i) {
+  _viteration = i;
+}
+
+void Cell::progress(uint64_t p) {
+  _vprogress = p;
+}
 
 void Cell::nextIteration() {
   ++_viteration;
