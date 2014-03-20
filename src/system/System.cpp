@@ -20,6 +20,7 @@ ts::system::System::System(CellTools* cellTools, ReduceDataTools* reduceTools):
 
   cellMgr->setMessageMgr(msgMgr);
   cellMgr->setSystem(this);
+  cellMgr->setCellTools(cellTools);
 
   execMgr->setSystem(this);
 
@@ -85,7 +86,7 @@ int ts::system::System::size() {
 
 void ts::system::System::unlockCell(ts::type::Cell* cell) {
   cellMgr->unlock(cell);
-  cellListener.notifyAll();
+  notify();
 }
 
 void ts::system::System::notify() {

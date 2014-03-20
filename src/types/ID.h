@@ -1,6 +1,6 @@
 #pragma once
 #include <cstdint>
-
+#include <string>
 namespace ts {
 namespace type {
 
@@ -12,5 +12,6 @@ struct ID {
   bool operator<(const ID&) const;
   bool operator>(const ID&) const;
   bool operator==(const ID& other);
+  std::string tostr();
 };
 }}

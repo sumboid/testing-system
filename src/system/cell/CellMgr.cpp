@@ -40,6 +40,7 @@ vector<WorkCell> ts::system::CellMgr::getCells(int amount) {
 
   /// Find all non-blocked cells without end state.
   vector<Cell*> fcells;
+
   for(auto cell: cells)
     if(!cell.second) {
       if(!cell.first->isEnd()) {
@@ -100,12 +101,12 @@ vector<WorkCell> ts::system::CellMgr::getCells(int amount) {
         findedCell = cellit->first;
       }
 
-      if(findedCell->iteration() < cell->iteration() || findedCell->iteration() < cell->iteration()) {
+      if(!findedCell->hasState(cell->neighboursState())) { // Need to change
         /// It means that finded copy of external cell has
         /// too old state
         break;
       }
-      neighbours.push_back(findedCell);
+      neighbours.push_back(findedCell->getState(cell->neighboursState(), cell->id()));
     }
 
     if(neighbours.size() == neighboursID.size()) {
@@ -139,10 +140,8 @@ void ts::system::CellMgr::unlock(Cell* cell) {
 }
 
 void ts::system::CellMgr::updateExternalCell(Cell* cell) {
-  std::cout << "Ok, it's new external cell here" << std::endl;
   pthread_rwlock_rdlock(cellsLock);
 
-  bool newCell = true;
   for(auto fcell: externalCells) {
     if(fcell->id() == cell->id()) {
       auto it = find(externalCells.begin(), externalCells.end(), fcell);
@@ -160,7 +159,11 @@ void ts::system::CellMgr::updateExternalCell(Cell* cell) {
 
   pthread_rwlock_unlock(cellsLock);
   pthread_rwlock_wrlock(cellsLock);
-  if(newCell) externalCells.push_back(cell);
+
+  ID cellID = cell->id();
+  Cell* newCell = cellTools->createGap(cellID);
+  newCell->saveState(cell);
+  externalCells.push_back(newCell);
   pthread_rwlock_unlock(cellsLock);
   system->notify();
 }

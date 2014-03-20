@@ -6,7 +6,7 @@
 #include "../types/Cell.h"
 #include "../types/ReduceDataTools.h"
 #include "../types/CellTools.h"
-#include "util/Listener.h"
+#include "util/Semaphore.h"
 
 namespace ts {
 namespace system {
@@ -24,7 +24,7 @@ private:
   size_t inputReduceData;
   bool _end;
 
-  Listener cellListener;
+  Semaphore cellListener;
 
 public:
   System(ts::type::CellTools*, ts::type::ReduceDataTools*);

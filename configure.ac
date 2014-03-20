@@ -6,7 +6,7 @@ AC_CONFIG_MACRO_DIR([m4/])
 
 AC_PROG_CXX([mpic++])
 
-SPECFLAGS="-O0 -g -std=c++11 -Wall"
+SPECFLAGS="-O0 -g -DNDEBUG -std=c++11 -Wall"
 
 AM_PROG_AR
 AC_ENABLE_SHARED

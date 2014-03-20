@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "../../types/Cell.h"
+#include "../../types/CellTools.h"
 #include "../message/MessageMgr.h"
 #include "../System.h"
 
@@ -17,6 +18,7 @@ namespace system {
 
   class CellMgr {
   private:
+    type::CellTools* cellTools;
     MessageMgr* messageMgr;
     System* system;
 
@@ -31,6 +33,7 @@ namespace system {
 
     void setMessageMgr(MessageMgr* mgr) { messageMgr = mgr; }
     void setSystem(System* _system) { system = _system; }
+    void setCellTools(type::CellTools* _cellTools) { cellTools = _cellTools; }
 
     void addCell(ts::type::Cell* cell);
     std::vector<std::pair<ts::type::Cell*, std::vector<ts::type::Cell*> > >

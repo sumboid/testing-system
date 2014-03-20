@@ -1,5 +1,6 @@
 #include "Cell.h"
 #include <algorithm>
+#include <iostream>
 using std::map;
 using std::vector;
 using std::tuple;
@@ -46,7 +47,8 @@ vector<ID> Cell::neighbours() {
 }
 
 void Cell::updateNeighbour(ID id, NodeID node) {
-  _vneighboursLocation[id] = node;
+  _vneighboursLocation.insert(std::pair<ID, NodeID>(id, node));
+  //_vneighboursLocation[id] = node;
 }
 
 ReduceData* Cell::_reduce() {
@@ -115,7 +117,8 @@ void Cell::setUpdate() {
   _vupdate = true;
 }
 
-void Cell::setNeighbours() {
+void Cell::setNeighbours(uint64_t iteration, uint64_t progress) {
+  _vneighboursState = Timestamp(iteration, progress);
   _vneighbours = true;
 }
 
@@ -127,19 +130,24 @@ bool Cell::needNeighbours() {
   return _vneighbours;
 }
 
+Timestamp Cell::neighboursState() {
+  return _vneighboursState;
+}
+
 void Cell::saveState() {
   _vlaststate = getBoundary();
-  _vstates[Timestamp(_viteration, _vprogress)] = _vlaststate;
+  _vstates.insert(pair<Timestamp, Cell*>(Timestamp(_viteration, _vprogress), _vlaststate));
 }
 
 void Cell::saveState(Cell* cell) {
-  for_each(cell->_vstates.begin(), cell->_vstates.end(),
-        [=](const pair<Timestamp, Cell*>& state) {
-          _vstates[state.first] = state.second;
-        });
+  //for_each(cell->_vstates.begin(), cell->_vstates.end(),
+  //      [=](const pair<Timestamp, Cell*>& state) {
+  //        _vstates[state.first] = state.second;
+  //      });
 
-  _viteration = cell->iteration();
-  _vprogress = cell->progress();
+  //_viteration = cell->iteration();
+  //_vprogress = cell->progress();
+  _vstates.insert(pair<Timestamp, Cell*>(Timestamp(cell->iteration(), cell->progress()), cell));
 }
 
 Cell* Cell::getLastState() {
@@ -147,11 +155,19 @@ Cell* Cell::getLastState() {
   return _vlaststate;
 }
 
-Cell* Cell::getState(Timestamp timestamp, const ID& neighbour) {
+Cell* Cell::getState(const Timestamp& timestamp, const ID& neighbour) {
   Cell* cell = _vstates.at(timestamp);
   _vstateGetted[timestamp].insert(neighbour);
   _tryRemoveState(timestamp);
   return cell;
+}
+
+bool Cell::hasState(const Timestamp& timestamp) {
+  auto stateit = _vstates.find(timestamp);
+  if(stateit == _vstates.end())
+    return false;
+  else
+    return true;
 }
 
 void Cell::_tryRemoveState(Timestamp timestamp) {
@@ -179,5 +195,19 @@ void Cell::_tryRemoveAllStates() {
 
 bool Cell::operator==(const Cell& other) { return _vid == other._vid; }
 bool Cell::operator==(const ID& other) { return _vid == other; }
+
+#ifdef NDEBUG
+  void Cell::printStates() {
+    if(_vstates.empty()) {
+      std::cout << "NO STATES LOLD" << std::endl;
+      return;
+    }
+    for(auto state: _vstates) {
+      uint64_t i, p;
+      std::tie(i, p) = state.first;
+      std::cout << i << " : " << p << std::endl;
+    }
+  }
+#endif
 
 }}

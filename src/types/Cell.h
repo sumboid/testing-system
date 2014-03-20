@@ -40,6 +40,7 @@ private:
   uint64_t _viteration;                        ///< Current iteration
   uint64_t _vprogress;                         ///< Current progress of iteration
 
+  Timestamp _vneighboursState;
   std::map<Timestamp, Cell*> _vstates;                ///< stored states of cell
   Cell* _vlaststate;                                  ///< last state
   std::map<Timestamp, std::set<ID>> _vstateGetted;    ///< states getted by neighbours
@@ -73,7 +74,7 @@ public:
   void setEnd();
   void setUpdate();
   void setReduce();
-  void setNeighbours();
+  void setNeighbours(uint64_t iteration, uint64_t progress);
 
   // State setters
   void nextIteration();
@@ -85,19 +86,22 @@ public:
   bool needUpdate();
   bool needNeighbours();
 
+  Timestamp neighboursState();
+
   // Saving state
   virtual Cell* getBoundary() = 0;
   void saveState();
   void saveState(Cell* cell);
-  Cell* getState(Timestamp timestamp, const ID& neighbour);
+  Cell* getState(const Timestamp& timestamp, const ID& neighbour);
   Cell* getLastState();
+  bool hasState(const Timestamp& timestamp);
   void _tryRemoveState(Timestamp timestamp);
   void _tryRemoveAllStates();
 
   // State getters
   uint64_t iteration();
   uint64_t progress();
-  
+
   // State setters
   void iteration(uint64_t i);
   void progress(uint64_t p);
@@ -111,6 +115,10 @@ public:
   //Misc
   bool operator==(const Cell& other);
   bool operator==(const ID& other);
+
+#ifdef NDEBUG
+  void printStates();
+#endif
 
 };
 

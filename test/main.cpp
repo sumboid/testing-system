@@ -29,7 +29,7 @@ public:
   ~ReduceDataTools() {}
   void serialize(ts::type::ReduceData* data, char*& buf, size_t& size) {
     size = 1;
-    buf = new char[sizeof(char)];
+    buf = new char[1];
     buf[0] = ((ReduceData*) data)->getNumber();
   }
 
@@ -56,9 +56,6 @@ public:
   Cell(ts::type::ID id, bool needFile = true): ts::type::Cell(id) {
     if(needFile) file.open(std::to_string(id.c[0]) + std::to_string(id.c[1]));
     iter = iteration();
-    //saveState();
-    //setUpdate();
-    //setNeighbours();
   }
 
   ~Cell() {
@@ -72,21 +69,19 @@ public:
     }
 
     file << iteration() << " iteration" << std::endl;
-    file << iteration() << "Neighbours size = " << neighbours.size() << std::endl;
     iter = iteration();
     if(iteration() % 2 == 1) {
       saveState();
+      std::cout << "State saved" << std::endl;
       setUpdate();
-      setNeighbours();
-    } else {
+      setNeighbours(iteration(), progress());
+    } else if (iteration() != 0) {
       int buf = iter;
       for(auto n: neighbours) {
-        file << "get neighbours" << std::endl;
         buf += ((Cell*) n)->iter;
       }
       file << "Reduced " << iter << " locally" << std::endl;
     }
-
     nextIteration();
   }
 
@@ -108,6 +103,7 @@ public:
     cell->iter = iter;
     cell->iteration(iteration());
     cell->progress(progress());
+    std::cout << "Getting boundary with stamp: " << iteration() << ":" << progress() << std::endl;
     return cell;
   }
 
@@ -136,6 +132,10 @@ public:
     result->iter = lbuf[5];
     return result;
   }
+
+  ts::type::Cell* createGap(const ID& id) override {
+    return new Cell(id, false);
+  }
 };
 
 int main() {
@@ -156,54 +156,50 @@ int main() {
   cells[1].push_back(new Cell(ts::type::ID(1,3,0)));
   cells[1].push_back(new Cell(ts::type::ID(1,4,0)));
 
+  if(*cells[0][0] == ID(0, 0, 0)) {
+    std::cout << "OK" << std::endl;
+  }
   for(auto cell : cells[0]) {
     ID id = cell->id();
-    for(int i = 0; i < 3; ++i) {
-      switch(i) {
-        case 0:
-          if((id.c[0] - 1) < 5)
-            cell->updateNeighbour(ID(id.c[0] - 1, id.c[1], id.c[2]), 0);
-          break;
-        case 1:
-          cell->updateNeighbour(ID(id.c[0], id.c[1] + 1, id.c[2]), 1);
-          break;
-        case 2:
-          if((id.c[0] + 1) < 5)
-            cell->updateNeighbour(ID(id.c[0] + 1, id.c[1], id.c[2]), 0);
-          break;
-      }
-    }
+    if((id.c[1] - 1) < 5)
+      cell->updateNeighbour(ID(id.c[0], id.c[1] - 1, id.c[2]), 0);
+    if((id.c[1] + 1) < 5)
+      cell->updateNeighbour(ID(id.c[0], id.c[1] + 1, id.c[2]), 0);
+    cell->updateNeighbour(ID(id.c[0] + 1, id.c[1], id.c[2]), 1);
   }
   for(auto cell : cells[1]) {
     ID id = cell->id();
-    for(int i = 0; i < 3; ++i) {
-      switch(i) {
-        case 0:
-          if((id.c[0] - 1) < 5)
-            cell->updateNeighbour(ID(id.c[0] - 1, id.c[1], id.c[2]), 1);
-          break;
-        case 1:
-          cell->updateNeighbour(ID(id.c[0], id.c[1] - 1, id.c[2]), 0);
-          break;
-        case 2:
-          if((id.c[0] + 1) < 5)
-            cell->updateNeighbour(ID(id.c[0] + 1, id.c[1], id.c[2]), 1);
-          break;
-      }
-    }
+    if((id.c[1] - 1) < 5)
+      cell->updateNeighbour(ID(id.c[0], id.c[1] - 1, id.c[2]), 1);
+    if((id.c[1] + 1) < 5)
+      cell->updateNeighbour(ID(id.c[0], id.c[1] + 1, id.c[2]), 1);
+
+    cell->updateNeighbour(ID(id.c[0] - 1, id.c[1], id.c[2]), 0);
   }
 
+  std::ofstream file(std::to_string(system->id()));
   switch(system->id()) {
     case 0:
-      for(auto cell: cells[0])
+      for(auto cell: cells[0]) {
+        ID selfid = cell->id();
+        for(auto n: cell->neighbours()) {
+          file << "\"" << selfid.tostr() << "\" -> \"" << n.tostr() << "\"" << std::endl;
+        }
         system->addCell(cell);
+      }
       break;
     case 1:
-      for(auto cell: cells[1])
+      for(auto cell: cells[1]) {
+        ID selfid = cell->id();
+        for(auto n: cell->neighbours()) {
+          file << "\"" << selfid.tostr() << "\" -> \"" << n.tostr() << "\"" << std::endl;
+        }
         system->addCell(cell);
+      }
       break;
   }
 
+  file.close();
   system->run();
   delete system;
   return 0;

@@ -14,6 +14,8 @@ libts_la_SOURCES =  src/system/cell/CellMgr.cpp \
                     src/system/System.h \
                     src/system/util/Listener.cpp \
                     src/system/util/Listener.h \
+                    src/system/util/Semaphore.cpp \
+                    src/system/util/Semaphore.h \
                     src/distr/Distributor.cpp \
                     src/distr/Distributor.h \
                     src/types/Cell.cpp \
@@ -47,4 +49,5 @@ tstypes_HEADERS = src/types/Cell.h \
 									src/types/ID.h
 
 tssystemutildir = $(includedir)/ts/system/util
-tssystemutil_HEADERS = src/system/util/Listener.h
+tssystemutil_HEADERS = src/system/util/Listener.h \
+											 src/system/util/Semaphore.h

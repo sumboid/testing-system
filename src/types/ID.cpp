@@ -21,4 +21,8 @@ bool ID::operator==(const ID& other) {
          c[Y] == other.c[Y] &&
          c[Z] == other.c[Z];
 }
+
+std::string ID::tostr() {
+  return "(" + std::to_string(c[X]) + ", " + std::to_string(c[Y]) + ", " + std::to_string(c[Z]) + ")";
+}
 }}
