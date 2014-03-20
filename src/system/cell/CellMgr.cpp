@@ -10,7 +10,9 @@ using ts::type::ID;
 
 ts::system::CellMgr::CellMgr() {
   cellsLock = new pthread_rwlock_t;
+  externalCellsLock = new pthread_rwlock_t;
   pthread_rwlock_init(cellsLock, NULL);
+  pthread_rwlock_init(externalCellsLock, NULL);
 }
 
 ts::system::CellMgr::CellMgr(MessageMgr* msgMgr):
@@ -21,7 +23,9 @@ ts::system::CellMgr::CellMgr(MessageMgr* msgMgr):
 
 ts::system::CellMgr::~CellMgr() {
   pthread_rwlock_destroy(cellsLock);
+  pthread_rwlock_destroy(externalCellsLock);
   delete cellsLock;
+  delete externalCellsLock;
 }
 
 void ts::system::CellMgr::addCell(Cell* cell) {
@@ -32,7 +36,6 @@ void ts::system::CellMgr::addCell(Cell* cell) {
 
 typedef pair<Cell*, vector<Cell*> > WorkCell;
 vector<WorkCell> ts::system::CellMgr::getCells(int amount) {
-  pthread_rwlock_wrlock(cellsLock);
   vector<WorkCell> result;
   vector<WorkCell> reduceResult;
   size_t reduceCount = 0;
@@ -41,6 +44,7 @@ vector<WorkCell> ts::system::CellMgr::getCells(int amount) {
   /// Find all non-blocked cells without end state.
   vector<Cell*> fcells;
 
+  pthread_rwlock_rdlock(cellsLock);
   for(auto cell: cells)
     if(!cell.second) {
       if(!cell.first->isEnd()) {
@@ -54,8 +58,11 @@ vector<WorkCell> ts::system::CellMgr::getCells(int amount) {
   /// If all of cells are free with end state shut down the System
   if(endCount == cells.size()) {
     system->end();
+    pthread_rwlock_unlock(cellsLock);
     return vector<WorkCell>();
   }
+
+  pthread_rwlock_unlock(cellsLock);
 
   for(auto cell: fcells) {
     /// Check cell waiting for final reduce step
@@ -87,16 +94,20 @@ vector<WorkCell> ts::system::CellMgr::getCells(int amount) {
         /// If neighbour cell doesn't exist in local cells
         /// try to find it in external cells
 
+        pthread_rwlock_rdlock(externalCellsLock);
         auto cellit = find_if(externalCells.begin(),
                               externalCells.end(), 
                               [&i](Cell* cell) {
           return *cell == i;
         });
 
-        if (externalCells.end() == cellit)
+        if (externalCells.end() == cellit) {
+          pthread_rwlock_unlock(externalCellsLock);
           break;
+        }
         else
           findedCell = *cellit;
+        pthread_rwlock_unlock(externalCellsLock);
       } else {
         findedCell = cellit->first;
       }
@@ -114,6 +125,7 @@ vector<WorkCell> ts::system::CellMgr::getCells(int amount) {
     }
   }
 
+  pthread_rwlock_wrlock(cellsLock);
   if(reduceCount == cells.size()) {
     for(auto i: reduceResult)
       cells[i.first] = true;
@@ -140,31 +152,32 @@ void ts::system::CellMgr::unlock(Cell* cell) {
 }
 
 void ts::system::CellMgr::updateExternalCell(Cell* cell) {
-  pthread_rwlock_rdlock(cellsLock);
+  std::cout << "It's new external cell here: " << cell->id().tostr() << std::endl;
+  pthread_rwlock_rdlock(externalCellsLock);
 
   for(auto fcell: externalCells) {
     if(fcell->id() == cell->id()) {
       auto it = find(externalCells.begin(), externalCells.end(), fcell);
 
-      pthread_rwlock_unlock(cellsLock);
-      pthread_rwlock_wrlock(cellsLock);
+      pthread_rwlock_unlock(externalCellsLock);
+      pthread_rwlock_wrlock(externalCellsLock);
 
       (*it)->saveState(cell);
 
-      pthread_rwlock_unlock(cellsLock);
+      pthread_rwlock_unlock(externalCellsLock);
       system->notify();
       return;
     }
   }
 
-  pthread_rwlock_unlock(cellsLock);
-  pthread_rwlock_wrlock(cellsLock);
+  pthread_rwlock_unlock(externalCellsLock);
+  pthread_rwlock_wrlock(externalCellsLock);
 
   ID cellID = cell->id();
   Cell* newCell = cellTools->createGap(cellID);
   newCell->saveState(cell);
   externalCells.push_back(newCell);
-  pthread_rwlock_unlock(cellsLock);
+  pthread_rwlock_unlock(externalCellsLock);
   system->notify();
 }
 

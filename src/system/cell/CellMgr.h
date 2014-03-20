@@ -25,6 +25,7 @@ namespace system {
     std::vector<ts::type::Cell*> externalCells;
     std::map<ts::type::Cell*, bool> cells;
     pthread_rwlock_t* cellsLock;
+    pthread_rwlock_t* externalCellsLock;
 
   public:
     CellMgr();
