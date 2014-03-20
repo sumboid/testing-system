@@ -73,6 +73,7 @@ void ts::system::System::putReduceData(ts::type::ReduceData* data) {
 }
 
 void ts::system::System::addCell(ts::type::Cell* cell) {
+  cell->setNodeID(id());
   cellMgr->addCell(cell);
 }
 

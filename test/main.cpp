@@ -76,11 +76,11 @@ public:
       setUpdate();
       setNeighbours(iteration(), progress());
     } else if (iteration() != 0) {
-      int buf = iter;
+      int buf = iter - 1;
       for(auto n: neighbours) {
         buf += ((Cell*) n)->iter;
       }
-      file << "Reduced " << iter << " locally" << std::endl;
+      file << "Reduced " << buf << " locally" << std::endl;
     }
     nextIteration();
   }
@@ -103,7 +103,6 @@ public:
     cell->iter = iter;
     cell->iteration(iteration());
     cell->progress(progress());
-    std::cout << "Getting boundary with stamp: " << iteration() << ":" << progress() << std::endl;
     return cell;
   }
 
@@ -143,60 +142,48 @@ int main() {
   ts::type::ReduceDataTools* rt = new ReduceDataTools;
   ts::system::System* system = new ts::system::System(ct, rt);
 
-  std::vector<Cell*> cells[5];
-  cells[0].push_back(new Cell(ts::type::ID(0,0,0)));
-  cells[0].push_back(new Cell(ts::type::ID(0,1,0)));
-  cells[0].push_back(new Cell(ts::type::ID(0,2,0)));
-  cells[0].push_back(new Cell(ts::type::ID(0,3,0)));
-  cells[0].push_back(new Cell(ts::type::ID(0,4,0)));
-
-  cells[1].push_back(new Cell(ts::type::ID(1,0,0)));
-  cells[1].push_back(new Cell(ts::type::ID(1,1,0)));
-  cells[1].push_back(new Cell(ts::type::ID(1,2,0)));
-  cells[1].push_back(new Cell(ts::type::ID(1,3,0)));
-  cells[1].push_back(new Cell(ts::type::ID(1,4,0)));
-
-  if(*cells[0][0] == ID(0, 0, 0)) {
-    std::cout << "OK" << std::endl;
-  }
-  for(auto cell : cells[0]) {
-    ID id = cell->id();
-    if((id.c[1] - 1) < 5)
-      cell->updateNeighbour(ID(id.c[0], id.c[1] - 1, id.c[2]), 0);
-    if((id.c[1] + 1) < 5)
-      cell->updateNeighbour(ID(id.c[0], id.c[1] + 1, id.c[2]), 0);
-    cell->updateNeighbour(ID(id.c[0] + 1, id.c[1], id.c[2]), 1);
-  }
-  for(auto cell : cells[1]) {
-    ID id = cell->id();
-    if((id.c[1] - 1) < 5)
-      cell->updateNeighbour(ID(id.c[0], id.c[1] - 1, id.c[2]), 1);
-    if((id.c[1] + 1) < 5)
-      cell->updateNeighbour(ID(id.c[0], id.c[1] + 1, id.c[2]), 1);
-
-    cell->updateNeighbour(ID(id.c[0] - 1, id.c[1], id.c[2]), 0);
-  }
-
+  std::vector<Cell*> cells;
   std::ofstream file(std::to_string(system->id()));
-  switch(system->id()) {
-    case 0:
-      for(auto cell: cells[0]) {
-        ID selfid = cell->id();
-        for(auto n: cell->neighbours()) {
-          file << "\"" << selfid.tostr() << "\" -> \"" << n.tostr() << "\"" << std::endl;
-        }
-        system->addCell(cell);
-      }
-      break;
-    case 1:
-      for(auto cell: cells[1]) {
-        ID selfid = cell->id();
-        for(auto n: cell->neighbours()) {
-          file << "\"" << selfid.tostr() << "\" -> \"" << n.tostr() << "\"" << std::endl;
-        }
-        system->addCell(cell);
-      }
-      break;
+  if(system->id() == 0) {
+    cells.push_back(new Cell(ts::type::ID(0,0,0)));
+    cells.push_back(new Cell(ts::type::ID(0,1,0)));
+    cells.push_back(new Cell(ts::type::ID(0,2,0)));
+    cells.push_back(new Cell(ts::type::ID(0,3,0)));
+    cells.push_back(new Cell(ts::type::ID(0,4,0)));
+    for(auto cell : cells) {
+      ID id = cell->id();
+      if((id.c[1] - 1) < 5)
+        cell->updateNeighbour(ID(id.c[0], id.c[1] - 1, id.c[2]), 0);
+      if((id.c[1] + 1) < 5)
+        cell->updateNeighbour(ID(id.c[0], id.c[1] + 1, id.c[2]), 0);
+      cell->updateNeighbour(ID(id.c[0] + 1, id.c[1], id.c[2]), 1);
+    }
+
+  }
+  else if(system->id() == 1) {
+    cells.push_back(new Cell(ts::type::ID(1,0,0)));
+    cells.push_back(new Cell(ts::type::ID(1,1,0)));
+    cells.push_back(new Cell(ts::type::ID(1,2,0)));
+    cells.push_back(new Cell(ts::type::ID(1,3,0)));
+    cells.push_back(new Cell(ts::type::ID(1,4,0)));
+
+    for(auto cell : cells) {
+      ID id = cell->id();
+      if((id.c[1] - 1) < 5)
+        cell->updateNeighbour(ID(id.c[0], id.c[1] - 1, id.c[2]), 1);
+      if((id.c[1] + 1) < 5)
+        cell->updateNeighbour(ID(id.c[0], id.c[1] + 1, id.c[2]), 1);
+
+      cell->updateNeighbour(ID(id.c[0] - 1, id.c[1], id.c[2]), 0);
+    }
+  }
+
+  for(auto cell: cells) {
+    ID selfid = cell->id();
+    for(auto n: cell->neighbours()) {
+      file << "\"" << selfid.tostr() << "\" -> \"" << n.tostr() << "\"" << std::endl;
+    }
+    system->addCell(cell);
   }
 
   file.close();
