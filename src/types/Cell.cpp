@@ -80,19 +80,6 @@ bool Cell::needUpdate() { return _vupdate; }
 //  return serialize(buf, size);
 //}
 
-size_t Cell::_serializeTimestamp(char*& buf) {
-  uint64_t* lbuf = new uint64_t[2];
-  lbuf[0] = _viteration;
-  lbuf[1] = _vprogress;
-
-  buf = reinterpret_cast<char*>(lbuf);
-  return 2 * sizeof(uint64_t) / sizeof(char);
-}
-
-tuple<uint64_t, uint64_t> Cell::_deserializeTimestamp(char* buf, size_t) {
-  uint64_t* lbuf = reinterpret_cast<uint64_t*>(buf);
-  return tuple<uint64_t, uint64_t>(lbuf[0], lbuf[1]);
-}
 uint64_t Cell::iteration() {
   return _viteration;
 }

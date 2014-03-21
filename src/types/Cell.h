@@ -13,8 +13,12 @@
 namespace ts {
 namespace type {
 typedef int NodeID;
+
+namespace util {
 class CellDeserializer;
 class CellSerializer;
+}
+
 class CellTools;
 
 /**
@@ -28,8 +32,8 @@ class CellTools;
 typedef std::tuple<uint64_t, uint64_t> Timestamp;
 class Cell {
   friend class CellTools;
-  friend class CellSerializer;
-  friend class CellDeserializer;
+  friend class util::CellSerializer;
+  friend class util::CellDeserializer;
 private:
   ID _vid;                                   ///< ID of cell
   NodeID _vnodeID;                           ///< Logic cell location
@@ -62,8 +66,6 @@ public:
   void updateNeighbour(ID id, NodeID node);
 
   //Serialization
-  size_t _serializeTimestamp(char*& buf);
-  static std::tuple<uint64_t, uint64_t> _deserializeTimestamp(char* buf, size_t size);
   //virtual void serialize(void*& buf, size_t& size) = 0;
   //virtual void deserialize(void* buf, size_t size) = 0;
 
