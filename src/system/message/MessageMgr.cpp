@@ -41,7 +41,7 @@ void ts::system::MessageMgr::receiveLoop() {
       comm->recv(buffer, size, tag, node);
       switch(tag) {
         case UPDATE_CELL:
-          cellMgr->updateExternalCell(cellTool->deserialize(buffer, size));
+          cellMgr->updateExternalCell(cellTool->boundaryDeserialize(buffer, size));
           break;
         case REDUCE_DATA:
           sys->putReduceData(reduceTool->deserialize(buffer, size));
@@ -79,7 +79,7 @@ void ts::system::MessageMgr::sendLoop() {
 
 void ts::system::MessageMgr::send(NodeID node, Tag tag, Cell* cell) {
   Message* message = new Message;
-  cellTool->serialize(cell, message->buffer, message->size);
+  cellTool->boundarySerialize(cell, message->buffer, message->size);
   message->tag = tag;
   message->node = node;
   queueMutex.lock();

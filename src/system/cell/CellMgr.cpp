@@ -152,6 +152,8 @@ void ts::system::CellMgr::unlock(Cell* cell) {
 }
 
 void ts::system::CellMgr::updateExternalCell(Cell* cell) {
+  std::cout << system->id() << ": NEW EXTERNAL CELL STATE: " << cell->id().tostr() << 
+    " with stamp: " << cell->iteration() << ":" << cell->progress() << std::endl;
   pthread_rwlock_rdlock(externalCellsLock);
 
   for(auto fcell: externalCells) {

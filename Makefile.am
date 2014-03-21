@@ -21,6 +21,7 @@ libts_la_SOURCES =  src/system/cell/CellMgr.cpp \
                     src/types/Cell.cpp \
                     src/types/Cell.h \
                     src/types/CellTools.h \
+                    src/types/CellTools.cpp \
                     src/types/ID.cpp \
                     src/types/ID.h \
                     src/types/ReduceData.h \

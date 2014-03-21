@@ -57,7 +57,9 @@ public:
   std::vector<ID> neighbours();
   void updateNeighbour(ID id, NodeID node);
 
-  //Serialization external data
+  //Serialization
+  size_t _serializeTimestamp(char*& buf);
+  static std::tuple<uint64_t, uint64_t> _deserializeTimestamp(char* buf, size_t size);
   //virtual void serialize(void*& buf, size_t& size) = 0;
   //virtual void deserialize(void* buf, size_t size) = 0;
 

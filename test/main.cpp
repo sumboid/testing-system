@@ -111,23 +111,16 @@ class CellTools: public ts::type::CellTools {
 public:
   ~CellTools() {}
   void serialize(ts::type::Cell* cell, char*& buf, size_t& size) {
-    size = 6 * sizeof(uint64_t);
-    uint64_t* lbuf = new uint64_t[6];
-    lbuf[0] = cell->id().c[0];
-    lbuf[1] = cell->id().c[1];
-    lbuf[2] = cell->id().c[2];
-    lbuf[3] = cell->iteration();
-    lbuf[4] = cell->progress();
-    lbuf[5] = ((Cell*) cell)->iter;
+    size = 1 * sizeof(uint64_t);
+    uint64_t* lbuf = new uint64_t[1];
+    lbuf[0] = ((Cell*) cell)->iter;
     buf = reinterpret_cast<char*>(lbuf);
   }
 
   ts::type::Cell* deserialize(char* buf, size_t) {
     uint64_t* lbuf = reinterpret_cast<uint64_t*>(buf);
-    Cell* result = new Cell(ts::type::ID(lbuf[0], lbuf[1], lbuf[2]), false);
-    result->iteration(lbuf[3]);
-    result->progress(lbuf[4]);
-    result->iter = lbuf[5];
+    Cell* result = new Cell(ts::type::ID(0, 0, 0), false);
+    result->iter = lbuf[0];
     return result;
   }
 

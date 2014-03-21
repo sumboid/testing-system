@@ -13,5 +13,8 @@ struct ID {
   bool operator>(const ID&) const;
   bool operator==(const ID& other);
   std::string tostr();
+
+  size_t serialize(char*& buf);
+  static ID deserialize(char* buf, size_t size);
 };
 }}
