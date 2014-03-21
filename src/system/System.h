@@ -31,8 +31,8 @@ public:
   ~System();
 
   void addCell(ts::type::Cell* cell);
-  int id();
-  int size();
+  uint64_t id();
+  uint64_t size();
   void run();
   void end() { _end = true; }
   void notify();

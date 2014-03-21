@@ -63,7 +63,7 @@ public:
   }
 
   void runStep(std::vector<ts::type::Cell*> neighbours) override {
-    if(iteration() == 30) {
+    if(iteration() == 10) {
       setEnd();
       return;
     }
@@ -72,7 +72,6 @@ public:
     iter = iteration();
     if(iteration() % 2 == 1) {
       saveState();
-      std::cout << "State saved" << std::endl;
       setUpdate();
       setNeighbours(iteration(), progress());
     } else if (iteration() != 0) {
@@ -144,38 +143,23 @@ int main() {
 
   std::vector<Cell*> cells;
   std::ofstream file(std::to_string(system->id()));
-  if(system->id() == 0) {
-    cells.push_back(new Cell(ts::type::ID(0,0,0)));
-    cells.push_back(new Cell(ts::type::ID(0,1,0)));
-    cells.push_back(new Cell(ts::type::ID(0,2,0)));
-    cells.push_back(new Cell(ts::type::ID(0,3,0)));
-    cells.push_back(new Cell(ts::type::ID(0,4,0)));
-    for(auto cell : cells) {
-      ID id = cell->id();
-      if((id.c[1] - 1) < 5)
-        cell->updateNeighbour(ID(id.c[0], id.c[1] - 1, id.c[2]), 0);
-      if((id.c[1] + 1) < 5)
-        cell->updateNeighbour(ID(id.c[0], id.c[1] + 1, id.c[2]), 0);
-      cell->updateNeighbour(ID(id.c[0] + 1, id.c[1], id.c[2]), 1);
-    }
 
-  }
-  else if(system->id() == 1) {
-    cells.push_back(new Cell(ts::type::ID(1,0,0)));
-    cells.push_back(new Cell(ts::type::ID(1,1,0)));
-    cells.push_back(new Cell(ts::type::ID(1,2,0)));
-    cells.push_back(new Cell(ts::type::ID(1,3,0)));
-    cells.push_back(new Cell(ts::type::ID(1,4,0)));
+  cells.push_back(new Cell(ts::type::ID(system->id(),0,0)));
+  cells.push_back(new Cell(ts::type::ID(system->id(),1,0)));
+  cells.push_back(new Cell(ts::type::ID(system->id(),2,0)));
+  cells.push_back(new Cell(ts::type::ID(system->id(),3,0)));
+  cells.push_back(new Cell(ts::type::ID(system->id(),4,0)));
 
-    for(auto cell : cells) {
-      ID id = cell->id();
-      if((id.c[1] - 1) < 5)
-        cell->updateNeighbour(ID(id.c[0], id.c[1] - 1, id.c[2]), 1);
-      if((id.c[1] + 1) < 5)
-        cell->updateNeighbour(ID(id.c[0], id.c[1] + 1, id.c[2]), 1);
-
-      cell->updateNeighbour(ID(id.c[0] - 1, id.c[1], id.c[2]), 0);
-    }
+  for(auto cell : cells) {
+    ID id = cell->id();
+    if((id.c[1] - 1) < 5)
+      cell->updateNeighbour(ID(id.c[0], id.c[1] - 1, id.c[2]), id.c[0]);
+    if((id.c[1] + 1) < 5)
+      cell->updateNeighbour(ID(id.c[0], id.c[1] + 1, id.c[2]), id.c[0]);
+    if((id.c[0] + 1) < system->size())
+      cell->updateNeighbour(ID(id.c[0] + 1, id.c[1], id.c[2]), id.c[0] + 1);
+    if((id.c[0] - 1) < system->size())
+      cell->updateNeighbour(ID(id.c[0] - 1, id.c[1], id.c[2]), id.c[0] - 1);
   }
 
   for(auto cell: cells) {

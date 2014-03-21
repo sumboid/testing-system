@@ -115,11 +115,6 @@ vector<WorkCell> ts::system::CellMgr::getCells(int amount) {
       if(!findedCell->hasState(cell->neighboursState())) { // Need to change
         /// It means that finded copy of external cell has
         /// too old state
-        //uint64_t one, two;
-        //std::tie(one, two) = cell->neighboursState();
-        //std::cout << "NEED " << one << ":" << two << std::endl;
-        //std::cout << "HAS" << std::endl; 
-        //findedCell->printStates();
         break;
       }
       neighbours.push_back(findedCell->getState(cell->neighboursState(), cell->id()));
@@ -157,8 +152,6 @@ void ts::system::CellMgr::unlock(Cell* cell) {
 }
 
 void ts::system::CellMgr::updateExternalCell(Cell* cell) {
-  //std::cout << "It's new external cell here: " << cell->id().tostr() << 
-  //  " with stamp: " << cell->iteration() << ":" << cell->progress() << std::endl;
   pthread_rwlock_rdlock(externalCellsLock);
 
   for(auto fcell: externalCells) {

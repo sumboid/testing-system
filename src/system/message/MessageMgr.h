@@ -54,7 +54,7 @@ private:
   std::mutex queueMutex;
 public:
   MessageMgr();
-  ~MessageMgr() {}
+  ~MessageMgr();
 
   void setCellMgr(CellMgr* mgr) { cellMgr = mgr; }
   void setSystem(System* _sys) { sys = _sys; }

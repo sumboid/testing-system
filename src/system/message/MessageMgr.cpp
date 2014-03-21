@@ -17,6 +17,10 @@ ts::system::MessageMgr::MessageMgr(): end(false) {
   _size = comm->getSize();
 }
 
+ts::system::MessageMgr::~MessageMgr() {
+  delete comm;
+}
+
 void ts::system::MessageMgr::run() {
   sender = thread(&MessageMgr::sendLoop, this);
   receiver = thread(&MessageMgr::receiveLoop, this);

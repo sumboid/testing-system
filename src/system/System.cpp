@@ -77,11 +77,11 @@ void ts::system::System::addCell(ts::type::Cell* cell) {
   cellMgr->addCell(cell);
 }
 
-int ts::system::System::id() {
+uint64_t ts::system::System::id() {
   return msgMgr->getNodeID();
 }
 
-int ts::system::System::size() {
+uint64_t ts::system::System::size() {
   return msgMgr->size();
 }
 

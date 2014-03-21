@@ -18,6 +18,7 @@ Cell::Cell(ID id) {
   _vprogress = 0;
   _vreduce = false;
   _vreduced = true;
+  _vneighbours = false;
   _vid = id;
   _vupdate = false;
   _vend = false;
@@ -140,13 +141,6 @@ void Cell::saveState() {
 }
 
 void Cell::saveState(Cell* cell) {
-  //for_each(cell->_vstates.begin(), cell->_vstates.end(),
-  //      [=](const pair<Timestamp, Cell*>& state) {
-  //        _vstates[state.first] = state.second;
-  //      });
-
-  //_viteration = cell->iteration();
-  //_vprogress = cell->progress();
   _vstates.insert(pair<Timestamp, Cell*>(Timestamp(cell->iteration(), cell->progress()), cell));
 }
 
