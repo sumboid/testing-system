@@ -3601,7 +3601,7 @@ fi
 
 
 
-SPECFLAGS="-O0 -g -DNDEBUG -std=c++11 -Wall"
+SPECFLAGS="-O0 -g -pg -DNDEBUG -std=c++11 -Wall"
 
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'

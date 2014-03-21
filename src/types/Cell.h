@@ -9,11 +9,13 @@
 
 #include "ID.h"
 #include "ReduceData.h"
-#include "CellTools.h"
 
 namespace ts {
 namespace type {
 typedef int NodeID;
+class CellDeserializer;
+class CellSerializer;
+class CellTools;
 
 /**
  * @class Cell
@@ -26,6 +28,8 @@ typedef int NodeID;
 typedef std::tuple<uint64_t, uint64_t> Timestamp;
 class Cell {
   friend class CellTools;
+  friend class CellSerializer;
+  friend class CellDeserializer;
 private:
   ID _vid;                                   ///< ID of cell
   NodeID _vnodeID;                           ///< Logic cell location
