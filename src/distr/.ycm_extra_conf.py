@@ -1,0 +1,1 @@
+/home/yoba/.vim/config/.ycm_extra_conf.py
