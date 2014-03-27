@@ -46,6 +46,12 @@ void ts::system::MessageMgr::receiveLoop() {
         case REDUCE_DATA:
           sys->putReduceData(reduceTool->deserialize(buffer, size));
           break;
+        case START_MOVE_CELL:
+          break;
+        case CONFIRM_MOVE_CELL:
+          break;
+        case MOVE_CELL:
+          break;
         default:
           break;
       }

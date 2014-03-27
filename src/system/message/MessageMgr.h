@@ -17,8 +17,12 @@ typedef int NodeID;
 
 enum Tag {
   UNDEFINED,
-  UPDATE_CELL,
-  REDUCE_DATA
+  UPDATE_CELL,       ///< Updating cell from external Node.
+  REDUCE_DATA,       ///< Partial reduce data
+
+  START_MOVE_CELL,   ///< Beginning of moving cell process
+  CONFIRM_MOVE_CELL, ///< Confirming of moving cell
+  MOVE_CELL          ///< Moving cell
 };
 
 struct Message {
@@ -35,7 +39,6 @@ struct Message {
 
 class System;
 class CellMgr;
-
 
 class MessageMgr {
 private:
