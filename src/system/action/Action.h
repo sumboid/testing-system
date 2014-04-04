@@ -8,6 +8,9 @@
 namespace ts {
 namespace system {
 
+class CellMgr;
+class ExecMgr;
+class System;
 class Action {
 protected:
   System*  system;

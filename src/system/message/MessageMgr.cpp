@@ -39,23 +39,14 @@ void ts::system::MessageMgr::receiveLoop() {
     if(comm->iprobeAny(size, tag, node)) {
       char* buffer = new char[size];
       comm->recv(buffer, size, tag, node);
-      switch(tag) {
-        case UPDATE_CELL:
-          cellMgr->updateExternalCell(cellTool->boundaryDeserialize(buffer, size));
-          break;
-        case REDUCE_DATA:
-          sys->putReduceData(reduceTool->deserialize(buffer, size));
-          break;
-        case START_MOVE_CELL:
-          break;
-        case CONFIRM_MOVE_CELL:
-          break;
-        case MOVE_CELL:
-          break;
-        default:
-          break;
-      }
-      delete[] buffer;
+      Message message;
+      message.tag = (Tag)tag;
+      message.node = node;
+      message.buffer = buffer;
+      message.size = size;
+
+      Action* action = actionBuilder->build(message);
+      sys->addAction(action);
     }
     else {
       if(end.load()) return;

@@ -9,9 +9,12 @@
 #include "../../types/Cell.h"
 #include "../../types/CellTools.h"
 #include "../../types/ReduceDataTools.h"
+#include "../action/ActionBuilder.h"
 
 namespace ts {
 namespace system {
+
+class ActionBuilder;
 
 typedef int NodeID;
 
@@ -45,6 +48,8 @@ private:
   Comm* comm;
   CellMgr* cellMgr;
   System* sys;
+  ActionBuilder* actionBuilder;
+
   ts::type::CellTools* cellTool;
   ts::type::ReduceDataTools* reduceTool;
 
@@ -63,6 +68,7 @@ public:
   void setSystem(System* _sys) { sys = _sys; }
   void setCellTool(ts::type::CellTools* tool) { cellTool = tool; }
   void setReduceTool(ts::type::ReduceDataTools* tool) { reduceTool = tool; }
+  void setActionBuilder(ActionBuilder* ab) { actionBuilder = ab; }
 
   void run();
   void join();

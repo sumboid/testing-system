@@ -9,8 +9,8 @@ namespace system {
 using std::pair;
 
 ActionBuilder::ActionBuilder() {
-  actionMap.insert(pair<Tag, Action*>(UPDATE_CELL, new action::Update));
-  actionMap.insert(pair<Tag, Action*>(REDUCE_DATA, new action::Reduce));
+  actionMap.insert(pair<Tag, Action*>(Tag::UPDATE_CELL, new action::Update));
+  actionMap.insert(pair<Tag, Action*>(Tag::REDUCE_DATA, new action::Reduce));
 }
 
 ActionBuilder::~ActionBuilder() {

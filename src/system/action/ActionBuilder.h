@@ -4,21 +4,25 @@
 #include "Action.h"
 #include "../../types/CellTools.h"
 #include "../../types/ReduceDataTools.h"
+#include "../message/MessageMgr.h"
 
 namespace ts {
 namespace system {
 
+class Action;
+class Message;
+
 class ActionBuilder {
+
 private:
   System*     system;
-  MessageMgr* msgMgr;
   CellMgr*    cellMgr;
   ExecMgr*    execMgr;
 
   ts::type::CellTools* cellTools;
   ts::type::ReduceDataTools* reduceDataTools;
 
-  std::map<Tag, Action*> actionMap;
+  std::map<int, Action*> actionMap;
 
 public:
   ActionBuilder();
