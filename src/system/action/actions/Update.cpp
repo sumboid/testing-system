@@ -1,4 +1,5 @@
 #include "Update.h"
+#include <iostream>
 namespace ts {
 namespace system {
 namespace action {
@@ -8,6 +9,7 @@ void Update::set(char* buffer, size_t size, ts::type::NodeID) {
 }
 
 void Update::run() {
+  std::cout << "UPDATE ACTION!" << std::endl;
   cellMgr->updateExternalCell(cell);
 }
 

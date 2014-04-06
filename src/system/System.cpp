@@ -122,26 +122,25 @@ void System::actionLoop() {
     queueMutex.lock();
     if(actionQueue.empty()) {
       queueMutex.unlock();
+      std::cout << "I'M FUCKING WAITING!" << std::endl;
       actionQueueListener.wait();
       if(_end) {
         return;
       }
     }
 
-    while(true) {
+    queueMutex.lock();
+    size_t queueSize = actionQueue.size();
+    queueMutex.unlock();
+
+    for(size_t i = 0; i < queueSize; ++i) {
       queueMutex.lock();
       Action* action = actionQueue.front();
+      actionQueue.pop();
       queueMutex.unlock();
 
       action->run();
       delete action;
-      queueMutex.lock();
-      bool empty = actionQueue.empty();
-      queueMutex.unlock();
-
-      if(empty) {
-        break;
-      }
     }
   }
 }

@@ -1,4 +1,5 @@
 #include "Reduce.h"
+#include <iostream>
 namespace ts {
 namespace system {
 namespace action {
@@ -8,6 +9,7 @@ void Reduce::set(char* buffer, size_t size, ts::type::NodeID) {
 }
 
 void Reduce::run() {
+  std::cout << "REDUCE ACTION!" << std::endl;
   system->putReduceData(data);
 }
 
