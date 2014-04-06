@@ -204,4 +204,9 @@ bool Cell::operator==(const ID& other) { return _vid == other; }
   }
 #endif
 
+void Cell::print() {
+  std::cout << "Cell(" << _vid.c[0] << ", " << _vid.c[1] << ", " << _vid.c[2] << "):"<< std::endl;
+  std::cout << "  - State: (" << _viteration << ", " << _vprogress << ")" << std::endl;
+}
+
 }}

@@ -1,4 +1,5 @@
 #include "CellSerializer.h"
+#include <iostream>
 #include <tuple>
 namespace ts {
 namespace type {

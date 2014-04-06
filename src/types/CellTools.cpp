@@ -1,4 +1,5 @@
 #include "CellTools.h"
+#include <iostream>
 #include <tuple>
 #include <cstring>
 #include <vector>
@@ -22,15 +23,14 @@ void CellTools::boundarySerialize(Cell* cell, char*& buf, size_t& size) {
   size_t _size[3];
 
   serialize(cell, _buffer[0], _size[0]);
-  _size[1] = CellSerializer::id(cell, buf);
-  _size[2] = CellSerializer::timestamp(cell, buf);
+  _size[1] = CellSerializer::id(cell, _buffer[1]);
+  _size[2] = CellSerializer::timestamp(cell, _buffer[2]);
 
   size = (_size[0] + _size[1] + _size[2]);
   buf = new char[size];
 
-
-  memcpy(buf, _buffer[0], _size[0] * sizeof(char));                       //Cell
-  memcpy(buf + _size[0], _buffer[1], _size[1] * sizeof(char));            //ID
+  memcpy(buf,                       _buffer[0], _size[0] * sizeof(char)); //Cell
+  memcpy(buf + _size[0],            _buffer[1], _size[1] * sizeof(char)); //ID
   memcpy(buf + _size[0] + _size[1], _buffer[2], _size[2] * sizeof(char)); //Timestamp
 }
 
