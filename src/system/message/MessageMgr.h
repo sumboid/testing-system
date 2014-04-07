@@ -78,6 +78,7 @@ public:
 
   void send(NodeID node, Tag tag, ts::type::Cell* cell);
   void send(ts::type::ReduceData* reduceData);
+  void sendStartMove(NodeID node, const ts::type::ID& id);
   NodeID getNodeID() { return id; }
 private:
   void sendLoop();

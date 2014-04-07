@@ -30,7 +30,7 @@ ts::system::CellMgr::~CellMgr() {
 
 void ts::system::CellMgr::addCell(Cell* cell) {
   pthread_rwlock_wrlock(cellsLock);
-  cells[cell] = false;
+  cells[cell] = FREE;
   pthread_rwlock_unlock(cellsLock);
 }
 
@@ -46,7 +46,7 @@ vector<WorkCell> ts::system::CellMgr::getCells(int amount) {
 
   pthread_rwlock_rdlock(cellsLock);
   for(auto cell: cells)
-    if(!cell.second) {
+    if(cell.second == FREE) {
       if(!cell.first->isEnd()) {
         fcells.push_back(cell.first);
       }
@@ -128,14 +128,14 @@ vector<WorkCell> ts::system::CellMgr::getCells(int amount) {
   pthread_rwlock_wrlock(cellsLock);
   if(reduceCount == cells.size()) {
     for(auto i: reduceResult)
-      cells[i.first] = true;
+      cells[i.first] = EXEC;
     pthread_rwlock_unlock(cellsLock);
 
     return reduceResult;
   }
   else {
     for(auto i: result)
-      cells[i.first] = true;
+      cells[i.first] = EXEC;
     pthread_rwlock_unlock(cellsLock);
     return result;
   }
@@ -147,7 +147,8 @@ void ts::system::CellMgr::unlock(Cell* cell) {
     for(auto node: nodes) messageMgr->send(node, UPDATE_CELL, cell->getLastState());
   }
   pthread_rwlock_wrlock(cellsLock);
-  cells[cell] = false;
+  if(cells[cell] == EXEC)
+    cells[cell] = FREE;
   pthread_rwlock_unlock(cellsLock);
 }
 
@@ -191,3 +192,26 @@ vector<Cell*> ts::system::CellMgr::getCells() {
 
   return result;
 }
+
+void ts::system::CellMgr::moveCell(ts::type::Cell* cell) {
+  pthread_rwlock_rdlock(cellsLock);
+  ID id = cell->id();
+  auto neighbours = cell->noticeList();
+  pthread_rwlock_unlock(cellsLock);
+
+  pthread_rwlock_wrlock(cellsLock);
+  cells[cell] = MOVE;
+  pthread_rwlock_unlock(cellsLock);
+
+  for(auto i: neighbours) movingCellAccept[id].push_back(i);
+  for(auto i: neighbours) messageMgr->sendStartMove(i, id);
+}
+
+void ts::system::CellMgr::moveCellAccept(const ts::type::ID& id, NodeID nid) {
+  auto it = movingCellAccept[id].find(nid);
+  movingCellAccept[id].erase(it);
+  if(movingCellAccept[id].empty()) {
+    /* WOWOWOWO LET'S START MOVING */
+  }
+}
+

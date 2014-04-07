@@ -18,14 +18,23 @@ namespace system {
 
   class CellMgr {
   private:
+    enum State {
+      FREE,
+      EXEC,
+      MOVE,
+      UPDATE
+    };
+
     type::CellTools* cellTools;
     MessageMgr* messageMgr;
     System* system;
 
     std::vector<ts::type::Cell*> externalCells;
-    std::map<ts::type::Cell*, bool> cells;
+    std::map<ts::type::Cell*, State> cells;
     pthread_rwlock_t* cellsLock;
     pthread_rwlock_t* externalCellsLock;
+
+    std::map<ts::type::ID, std::vector<NodeID>> movingCellAccept;
 
   public:
     CellMgr();
@@ -42,8 +51,8 @@ namespace system {
     void unlock(ts::type::Cell* cell);
     void updateExternalCell(ts::type::Cell* cell);
 
-
-    //void moveCell(Cell* cell);
+    void moveCell(ts::type::Cell* cell);
+    void moveCellAccept(const ts::type::ID& id, NodeID nid);
 
     std::vector<ts::type::Cell*> getCells();
   };

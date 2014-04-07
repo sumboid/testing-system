@@ -11,10 +11,10 @@ struct ID {
   virtual ~ID();
   bool operator<(const ID&) const;
   bool operator>(const ID&) const;
-  bool operator==(const ID& other);
-  std::string tostr();
+  bool operator==(const ID& other) const;
+  std::string tostr() const;
 
-  size_t serialize(char*& buf);
+  size_t serialize(char*& buf) const;
   static ID deserialize(char* buf, size_t size);
 };
 }}

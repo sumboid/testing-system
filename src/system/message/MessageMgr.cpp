@@ -11,27 +11,30 @@ using ts::type::CellTools;
 using ts::type::ReduceDataTools;
 using ts::type::ReduceData;
 
-ts::system::MessageMgr::MessageMgr(): end(false) {
+namespace ts {
+namespace system {
+
+MessageMgr::MessageMgr(): end(false) {
   comm = new Comm(0, 0);
   id = comm->getRank();
   _size = comm->getSize();
 }
 
-ts::system::MessageMgr::~MessageMgr() {
+MessageMgr::~MessageMgr() {
   delete comm;
 }
 
-void ts::system::MessageMgr::run() {
+void MessageMgr::run() {
   sender = thread(&MessageMgr::sendLoop, this);
   receiver = thread(&MessageMgr::receiveLoop, this);
 }
 
-void ts::system::MessageMgr::join() {
+void MessageMgr::join() {
   sender.join();
   receiver.join();
 }
 
-void ts::system::MessageMgr::receiveLoop() {
+void MessageMgr::receiveLoop() {
   while(true) {
     size_t size;
     unsigned int tag;
@@ -55,7 +58,7 @@ void ts::system::MessageMgr::receiveLoop() {
   }
 }
 
-void ts::system::MessageMgr::sendLoop() {
+void MessageMgr::sendLoop() {
   while(true) {
     if(end.load()) return;
     queueMutex.lock();
@@ -74,7 +77,7 @@ void ts::system::MessageMgr::sendLoop() {
   }
 }
 
-void ts::system::MessageMgr::send(NodeID node, Tag tag, Cell* cell) {
+void MessageMgr::send(NodeID node, Tag tag, Cell* cell) {
   Message* message = new Message;
   cellTool->boundarySerialize(cell, message->buffer, message->size);
   message->tag = tag;
@@ -84,7 +87,7 @@ void ts::system::MessageMgr::send(NodeID node, Tag tag, Cell* cell) {
   queueMutex.unlock();
 }
 
-void ts::system::MessageMgr::send(ReduceData* reduceData) {
+void MessageMgr::send(ReduceData* reduceData) {
   queueMutex.lock();
   for(size_t i = 0; i < _size; ++i) {
     if(i != id) {
@@ -98,6 +101,16 @@ void ts::system::MessageMgr::send(ReduceData* reduceData) {
   queueMutex.unlock();
 }
 
-void ts::system::MessageMgr::stop() {
+void MessageMgr::stop() {
   end.store(true);
 }
+
+void MessageMgr::sendStartMove(NodeID node, const ts::type::ID& id) {
+  Message* message = new Message;
+  message->node = node;
+  message->tag = START_MOVE_CELL;
+  message->size = id.serialize(message->buffer);
+
+  sendQueue.push(message);
+}
+}}
