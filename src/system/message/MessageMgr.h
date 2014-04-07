@@ -9,16 +9,23 @@
 #include "../../types/Cell.h"
 #include "../../types/CellTools.h"
 #include "../../types/ReduceDataTools.h"
+#include "../action/ActionBuilder.h"
 
 namespace ts {
 namespace system {
+
+class ActionBuilder;
 
 typedef int NodeID;
 
 enum Tag {
   UNDEFINED,
-  UPDATE_CELL,
-  REDUCE_DATA
+  UPDATE_CELL,       ///< Updating cell from external Node.
+  REDUCE_DATA,       ///< Partial reduce data
+
+  START_MOVE_CELL,   ///< Beginning of moving cell process
+  CONFIRM_MOVE_CELL, ///< Confirming of moving cell
+  MOVE_CELL          ///< Moving cell
 };
 
 struct Message {
@@ -36,12 +43,13 @@ struct Message {
 class System;
 class CellMgr;
 
-
 class MessageMgr {
 private:
   Comm* comm;
   CellMgr* cellMgr;
   System* sys;
+  ActionBuilder* actionBuilder;
+
   ts::type::CellTools* cellTool;
   ts::type::ReduceDataTools* reduceTool;
 
@@ -60,6 +68,7 @@ public:
   void setSystem(System* _sys) { sys = _sys; }
   void setCellTool(ts::type::CellTools* tool) { cellTool = tool; }
   void setReduceTool(ts::type::ReduceDataTools* tool) { reduceTool = tool; }
+  void setActionBuilder(ActionBuilder* ab) { actionBuilder = ab; }
 
   void run();
   void join();

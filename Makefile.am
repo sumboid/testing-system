@@ -16,6 +16,14 @@ libts_la_SOURCES =  src/system/cell/CellMgr.cpp \
 										src/system/util/Listener.h \
 										src/system/util/Semaphore.cpp \
 										src/system/util/Semaphore.h \
+										src/system/action/Action.h \
+										src/system/action/Action.cpp \
+										src/system/action/ActionBuilder.h \
+										src/system/action/ActionBuilder.cpp \
+										src/system/action/actions/Update.h \
+										src/system/action/actions/Update.cpp \
+										src/system/action/actions/Reduce.h \
+										src/system/action/actions/Reduce.cpp \
 										src/distr/Distributor.cpp \
 										src/distr/Distributor.h \
 										src/types/Cell.cpp \
@@ -45,6 +53,14 @@ tssystemmsg_HEADERS = src/system/message/MessageMgr.h
 
 tssystemmsgcommdir = $(includedir)/ts/system/message/comm
 tssystemmsgcomm_HEADERS = src/system/message/comm/Comm.h
+
+tssystemactiondir = $(includedir)/ts/system/action
+tssystemaction_HEADERS =  src/system/action/Action.h \
+													src/system/action/ActionBuilder.h
+
+tssystemactionactionsdir = $(includedir)/ts/system/action/actions
+tssystemactionactions_HEADERS =  src/system/action/actions/Reduce.h \
+																 src/system/action/actions/Update.h
 
 tstypesdir = $(includedir)/ts/types
 tstypes_HEADERS = src/types/Cell.h \

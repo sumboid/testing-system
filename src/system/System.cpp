@@ -2,21 +2,32 @@
 #include <vector>
 #include "System.h"
 
+namespace ts {
+namespace system {
+
 using std::vector;
 using ts::type::CellTools;
 using ts::type::Cell;
 using ts::type::ReduceDataTools;
 
-ts::system::System::System(CellTools* cellTools, ReduceDataTools* reduceTools):
+System::System(CellTools* cellTools, ReduceDataTools* reduceTools):
   inputReduceData(0), _end(false), cellListener(true) {
   msgMgr = new MessageMgr;
   cellMgr = new CellMgr;
   execMgr = new ExecMgr(reduceTools);
 
+  actionBuilder = new ActionBuilder();
+  actionBuilder->setCellTools(cellTools);
+  actionBuilder->setExecMgr(execMgr);
+  actionBuilder->setReduceDataTools(reduceTools);
+  actionBuilder->setCellMgr(cellMgr);
+  actionBuilder->setSystem(this);
+
   msgMgr->setCellMgr(cellMgr);
   msgMgr->setSystem(this);
   msgMgr->setCellTool(cellTools);
   msgMgr->setReduceTool(reduceTools);
+  msgMgr->setActionBuilder(actionBuilder);
 
   cellMgr->setMessageMgr(msgMgr);
   cellMgr->setSystem(this);
@@ -24,22 +35,25 @@ ts::system::System::System(CellTools* cellTools, ReduceDataTools* reduceTools):
 
   execMgr->setSystem(this);
 
+  actionLoopThread = std::thread(&System::actionLoop, this);
   msgMgr->run();
   execMgr->run();
+
 }
 
-ts::system::System::~System() {
+System::~System() {
   msgMgr->stop();
   execMgr->stop();
   msgMgr->join();
   execMgr->join();
 
+  actionLoopThread.join();
   delete msgMgr;
   delete execMgr;
   delete cellMgr;
 }
 
-void ts::system::System::run() {
+void System::run() {
   while(true) {
     auto cells = cellMgr->getCells(359);
     if(_end) {
@@ -53,7 +67,7 @@ void ts::system::System::run() {
   }
 }
 
-void ts::system::System::spreadReduceData(ts::type::ReduceData* data) {
+void System::spreadReduceData(ts::type::ReduceData* data) {
   if(msgMgr->size() == 1) {
     execMgr->endGlobalReduce();
     return;
@@ -61,7 +75,7 @@ void ts::system::System::spreadReduceData(ts::type::ReduceData* data) {
   msgMgr->send(data);
 }
 
-void ts::system::System::putReduceData(ts::type::ReduceData* data) {
+void System::putReduceData(ts::type::ReduceData* data) {
   execMgr->reduce(data);
   ++inputReduceData;
 
@@ -72,26 +86,69 @@ void ts::system::System::putReduceData(ts::type::ReduceData* data) {
   delete data;
 }
 
-void ts::system::System::addCell(ts::type::Cell* cell) {
+void System::addCell(ts::type::Cell* cell) {
   cell->setNodeID(id());
   cellMgr->addCell(cell);
 }
 
-uint64_t ts::system::System::id() {
+uint64_t System::id() {
   return msgMgr->getNodeID();
 }
 
-uint64_t ts::system::System::size() {
+uint64_t System::size() {
   return msgMgr->size();
 }
 
-void ts::system::System::unlockCell(ts::type::Cell* cell) {
+void System::unlockCell(ts::type::Cell* cell) {
   cellMgr->unlock(cell);
   notify();
 }
 
-void ts::system::System::notify() {
+void System::notify() {
   cellListener.notifyAll();
 }
 
-vector<Cell*> ts::system::System::getCells() { return cellMgr->getCells(); }
+vector<Cell*> System::getCells() { return cellMgr->getCells(); }
+
+void System::addAction(Action* action) {
+  queueMutex.lock();
+  actionQueue.push(action);
+  queueMutex.unlock();
+  actionQueueListener.notifyAll();
+}
+
+void System::actionLoop() {
+  while(true) {
+    queueMutex.lock();
+    if(actionQueue.empty()) {
+      queueMutex.unlock();
+      std::cout << "I'M WAITING!" << std::endl;
+      actionQueueListener.wait();
+      if(_end) {
+        std::cout << "THAT'S END!" << std::endl;
+        return;
+      }
+    }
+
+    size_t queueSize = actionQueue.size();
+    queueMutex.unlock();
+
+    for(size_t i = 0; i < queueSize; ++i) {
+      queueMutex.lock();
+      Action* action = actionQueue.front();
+      actionQueue.pop();
+      queueMutex.unlock();
+
+      action->run();
+      delete action;
+    }
+  }
+}
+
+void System::end() {
+  _end = true;
+  cellListener.notifyAll();
+  actionQueueListener.notifyAll();
+}
+
+}}
