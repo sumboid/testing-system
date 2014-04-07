@@ -122,14 +122,14 @@ void System::actionLoop() {
     queueMutex.lock();
     if(actionQueue.empty()) {
       queueMutex.unlock();
-      std::cout << "I'M FUCKING WAITING!" << std::endl;
+      std::cout << "I'M WAITING!" << std::endl;
       actionQueueListener.wait();
       if(_end) {
+        std::cout << "THAT'S END!" << std::endl;
         return;
       }
     }
 
-    queueMutex.lock();
     size_t queueSize = actionQueue.size();
     queueMutex.unlock();
 
