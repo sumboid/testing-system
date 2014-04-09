@@ -82,9 +82,7 @@ void MessageMgr::send(NodeID node, Tag tag, Cell* cell) {
   cellTool->boundarySerialize(cell, message->buffer, message->size);
   message->tag = tag;
   message->node = node;
-  queueMutex.lock();
-  sendQueue.push(message);
-  queueMutex.unlock();
+  push(message);
 }
 
 void MessageMgr::send(ReduceData* reduceData) {
@@ -111,6 +109,29 @@ void MessageMgr::sendStartMove(NodeID node, const ts::type::ID& id) {
   message->tag = START_MOVE_CELL;
   message->size = id.serialize(message->buffer);
 
+  push(message);
+}
+
+void MessageMgr::sendConfirmMove(NodeID node, const ts::type::ID& id) {
+  Message* message = new Message;
+  message->node = node;
+  message->tag = CONFIRM_MOVE_CELL;
+  message->size = id.serialize(message->buffer);
+
+  push(message);
+}
+
+void MessageMgr::push(Message* message) {
+  queueMutex.lock();
   sendQueue.push(message);
+  queueMutex.unlock();
+}
+
+Message* MessageMgr::pop() {
+  queueMutex.lock();
+  Message* message = sendQueue.front();
+  sendQueue.pop();
+  queueMutex.unlock();
+  return message;
 }
 }}
