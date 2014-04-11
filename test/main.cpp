@@ -4,8 +4,8 @@
 
 #include <ts/system/System.h>
 
-#include <ts/types/Cell.h>
-#include <ts/types/CellTools.h>
+#include <ts/types/Fragment.h>
+#include <ts/types/FragmentTools.h>
 #include <ts/types/ID.h>
 #include <ts/types/ReduceData.h>
 #include <ts/types/ReduceDataTools.h>
@@ -44,25 +44,25 @@ public:
   }
 };
 
-/* Cell description */
+/* Fragment description */
 
-class Cell: public ts::type::Cell {
-friend class CellTools;
+class Fragment: public ts::type::Fragment {
+friend class FragmentTools;
 private:
   std::ofstream file;
   uint64_t iter;
 
 public:
-  Cell(ts::type::ID id, bool needFile = true): ts::type::Cell(id) {
+  Fragment(ts::type::ID id, bool needFile = true): ts::type::Fragment(id) {
     if(needFile) file.open(std::to_string(id.c[0]) + std::to_string(id.c[1]));
     iter = iteration();
   }
 
-  ~Cell() {
+  ~Fragment() {
     file.close();
   }
 
-  void runStep(std::vector<ts::type::Cell*> neighbours) override {
+  void runStep(std::vector<ts::type::Fragment*> neighbours) override {
     if(iteration() == 10) {
       setEnd();
       return;
@@ -77,7 +77,7 @@ public:
     } else if (iteration() != 0) {
       int buf = iter - 1;
       for(auto n: neighbours) {
-        buf += ((Cell*) n)->iter;
+        buf += ((Fragment*) n)->iter;
       }
       file << "Reduced " << buf << " locally" << std::endl;
     }
@@ -97,70 +97,70 @@ public:
     file << (int) ((ReduceData*) data)->getNumber() << " reduced" << std::endl;
   }
 
-  Cell* getBoundary() override {
-    Cell* cell = new Cell(id(), false);
-    cell->iter = iter;
-    cell->iteration(iteration());
-    cell->progress(progress());
-    return cell;
+  Fragment* getBoundary() override {
+    Fragment* fragment = new Fragment(id(), false);
+    fragment->iter = iter;
+    fragment->iteration(iteration());
+    fragment->progress(progress());
+    return fragment;
   }
 
 };
 
-class CellTools: public ts::type::CellTools {
+class FragmentTools: public ts::type::FragmentTools {
 public:
-  ~CellTools() {}
-  void serialize(ts::type::Cell* cell, char*& buf, size_t& size) {
+  ~FragmentTools() {}
+  void serialize(ts::type::Fragment* fragment, char*& buf, size_t& size) {
     size = 1 * sizeof(uint64_t);
     uint64_t* lbuf = new uint64_t[1];
-    lbuf[0] = ((Cell*) cell)->iter;
+    lbuf[0] = ((Fragment*) fragment)->iter;
     buf = reinterpret_cast<char*>(lbuf);
   }
 
-  ts::type::Cell* deserialize(char* buf, size_t) {
+  ts::type::Fragment* deserialize(char* buf, size_t) {
     uint64_t* lbuf = reinterpret_cast<uint64_t*>(buf);
-    Cell* result = new Cell(ts::type::ID(0, 0, 0), false);
+    Fragment* result = new Fragment(ts::type::ID(0, 0, 0), false);
     result->iter = lbuf[0];
     return result;
   }
 
-  ts::type::Cell* createGap(const ID& id) override {
-    return new Cell(id, false);
+  ts::type::Fragment* createGap(const ID& id) override {
+    return new Fragment(id, false);
   }
 };
 
 int main() {
-  ts::type::CellTools* ct = new CellTools;
+  ts::type::FragmentTools* ct = new FragmentTools;
   ts::type::ReduceDataTools* rt = new ReduceDataTools;
   ts::system::System* system = new ts::system::System(ct, rt);
 
-  std::vector<Cell*> cells;
+  std::vector<Fragment*> fragments;
   std::ofstream file(std::to_string(system->id()));
 
-  cells.push_back(new Cell(ts::type::ID(system->id(),0,0)));
-  cells.push_back(new Cell(ts::type::ID(system->id(),1,0)));
-  cells.push_back(new Cell(ts::type::ID(system->id(),2,0)));
-  cells.push_back(new Cell(ts::type::ID(system->id(),3,0)));
-  cells.push_back(new Cell(ts::type::ID(system->id(),4,0)));
+  fragments.push_back(new Fragment(ts::type::ID(system->id(),0,0)));
+  fragments.push_back(new Fragment(ts::type::ID(system->id(),1,0)));
+  fragments.push_back(new Fragment(ts::type::ID(system->id(),2,0)));
+  fragments.push_back(new Fragment(ts::type::ID(system->id(),3,0)));
+  fragments.push_back(new Fragment(ts::type::ID(system->id(),4,0)));
 
-  for(auto cell : cells) {
-    ID id = cell->id();
+  for(auto fragment : fragments) {
+    ID id = fragment->id();
     if((id.c[1] - 1) < 5)
-      cell->updateNeighbour(ID(id.c[0], id.c[1] - 1, id.c[2]), id.c[0]);
+      fragment->updateNeighbour(ID(id.c[0], id.c[1] - 1, id.c[2]), id.c[0]);
     if((id.c[1] + 1) < 5)
-      cell->updateNeighbour(ID(id.c[0], id.c[1] + 1, id.c[2]), id.c[0]);
+      fragment->updateNeighbour(ID(id.c[0], id.c[1] + 1, id.c[2]), id.c[0]);
     if((id.c[0] + 1) < system->size())
-      cell->updateNeighbour(ID(id.c[0] + 1, id.c[1], id.c[2]), id.c[0] + 1);
+      fragment->updateNeighbour(ID(id.c[0] + 1, id.c[1], id.c[2]), id.c[0] + 1);
     if((id.c[0] - 1) < system->size())
-      cell->updateNeighbour(ID(id.c[0] - 1, id.c[1], id.c[2]), id.c[0] - 1);
+      fragment->updateNeighbour(ID(id.c[0] - 1, id.c[1], id.c[2]), id.c[0] - 1);
   }
 
-  for(auto cell: cells) {
-    ID selfid = cell->id();
-    for(auto n: cell->neighbours()) {
+  for(auto fragment: fragments) {
+    ID selfid = fragment->id();
+    for(auto n: fragment->neighbours()) {
       file << "\"" << selfid.tostr() << "\" -> \"" << n.tostr() << "\"" << std::endl;
     }
-    system->addCell(cell);
+    system->addFragment(fragment);
   }
 
   file.close();

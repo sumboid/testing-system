@@ -1,6 +1,6 @@
 #pragma once
 #include "../Action.h"
-#include "../../../types/Cell.h"
+#include "../../../types/Fragment.h"
 
 namespace ts {
 namespace system {
@@ -8,7 +8,7 @@ namespace action {
 
 class Update : public ts::system::Action {
 private:
-  ts::type::Cell* cell;
+  ts::type::Fragment* fragment;
 
 public:
   Update() {}

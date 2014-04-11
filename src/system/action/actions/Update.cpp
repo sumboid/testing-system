@@ -5,12 +5,12 @@ namespace system {
 namespace action {
 
 void Update::set(char* buffer, size_t size, ts::type::NodeID) {
-  cell = cellTools->boundaryDeserialize(buffer, size);
+  fragment = fragmentTools->boundaryDeserialize(buffer, size);
 }
 
 void Update::run() {
   std::cout << "UPDATE ACTION!" << std::endl;
-  cellMgr->updateExternalCell(cell);
+  fragmentMgr->updateExternalFragment(fragment);
 }
 
 Action* Update::copy() {

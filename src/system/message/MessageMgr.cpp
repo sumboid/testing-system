@@ -6,8 +6,8 @@
 using std::thread;
 using std::this_thread::sleep_for;
 using std::chrono::seconds;
-using ts::type::Cell;
-using ts::type::CellTools;
+using ts::type::Fragment;
+using ts::type::FragmentTools;
 using ts::type::ReduceDataTools;
 using ts::type::ReduceData;
 
@@ -77,15 +77,23 @@ void MessageMgr::sendLoop() {
   }
 }
 
-void MessageMgr::send(NodeID node, Tag tag, Cell* cell) {
+void MessageMgr::sendBoundary(NodeID node, Fragment* fragment) {
   Message* message = new Message;
-  cellTool->boundarySerialize(cell, message->buffer, message->size);
-  message->tag = tag;
+  fragmentTool->boundarySerialize(fragment, message->buffer, message->size);
+  message->tag = UPDATE_FRAGMENT;
   message->node = node;
   push(message);
 }
 
-void MessageMgr::send(ReduceData* reduceData) {
+void MessageMgr::sendFullFragment(NodeID node, Fragment* fragment) {
+  Message* message = new Message;
+  message->size = fragmentTool->fullSerialize(fragment, message->buffer);
+  message->tag = MOVE_FRAGMENT;
+  message->node = node;
+  push(message);
+}
+
+void MessageMgr::sendReduce(ReduceData* reduceData) {
   queueMutex.lock();
   for(size_t i = 0; i < _size; ++i) {
     if(i != id) {
@@ -103,11 +111,22 @@ void MessageMgr::stop() {
   end.store(true);
 }
 
-void MessageMgr::sendStartMove(NodeID node, const ts::type::ID& id) {
+void MessageMgr::sendStartMove(NodeID node, const ts::type::ID& id, NodeID to) {
   Message* message = new Message;
   message->node = node;
-  message->tag = START_MOVE_CELL;
+  message->tag = START_MOVE_FRAGMENT;
   message->size = id.serialize(message->buffer);
+
+  int nodesize = sizeof(NodeID) / sizeof(char);
+  char* nbuf = reinterpret_cast<char*>(&to);
+
+  char* buf = new char[nodesize + message->size];
+  memcpy(buf, message->buffer, message->size);
+  memcpy(buf + message->size, nbuf, nodesize);
+
+  delete[] message->buffer;
+  message->buffer = buf;
+  message->size += nodesize;
 
   push(message);
 }
@@ -115,7 +134,7 @@ void MessageMgr::sendStartMove(NodeID node, const ts::type::ID& id) {
 void MessageMgr::sendConfirmMove(NodeID node, const ts::type::ID& id) {
   Message* message = new Message;
   message->node = node;
-  message->tag = CONFIRM_MOVE_CELL;
+  message->tag = CONFIRM_MOVE_FRAGMENT;
   message->size = id.serialize(message->buffer);
 
   push(message);

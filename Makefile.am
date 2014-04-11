@@ -2,12 +2,13 @@ AUTOMAKE_OPTIONS = subdir-objects
 
 #dist_data_DATA = m4
 lib_LTLIBRARIES = libts.la
-libts_la_SOURCES =  src/system/cell/CellMgr.cpp \
-										src/system/cell/CellMgr.h \
+libts_la_SOURCES =  src/system/fragment/FragmentMgr.cpp \
+										src/system/fragment/FragmentMgr.h \
 										src/system/exec/ExecMgr.cpp \
 										src/system/exec/ExecMgr.h \
 										src/system/message/MessageMgr.cpp \
 										src/system/message/MessageMgr.h \
+										src/system/message/NodeID.h \
 										src/system/message/comm/Comm.cpp \
 										src/system/message/comm/Comm.h \
 										src/system/System.cpp \
@@ -26,18 +27,18 @@ libts_la_SOURCES =  src/system/cell/CellMgr.cpp \
 										src/system/action/actions/Reduce.cpp \
 										src/distr/Distributor.cpp \
 										src/distr/Distributor.h \
-										src/types/Cell.cpp \
-										src/types/Cell.h \
-										src/types/CellTools.h \
-										src/types/CellTools.cpp \
+										src/types/Fragment.cpp \
+										src/types/Fragment.h \
+										src/types/FragmentTools.h \
+										src/types/FragmentTools.cpp \
 										src/types/ID.cpp \
 										src/types/ID.h \
 										src/types/ReduceData.h \
 										src/types/ReduceDataTools.h \
-										src/types/util/CellSerializer.h \
-										src/types/util/CellSerializer.cpp \
-										src/types/util/CellDeserializer.h \
-										src/types/util/CellDeserializer.cpp
+										src/types/util/FragmentSerializer.h \
+										src/types/util/FragmentSerializer.cpp \
+										src/types/util/FragmentDeserializer.h \
+										src/types/util/FragmentDeserializer.cpp
 
 tssystemdir = $(includedir)/ts/system
 tssystem_HEADERS =  src/system/System.h
@@ -45,11 +46,12 @@ tssystem_HEADERS =  src/system/System.h
 tssystemexecdir = $(includedir)/ts/system/exec
 tssystemexec_HEADERS = src/system/exec/ExecMgr.h
 
-tssystemcelldir = $(includedir)/ts/system/cell
-tssystemcell_HEADERS = src/system/cell/CellMgr.h
+tssystemfragmentdir = $(includedir)/ts/system/fragment
+tssystemfragment_HEADERS = src/system/fragment/FragmentMgr.h
 
 tssystemmsgdir = $(includedir)/ts/system/message
-tssystemmsg_HEADERS = src/system/message/MessageMgr.h
+tssystemmsg_HEADERS = src/system/message/MessageMgr.h \
+											src/system/message/NodeID.h
 
 tssystemmsgcommdir = $(includedir)/ts/system/message/comm
 tssystemmsgcomm_HEADERS = src/system/message/comm/Comm.h
@@ -63,8 +65,8 @@ tssystemactionactions_HEADERS =  src/system/action/actions/Reduce.h \
 																 src/system/action/actions/Update.h
 
 tstypesdir = $(includedir)/ts/types
-tstypes_HEADERS = src/types/Cell.h \
-									src/types/CellTools.h \
+tstypes_HEADERS = src/types/Fragment.h \
+									src/types/FragmentTools.h \
 									src/types/ReduceData.h \
 									src/types/ReduceDataTools.h \
 									src/types/ID.h
@@ -74,5 +76,5 @@ tssystemutil_HEADERS = src/system/util/Listener.h \
 											 src/system/util/Semaphore.h
 
 tstypesutildir = $(includedir)/ts/types/util
-tstypesutildir_HEADER = src/types/util/CellSerializer.h \
-												src/types/util/CellDeserializer.h
+tstypesutildir_HEADER = src/types/util/FragmentSerializer.h \
+												src/types/util/FragmentDeserializer.h

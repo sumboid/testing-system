@@ -6,10 +6,10 @@
 
 #include "exec/ExecMgr.h"
 #include "message/MessageMgr.h"
-#include "cell/CellMgr.h"
-#include "../types/Cell.h"
+#include "fragment/FragmentMgr.h"
+#include "../types/Fragment.h"
 #include "../types/ReduceDataTools.h"
-#include "../types/CellTools.h"
+#include "../types/FragmentTools.h"
 #include "util/Semaphore.h"
 #include "util/Listener.h"
 
@@ -19,7 +19,7 @@
 namespace ts {
 namespace system {
 
-class CellMgr;
+class FragmentMgr;
 class MessageMgr;
 class ExecMgr;
 class Action;
@@ -28,13 +28,13 @@ class ActionBuilder;
 class System {
 private:
   MessageMgr* msgMgr;
-  CellMgr* cellMgr;
+  FragmentMgr* fragmentMgr;
   ExecMgr* execMgr;
   ActionBuilder* actionBuilder;
   size_t inputReduceData;
   std::atomic<bool> _end;
 
-  Semaphore cellListener;
+  Semaphore fragmentListener;
 
   std::thread actionLoopThread;
   std::mutex queueMutex;
@@ -42,16 +42,16 @@ private:
   Semaphore actionQueueListener;
 
 public:
-  System(ts::type::CellTools*, ts::type::ReduceDataTools*);
+  System(ts::type::FragmentTools*, ts::type::ReduceDataTools*);
   ~System();
 
-  void addCell(ts::type::Cell* cell);
+  void addFragment(ts::type::Fragment* fragment);
   uint64_t id();
   uint64_t size();
   void run();
   void end();
   void notify();
-  std::vector<ts::type::Cell*> getCells();
+  std::vector<ts::type::Fragment*> getFragments();
 
   void addAction(Action* action);
   void actionLoop();
@@ -59,7 +59,7 @@ public:
   /// ExecMgr part
   void spreadReduceData(ts::type::ReduceData* data);
   void putReduceData(ts::type::ReduceData* data);
-  void unlockCell(ts::type::Cell* cell);
+  void unlockFragment(ts::type::Fragment* fragment);
 
   //put(Message* message);
 };

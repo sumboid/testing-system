@@ -12,7 +12,7 @@ using std::this_thread::sleep_for;
 using std::mutex;
 using std::unique_lock;
 using std::chrono::seconds;
-using ts::type::Cell;
+using ts::type::Fragment;
 using ts::type::ReduceData;
 
 void ts::system::ExecMgr::run() {
@@ -28,17 +28,17 @@ void ts::system::ExecMgr::stop() {
   queueListener.notifyAll();
 }
 
-void ts::system::ExecMgr::add(const vector<WorkCell>& cells) {
+void ts::system::ExecMgr::add(const vector<WorkFragment>& fragments) {
   queueMutex.lock();
-  for(auto cell: cells) {
-    cellQueue.push(cell);
+  for(auto fragment: fragments) {
+    fragmentQueue.push(fragment);
   }
   queueMutex.unlock();
   queueListener.notifyAll();
 }
-void ts::system::ExecMgr::add(const WorkCell& cell) {
+void ts::system::ExecMgr::add(const WorkFragment& fragment) {
   queueMutex.lock();
-  cellQueue.push(cell);
+  fragmentQueue.push(fragment);
   queueMutex.unlock();
   queueListener.notifyAll();
 }
@@ -46,7 +46,7 @@ void ts::system::ExecMgr::add(const WorkCell& cell) {
 /**
  * @brief ts::system::ExecMgr::loop
  * Main loop of Execution Manager. It has two missions:
- * 1. Handling cells: running cell step
+ * 1. Handling fragments: running fragment step
  * 2. Ending reduce step
  */
 
@@ -83,7 +83,7 @@ void ts::system::ExecMgr::loop() {
     }
 
     queueMutex.lock();
-    bool emptyQueue = cellQueue.empty();
+    bool emptyQueue = fragmentQueue.empty();
     queueMutex.unlock();
 
     if(emptyQueue) {
@@ -93,17 +93,17 @@ void ts::system::ExecMgr::loop() {
       }
     }
 
-    while(!cellQueue.empty()) {
+    while(!fragmentQueue.empty()) {
       queueMutex.lock();
-      auto cell = cellQueue.front();
-      cellQueue.pop();
+      auto fragment = fragmentQueue.front();
+      fragmentQueue.pop();
       queueMutex.unlock();
 
-      if (!compute(cell)) {
-        add(cell);
+      if (!compute(fragment)) {
+        add(fragment);
         break;
       }
-      system->unlockCell(cell.first);
+      system->unlockFragment(fragment.first);
     }
   }
 }
@@ -129,32 +129,32 @@ void ts::system::ExecMgr::endGlobalReduce() {
   ERDListener.notifyAll();
 }
 
-bool ts::system::ExecMgr::compute(WorkCell& cell) {
-  if(cell.first->needReduce() && cell.first->wasReduced()) {
+bool ts::system::ExecMgr::compute(WorkFragment& fragment) {
+  if(fragment.first->needReduce() && fragment.first->wasReduced()) {
     if(rstate == GLOBAL_REDUCING) {
-      localReduceData = cell.first->_reduce();
+      localReduceData = fragment.first->_reduce();
       rstate = LOCAL_REDUCING;
     }
     else if(rstate == LOCAL_REDUCING) {
       auto tmp = localReduceData;
-      localReduceData = cell.first->_reduce(localReduceData);
+      localReduceData = fragment.first->_reduce(localReduceData);
       delete tmp;
     }
     else exit(4); // XXX
   }
-  else if(!cell.first->needReduce() && !cell.first->wasReduced()) {
+  else if(!fragment.first->needReduce() && !fragment.first->wasReduced()) {
     if(rstate == LOCAL_REDUCING) {
       rstate = PRE_GLOBAL_REDUCING;
       return false;
     }
-    cell.first->_reduceStep(storedReduceData);
+    fragment.first->_reduceStep(storedReduceData);
   }
   else {
-    justcompute(cell);
+    justcompute(fragment);
   }
   return true;
 }
 
-void ts::system::ExecMgr::justcompute(WorkCell& cell) {
-  cell.first->_runStep(cell.second);
+void ts::system::ExecMgr::justcompute(WorkFragment& fragment) {
+  fragment.first->_runStep(fragment.second);
 }

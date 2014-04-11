@@ -9,7 +9,7 @@
 #include <utility>
 #include <queue>
 
-#include "../../types/Cell.h"
+#include "../../types/Fragment.h"
 #include "../../types/ReduceData.h"
 #include "../../types/ReduceDataTools.h"
 #include "../System.h"
@@ -19,14 +19,14 @@ namespace ts {
 namespace system {
 
 class System;
-typedef std::pair<ts::type::Cell*, std::vector<ts::type::Cell*> > WorkCell;
+typedef std::pair<ts::type::Fragment*, std::vector<ts::type::Fragment*> > WorkFragment;
 class ExecMgr {
 private:
   enum ReduceState { LOCAL_REDUCING, PRE_GLOBAL_REDUCING, GLOBAL_REDUCING };
   ts::type::ReduceData* externalReduceData;
   ts::type::ReduceData* localReduceData;
   ts::type::ReduceData* storedReduceData;
-  std::queue<WorkCell> cellQueue;
+  std::queue<WorkFragment> fragmentQueue;
 
   System* system;
 
@@ -62,8 +62,8 @@ public:
   void join();
   void stop();
 
-  void add(const std::vector<WorkCell>& cells);
-  void add(const WorkCell& cells);
+  void add(const std::vector<WorkFragment>& fragments);
+  void add(const WorkFragment& fragments);
 
   //Reduce
   void reduce(ts::type::ReduceData* rdata);
@@ -71,8 +71,8 @@ public:
 
 private:
   void loop();
-  bool compute(WorkCell& cell);
-  void justcompute(WorkCell& cell);
+  bool compute(WorkFragment& fragment);
+  void justcompute(WorkFragment& fragment);
 };
 }
 }

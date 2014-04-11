@@ -9,7 +9,7 @@ namespace system {
 using std::pair;
 
 ActionBuilder::ActionBuilder() {
-  actionMap.insert(pair<Tag, Action*>(Tag::UPDATE_CELL, new action::Update));
+  actionMap.insert(pair<Tag, Action*>(Tag::UPDATE_FRAGMENT, new action::Update));
   actionMap.insert(pair<Tag, Action*>(Tag::REDUCE_DATA, new action::Reduce));
 }
 
@@ -22,16 +22,16 @@ void ActionBuilder::setSystem(System* _system) {
   system = _system;
 }
 
-void ActionBuilder::setCellMgr(CellMgr* _cellMgr) {
-  cellMgr = _cellMgr;
+void ActionBuilder::setFragmentMgr(FragmentMgr* _fragmentMgr) {
+  fragmentMgr = _fragmentMgr;
 }
 
 void ActionBuilder::setExecMgr(ExecMgr* _execMgr) {
   execMgr = _execMgr;
 }
 
-void ActionBuilder::setCellTools(ts::type::CellTools* _cellTools) {
-  cellTools = _cellTools;
+void ActionBuilder::setFragmentTools(ts::type::FragmentTools* _fragmentTools) {
+  fragmentTools = _fragmentTools;
 }
 
 void ActionBuilder::setReduceDataTools(ts::type::ReduceDataTools* _reduceDataTools) {
@@ -42,9 +42,9 @@ Action* ActionBuilder::build(const Message& message) {
   Action* action = actionMap[message.tag]->copy();
 
   action->setSystem(system);
-  action->setCellMgr(cellMgr);
+  action->setFragmentMgr(fragmentMgr);
   action->setExecMgr(execMgr);
-  action->setCellTools(cellTools);
+  action->setFragmentTools(fragmentTools);
   action->setReduceDataTools(reduceDataTools);
 
   action->set(message.buffer, message.size, message.node);

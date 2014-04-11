@@ -16,17 +16,17 @@ bool ID::operator<(const ID&) const {
 bool ID::operator>(const ID&) const {
   return false; //XXX: Need to check map behaviour
 }
-bool ID::operator==(const ID& other) {
+bool ID::operator==(const ID& other) const {
   return c[X] == other.c[X] &&
          c[Y] == other.c[Y] &&
          c[Z] == other.c[Z];
 }
 
-std::string ID::tostr() {
+std::string ID::tostr() const {
   return "(" + std::to_string(c[X]) + ", " + std::to_string(c[Y]) + ", " + std::to_string(c[Z]) + ")";
 }
 
-size_t ID::serialize(char*& buf) {
+size_t ID::serialize(char*& buf) const {
   size_t size = 3 * sizeof(uint64_t);
   uint64_t* lbuf = new uint64_t[3];
 
