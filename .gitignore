@@ -21,6 +21,7 @@ ts
 
 # Dirs
 sandbox
+build
 
 # Files
 .tags*
