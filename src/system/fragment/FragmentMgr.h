@@ -54,7 +54,8 @@ namespace system {
     void updateExternalFragment(ts::type::Fragment* fragment);
 
     void updateNeighbours(const ts::type::ID& id);
-    void moveFragment(ts::type::Fragment* fragment, NodeID node);
+    void startMoveFragment(ts::type::Fragment* fragment, NodeID node);
+    void moveFragment(ts::type::Fragment* fragment);
     void moveFragmentAccept(const ts::type::ID& id, NodeID nid);
     void createExternal(ts::type::Fragment* f);
     std::vector<ts::type::Fragment*> getFragments();

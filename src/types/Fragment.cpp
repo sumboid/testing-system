@@ -177,10 +177,26 @@ Fragment* Fragment::getLastState() {
 Fragment* Fragment::getState(const Timestamp& timestamp, const ID& neighbour) {
   _vstatesMutex.lock();
   Fragment* fragment = _vstates.at(timestamp);
-  _vstateGetted[timestamp].insert(neighbour);
+
+  _vstateGettedLock.wlock([&]() {
+      _vstateGetted[timestamp].insert(neighbour);
+  });
+
   _tryRemoveState(timestamp);
   _vstatesMutex.unlock();
   return fragment;
+}
+
+vector<Fragment*> Fragment::specialUpdateNeighbour(const ID& neighbour, NodeID node) {
+  vector<Fragment*> result;
+  _vstateGettedLock.rlock([&]() {
+    for(auto i : _vstateGetted)
+      if(i.second.find(neighbour) == i.second.end()) {
+        result.push_back(_vstates[i.first]->copy());
+      }
+  });
+  _vneighboursLocation[neighbour] = node;
+  return result;
 }
 
 bool Fragment::hasState(const Timestamp& timestamp) {

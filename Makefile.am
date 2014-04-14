@@ -38,7 +38,9 @@ libts_la_SOURCES =  src/system/fragment/FragmentMgr.cpp \
 										src/types/util/FragmentSerializer.h \
 										src/types/util/FragmentSerializer.cpp \
 										src/types/util/FragmentDeserializer.h \
-										src/types/util/FragmentDeserializer.cpp
+										src/types/util/FragmentDeserializer.cpp \
+										src/util/RWLock.h \
+										src/util/RWLock.cpp
 
 tssystemdir = $(includedir)/ts/system
 tssystem_HEADERS =  src/system/System.h
@@ -76,5 +78,8 @@ tssystemutil_HEADERS = src/system/util/Listener.h \
 											 src/system/util/Semaphore.h
 
 tstypesutildir = $(includedir)/ts/types/util
-tstypesutildir_HEADER = src/types/util/FragmentSerializer.h \
+tstypesutil_HEADERS = src/types/util/FragmentSerializer.h \
 												src/types/util/FragmentDeserializer.h
+
+tsutildir = $(includedir)/ts/util
+tsutil_HEADERS = src/util/RWLock.h

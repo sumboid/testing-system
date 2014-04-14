@@ -10,6 +10,7 @@
 
 #include "ID.h"
 #include "ReduceData.h"
+#include "../util/RWLock.h"
 
 namespace ts {
 namespace type {
@@ -56,6 +57,7 @@ private:
 
   Fragment* _vlaststate;                                  ///< last state
   std::map<Timestamp, std::set<ID>> _vstateGetted;    ///< states getted by neighbours
+  ts::RWLock _vstateGettedLock;
 public:
   // General
   Fragment(ID id);
@@ -69,6 +71,7 @@ public:
   std::vector<ID> neighbours();
   std::vector<ID> neighbours(NodeID node);
   void updateNeighbour(ID id, NodeID node);
+  std::vector<Fragment*> specialUpdateNeighbour(const ID& id, NodeID node);
   void addNeighbour(ID id, NodeID node);
 
   //Serialization
@@ -135,6 +138,7 @@ public:
   void printStates();
 #endif
 
+  virtual Fragment* copy();
   void print();
 
 };
