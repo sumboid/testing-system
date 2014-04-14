@@ -2,6 +2,7 @@
 #include "ActionBuilder.h"
 #include "actions/Update.h"
 #include "actions/Reduce.h"
+#include "actions/StartMove.h"
 
 namespace ts {
 namespace system {
@@ -11,6 +12,7 @@ using std::pair;
 ActionBuilder::ActionBuilder() {
   actionMap.insert(pair<Tag, Action*>(Tag::UPDATE_FRAGMENT, new action::Update));
   actionMap.insert(pair<Tag, Action*>(Tag::REDUCE_DATA, new action::Reduce));
+  actionMap.insert(pair<Tag, Action*>(Tag::START_MOVE_FRAGMENT, new action::StartMove));
 }
 
 ActionBuilder::~ActionBuilder() {

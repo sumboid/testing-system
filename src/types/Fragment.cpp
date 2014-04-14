@@ -63,6 +63,13 @@ vector<ID> Fragment::neighbours(NodeID node) {
 }
 
 
+bool Fragment::isNeighbour(const ID& id) {
+  for(auto n : _vneighboursLocation) {
+    if(n.first == id)
+      return true;
+  }
+  return false;
+}
 void Fragment::addNeighbour(ID id, NodeID node) {
   _vneighboursLocationMutex.lock();
   _vneighboursLocation.insert(std::pair<ID, NodeID>(id, node));

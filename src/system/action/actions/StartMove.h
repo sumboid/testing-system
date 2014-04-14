@@ -8,7 +8,9 @@ namespace action {
 
 class StartMove : public ts::system::Action {
 private:
-  ts::type::Fragment* fragment;
+  ts::type::ID id;
+  NodeID node;
+  NodeID sender;
 
 public:
   StartMove() {}

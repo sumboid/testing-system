@@ -53,7 +53,9 @@ namespace system {
     void unlock(ts::type::Fragment* fragment);
     void updateExternalFragment(ts::type::Fragment* fragment);
 
-    void updateNeighbours(const ts::type::ID& id);
+    void specialUpdateNeighbours(const ts::type::ID& id);
+    void confirmMove(const ts::type::ID& id, NodeID node);
+    void updateNeighbours(const ts::type::ID& id, NodeID node);
     void startMoveFragment(ts::type::Fragment* fragment, NodeID node);
     void moveFragment(ts::type::Fragment* fragment);
     void moveFragmentAccept(const ts::type::ID& id, NodeID nid);

@@ -70,6 +70,7 @@ public:
   std::set<NodeID> noticeList();
   std::vector<ID> neighbours();
   std::vector<ID> neighbours(NodeID node);
+  bool isNeighbour(const ID& id);
   void updateNeighbour(ID id, NodeID node);
   std::vector<Fragment*> specialUpdateNeighbour(const ID& id, NodeID node);
   void addNeighbour(ID id, NodeID node);

@@ -239,7 +239,7 @@ void FragmentMgr::startMoveFragment(Fragment* fragment, NodeID node) {
   moveList[fragment->id()] = node;
 
   for(auto i: neighbours) movingFragmentAccept[id].push_back(i);
-  updateNeighbours(id);
+  specialUpdateNeighbours(id);
 
   for(auto i: neighbours) messageMgr->sendStartMove(i, id, node);
 
@@ -254,7 +254,7 @@ void FragmentMgr::createExternal(Fragment* f) {
   externalFragments.push_back(nf);
 }
 
-void FragmentMgr::updateNeighbours(const ts::type::ID& id) {
+void FragmentMgr::specialUpdateNeighbours(const ts::type::ID& id) {
   auto fragment = findFragment(id);
   auto neighbours = fragment->neighbours();
 
@@ -268,6 +268,20 @@ void FragmentMgr::updateNeighbours(const ts::type::ID& id) {
       }
     }
   }
+}
+
+void FragmentMgr::confirmMove(const ts::type::ID& id, NodeID node) {
+  messageMgr->sendConfirmMove(node, id);
+}
+
+void FragmentMgr::updateNeighbours(const ts::type::ID& id, NodeID node) {
+  for(auto i : fragments)
+    if(i.first->isNeighbour(id))
+      i.first->updateNeighbour(id, node);
+
+  for(auto i : externalFragments)
+    if(i->isNeighbour(id))
+      i->updateNeighbour(id, node);
 }
 
 void FragmentMgr::moveFragmentAccept(const ts::type::ID& id, NodeID nid) {

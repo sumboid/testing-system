@@ -25,6 +25,8 @@ libts_la_SOURCES =  src/system/fragment/FragmentMgr.cpp \
 										src/system/action/actions/Update.cpp \
 										src/system/action/actions/Reduce.h \
 										src/system/action/actions/Reduce.cpp \
+										src/system/action/actions/StartMove.h \
+										src/system/action/actions/StartMove.cpp \
 										src/distr/Distributor.cpp \
 										src/distr/Distributor.h \
 										src/types/Fragment.cpp \
@@ -64,7 +66,8 @@ tssystemaction_HEADERS =  src/system/action/Action.h \
 
 tssystemactionactionsdir = $(includedir)/ts/system/action/actions
 tssystemactionactions_HEADERS =  src/system/action/actions/Reduce.h \
-																 src/system/action/actions/Update.h
+																 src/system/action/actions/Update.h \
+																 src/system/action/actions/StartMove.h
 
 tstypesdir = $(includedir)/ts/types
 tstypes_HEADERS = src/types/Fragment.h \
