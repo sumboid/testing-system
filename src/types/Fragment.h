@@ -111,6 +111,7 @@ public:
   void createExternal(Fragment* f);
   void saveState();
   void saveState(Fragment* fragment);
+  void moveStates(Fragment* fragment);
   Fragment* getState(const Timestamp& timestamp, const ID& neighbour);
   Fragment* getLastState();
   bool hasState(const Timestamp& timestamp);

@@ -1,6 +1,8 @@
 #include <iostream>
 #include <chrono>
 #include <cassert>
+#include <cstdlib>
+#include <cstring>
 #include "MessageMgr.h"
 
 using std::thread;

@@ -25,7 +25,8 @@ Fragment::Fragment(ID id) {
   _vend = false;
 }
 
-Fragment::~Fragment() {}
+Fragment::~Fragment() {
+}
 
 ID Fragment::id() { return _vid; }
 void Fragment::setNodeID(NodeID nodeID) {
@@ -174,6 +175,12 @@ void Fragment::saveState() {
 
 void Fragment::saveState(Fragment* fragment) {
   _vstates.insert(pair<Timestamp, Fragment*>(Timestamp(fragment->iteration(), fragment->progress()), fragment));
+}
+
+void Fragment::moveStates(Fragment* fragment) {
+  for(auto state: _vstates) {
+    fragment->saveState(state.second);
+  }
 }
 
 Fragment* Fragment::getLastState() {

@@ -32,13 +32,17 @@ FragmentMgr::~FragmentMgr() {
 }
 
 void FragmentMgr::addFragment(Fragment* fragment) {
+  Fragment* b = findFragment(fragment->id());
+  if(b != 0) {
+    b->moveStates(fragment);
+  }
   pthread_rwlock_wrlock(fragmentsLock);
   fragments[fragment] = FREE;
   pthread_rwlock_unlock(fragmentsLock);
 }
 
 typedef pair<Fragment*, vector<Fragment*> > WorkFragment;
-vector<WorkFragment> FragmentMgr::getFragments(int amount) {
+vector<WorkFragment> FragmentMgr::getFragments(int) {
   vector<WorkFragment> result;
   vector<WorkFragment> reduceResult;
   size_t reduceCount = 0;
