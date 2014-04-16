@@ -6,6 +6,7 @@
 # Libraries
 *.lib
 *.a
+*.la
 
 # Shared objects (inc. Windows DLLs)
 *.dll
@@ -46,6 +47,7 @@ config.guess
 configure
 libtool
 ltmain.sh
+config.sub
 m4/libtool.m4
 m4/lt~obsolete.m4
 m4/ltoptions.m4
