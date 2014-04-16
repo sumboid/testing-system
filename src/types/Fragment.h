@@ -48,15 +48,15 @@ private:
   bool _vneighbours;                         ///< Flag that indicate fragment need neighbours for next step
   bool _vend;                                ///< Flag that indicate fragment is ready to end
 
-  uint64_t _viteration;                        ///< Current iteration
-  uint64_t _vprogress;                         ///< Current progress of iteration
+  uint64_t _viteration;                      ///< Current iteration
+  uint64_t _vprogress;                       ///< Current progress of iteration
 
   Timestamp _vneighboursState;
-  std::map<Timestamp, Fragment*> _vstates;                ///< stored states of fragment
+  std::map<Timestamp, Fragment*> _vstates;   ///< stored states of fragment
   std::mutex _vstatesMutex;
 
-  Fragment* _vlaststate;                                  ///< last state
-  std::map<Timestamp, std::set<ID>> _vstateGetted;    ///< states getted by neighbours
+  Fragment* _vlaststate;                           ///< last state
+  std::map<Timestamp, std::set<ID>> _vstateGetted; ///< states getted by neighbours
   ts::RWLock _vstateGettedLock;
 public:
   // General
@@ -140,7 +140,7 @@ public:
   void printStates();
 #endif
 
-  virtual Fragment* copy();
+  virtual Fragment* copy() = 0;
   void print();
 
 };

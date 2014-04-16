@@ -1,4 +1,5 @@
 #include "ConfirmMove.h"
+#include <iostream>
 
 using ts::type::ID;
 namespace ts {
@@ -12,7 +13,8 @@ void ConfirmMove::set(char* buffer, size_t, ts::type::NodeID _sender) {
 }
 
 void ConfirmMove::run()  {
-  fragmentMgr->confirmMove(id, sender);
+  std::cout << system->id() << ": CONFIRM MOVING: " << id.tostr() << std::endl;
+  fragmentMgr->moveFragmentAccept(id, sender);
 }
 
 Action* ConfirmMove::copy() {

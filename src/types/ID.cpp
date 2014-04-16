@@ -1,4 +1,5 @@
 #include "ID.h"
+#include <iostream>
 
 namespace ts {
 namespace type {
@@ -10,10 +11,10 @@ ID::ID(uint64_t x, uint64_t y, uint64_t z) {
 }
 
 ID::~ID() {}
-bool ID::operator<(const ID&) const {
+bool ID::operator<(const ID& other) const {
   return true; //XXX: Need to check map behaviour
 }
-bool ID::operator>(const ID&) const {
+bool ID::operator>(const ID& other) const {
   return false; //XXX: Need to check map behaviour
 }
 bool ID::operator==(const ID& other) const {

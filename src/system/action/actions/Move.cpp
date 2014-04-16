@@ -1,4 +1,5 @@
 #include "Move.h"
+#include <iostream>
 
 namespace ts {
 namespace system {
@@ -9,6 +10,7 @@ namespace action {
   }
 
   void Move::run() {
+    std::cout << system->id() << ": MOVING: " << fragment->id().tostr() << std::endl;
     system->addFragment(fragment);
   }
 

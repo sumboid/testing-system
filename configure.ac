@@ -2,7 +2,7 @@ AC_INIT([ts],[0.1],[ilya.sumb@gmail.com])
 AM_INIT_AUTOMAKE([foreign silent-rules])
 AM_SILENT_RULES([yes])
 
-AC_CONFIG_MACRO_DIR([m4/])
+AC_CONFIG_MACRO_DIR([m4])
 
 AC_PROG_CXX([mpic++])
 

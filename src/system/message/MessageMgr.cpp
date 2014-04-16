@@ -129,7 +129,6 @@ void MessageMgr::sendStartMove(NodeID node, const ts::type::ID& id, NodeID to) {
   delete[] message->buffer;
   message->buffer = buf;
   message->size += nodesize;
-
   push(message);
 }
 

@@ -9,7 +9,7 @@ void Update::set(char* buffer, size_t size, ts::type::NodeID) {
 }
 
 void Update::run() {
-  std::cout << "UPDATE ACTION!" << std::endl;
+  std::cout << system->id() << ": BOUNDARY UPDATED: " << fragment->id().tostr() << std::endl;
   fragmentMgr->updateExternalFragment(fragment);
 }
 

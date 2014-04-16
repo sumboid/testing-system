@@ -105,6 +105,10 @@ public:
     return fragment;
   }
 
+  Fragment* copy() override {
+    return new Fragment(ID(0,0,0));
+  }
+
 };
 
 class FragmentTools: public ts::type::FragmentTools {
@@ -146,13 +150,13 @@ int main() {
   for(auto fragment : fragments) {
     ID id = fragment->id();
     if((id.c[1] - 1) < 5)
-      fragment->updateNeighbour(ID(id.c[0], id.c[1] - 1, id.c[2]), id.c[0]);
+      fragment->addNeighbour(ID(id.c[0], id.c[1] - 1, id.c[2]), id.c[0]);
     if((id.c[1] + 1) < 5)
-      fragment->updateNeighbour(ID(id.c[0], id.c[1] + 1, id.c[2]), id.c[0]);
+      fragment->addNeighbour(ID(id.c[0], id.c[1] + 1, id.c[2]), id.c[0]);
     if((id.c[0] + 1) < system->size())
-      fragment->updateNeighbour(ID(id.c[0] + 1, id.c[1], id.c[2]), id.c[0] + 1);
+      fragment->addNeighbour(ID(id.c[0] + 1, id.c[1], id.c[2]), id.c[0] + 1);
     if((id.c[0] - 1) < system->size())
-      fragment->updateNeighbour(ID(id.c[0] - 1, id.c[1], id.c[2]), id.c[0] - 1);
+      fragment->addNeighbour(ID(id.c[0] - 1, id.c[1], id.c[2]), id.c[0] - 1);
   }
 
   for(auto fragment: fragments) {

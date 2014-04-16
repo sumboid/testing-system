@@ -1,5 +1,5 @@
 AUTOMAKE_OPTIONS = subdir-objects
-
+ACLOCAL_AMFLAGS = -I m4
 #dist_data_DATA = m4
 lib_LTLIBRARIES = libts.la
 libts_la_SOURCES =  src/system/fragment/FragmentMgr.cpp \

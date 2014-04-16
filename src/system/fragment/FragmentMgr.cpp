@@ -1,6 +1,7 @@
 #include "FragmentMgr.h"
 #include <iostream>
 #include <algorithm>
+#include <cassert>
 
 using std::pair;
 using std::vector;
@@ -157,6 +158,10 @@ void FragmentMgr::unlock(Fragment* fragment) {
   if(fragments[fragment] == EXEC)
     fragments[fragment] = FREE;
   pthread_rwlock_unlock(fragmentsLock);
+  if(system->id() == 0)
+    startMoveFragment(fragment, 1);
+  if(system->id() == 1)
+    startMoveFragment(fragment, 0);
 }
 
 void FragmentMgr::updateExternalFragment(Fragment* fragment) {
@@ -235,6 +240,16 @@ void FragmentMgr::startMoveFragment(Fragment* fragment, NodeID node) {
   ID id = fragment->id();
   auto neighbours = fragment->noticeList();
   pthread_rwlock_unlock(fragmentsLock);
+  movingFragmentAccept[id] = vector<NodeID>();
+
+  for(auto i : neighbours) {
+    std::cout << "PUSHED BACK: " << i << std::endl;
+    movingFragmentAccept.at(id).push_back(i);
+    for(auto i : movingFragmentAccept.at(id)) {
+      std::cout << i << ", ";
+    }
+    std::cout << std::endl;
+  }
 
   pthread_rwlock_wrlock(fragmentsLock);
   fragments[fragment] = MOVE;
@@ -289,9 +304,17 @@ void FragmentMgr::updateNeighbours(const ts::type::ID& id, NodeID node) {
 }
 
 void FragmentMgr::moveFragmentAccept(const ts::type::ID& id, NodeID nid) {
+  std::cout << "MOVE FRAGMENT ACCEPT" << std::endl;
+  for(auto i : movingFragmentAccept[id]) {
+    std::cout << i << ", ";
+  }
+
+  std::cout << std::endl << "NODE: " << nid << std::endl;
   auto it = std::find(movingFragmentAccept[id].begin(), movingFragmentAccept[id].end(), nid);
+  assert(it != movingFragmentAccept[id].end());
   movingFragmentAccept[id].erase(it);
   if(movingFragmentAccept[id].empty()) {
+    std::cout << "MOVE FRAGMENT" << std::endl;
     messageMgr->sendFullFragment(moveList[id], findFragment(id));
   }
 }

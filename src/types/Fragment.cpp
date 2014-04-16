@@ -107,12 +107,6 @@ bool Fragment::needReduce() { return _vreduce;  }
 bool Fragment::wasReduced() { return _vreduced; }
 bool Fragment::needUpdate() { return _vupdate; }
 
-
-//void Fragment::_serialize(void*& buf, size_t& size) {
-//  _vupdate = false;
-//  return serialize(buf, size);
-//}
-
 uint64_t Fragment::iteration() {
   return _viteration;
 }
