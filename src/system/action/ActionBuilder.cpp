@@ -4,7 +4,7 @@
 #include "actions/Reduce.h"
 #include "actions/StartMove.h"
 #include "actions/ConfirmMove.h"
-#include "actions/GetFragment.h"
+#include "actions/Move.h"
 
 namespace ts {
 namespace system {
@@ -16,7 +16,7 @@ ActionBuilder::ActionBuilder() {
   actionMap.insert(pair<Tag, Action*>(Tag::REDUCE_DATA, new action::Reduce));
   actionMap.insert(pair<Tag, Action*>(Tag::START_MOVE_FRAGMENT, new action::StartMove));
   actionMap.insert(pair<Tag, Action*>(Tag::CONFIRM_MOVE_FRAGMENT, new action::ConfirmMove));
-  actionMap.insert(pair<Tag, Action*>(Tag::MOVE_FRAGMENT, new action::GetFragment));
+  actionMap.insert(pair<Tag, Action*>(Tag::MOVE_FRAGMENT, new action::Move));
 }
 
 ActionBuilder::~ActionBuilder() {
