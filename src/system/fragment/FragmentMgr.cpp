@@ -40,6 +40,7 @@ void FragmentMgr::addFragment(Fragment* fragment) {
   pthread_rwlock_wrlock(fragmentsLock);
   fragments[fragment] = FREE;
   pthread_rwlock_unlock(fragmentsLock);
+  system->notify();
 }
 
 typedef pair<Fragment*, vector<Fragment*> > WorkFragment;
@@ -240,15 +241,11 @@ void FragmentMgr::startMoveFragment(Fragment* fragment, NodeID node) {
   ID id = fragment->id();
   auto neighbours = fragment->noticeList();
   pthread_rwlock_unlock(fragmentsLock);
-  movingFragmentAccept[id] = vector<NodeID>();
+  movingFragmentAccept.emplace(id, vector<NodeID>());
 
   for(auto i : neighbours) {
-    std::cout << "PUSHED BACK: " << i << std::endl;
+  std::cout << "HERE" << std::endl;
     movingFragmentAccept.at(id).push_back(i);
-    for(auto i : movingFragmentAccept.at(id)) {
-      std::cout << i << ", ";
-    }
-    std::cout << std::endl;
   }
 
   pthread_rwlock_wrlock(fragmentsLock);
@@ -257,7 +254,6 @@ void FragmentMgr::startMoveFragment(Fragment* fragment, NodeID node) {
 
   moveList[fragment->id()] = node;
 
-  for(auto i: neighbours) movingFragmentAccept[id].push_back(i);
   specialUpdateNeighbours(id);
 
   for(auto i: neighbours) messageMgr->sendStartMove(i, id, node);
@@ -305,14 +301,14 @@ void FragmentMgr::updateNeighbours(const ts::type::ID& id, NodeID node) {
 
 void FragmentMgr::moveFragmentAccept(const ts::type::ID& id, NodeID nid) {
   std::cout << "MOVE FRAGMENT ACCEPT" << std::endl;
-  for(auto i : movingFragmentAccept[id]) {
-    std::cout << i << ", ";
-  }
-
-  std::cout << std::endl << "NODE: " << nid << std::endl;
   auto it = std::find(movingFragmentAccept[id].begin(), movingFragmentAccept[id].end(), nid);
-  assert(it != movingFragmentAccept[id].end());
   movingFragmentAccept[id].erase(it);
+  if(it == movingFragmentAccept[id].end()) {
+    std::cout << "WAT" << std::endl;
+  }
+  std::cout << "Ok, erase element: " <<  nid << std::endl;
+  for(auto i: movingFragmentAccept[id]) 
+    std::cout << id.tostr() << " : " << i << std::endl;
   if(movingFragmentAccept[id].empty()) {
     std::cout << "MOVE FRAGMENT" << std::endl;
     messageMgr->sendFullFragment(moveList[id], findFragment(id));

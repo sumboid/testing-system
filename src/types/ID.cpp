@@ -11,12 +11,18 @@ ID::ID(uint64_t x, uint64_t y, uint64_t z) {
 }
 
 ID::~ID() {}
+
 bool ID::operator<(const ID& other) const {
-  return true; //XXX: Need to check map behaviour
+  return c[X] > other.c[X] ||
+         c[Y] > other.c[Y] ||
+         c[Z] > other.c[Z];
 }
 bool ID::operator>(const ID& other) const {
-  return false; //XXX: Need to check map behaviour
+  return c[X] < other.c[X] ||
+         c[Y] < other.c[Y] ||
+         c[Z] < other.c[Z];
 }
+
 bool ID::operator==(const ID& other) const {
   return c[X] == other.c[X] &&
          c[Y] == other.c[Y] &&

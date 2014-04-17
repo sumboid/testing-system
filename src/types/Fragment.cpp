@@ -1,6 +1,7 @@
 #include "Fragment.h"
 #include <algorithm>
 #include <iostream>
+#include <cassert>
 using std::map;
 using std::vector;
 using std::tuple;
