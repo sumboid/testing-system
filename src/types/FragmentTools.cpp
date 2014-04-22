@@ -73,33 +73,10 @@ size_t FragmentTools::fullSerialize(Fragment* fragment, char*& buf) {
   buffers.insert(pair<char*, size_t>(localbuf, localsize));
   size += localsize + sizeof(size_t) / sizeof(char);
 
-  map<char*, size_t> states;
-  size_t statesSize = 0;
-  size += sizeof(size_t) / sizeof(char);
-  for(auto c : fragment->_vstates) {
-    Fragment* stateFragment = c.second;
-    stateFragment->_vid = fragment->_vid;
-    tie(stateFragment->_viteration, stateFragment->_vprogress) = c.first;
-    size_t stateSize = 0;
-    boundarySerialize(stateFragment, localbuf, stateSize);
-    states.insert(pair<char*, size_t>(localbuf, stateSize));
-    statesSize++;
-    size += stateSize + sizeof(size_t) / sizeof(char);
-  }
 
   buf = new char[size];
   localsize = 0;
   for(auto i : buffers) {
-    memcpy(buf + localsize, reinterpret_cast<char*>(&(i.second)), sizeof(size_t) / sizeof(char));
-    localsize += sizeof(size_t) / sizeof(char);
-    memcpy(buf + localsize, i.first, i.second);
-    localsize += i.second;
-  }
-
-  memcpy(buf + localsize, reinterpret_cast<char*>(&(statesSize)), sizeof(size_t) / sizeof(char));
-  localsize += sizeof(size_t) / sizeof(char);
-
-  for(auto i : states) {
     memcpy(buf + localsize, reinterpret_cast<char*>(&(i.second)), sizeof(size_t) / sizeof(char));
     localsize += sizeof(size_t) / sizeof(char);
     memcpy(buf + localsize, i.first, i.second);
@@ -138,18 +115,6 @@ Fragment* FragmentTools::fullDeserialize(char* buf, size_t size) {
   current += sizeof(size_t) / sizeof(char);
   FragmentDeserializer::flags(fragment, buf + current, localsize);
   current += localsize;
-
-  size_t statesSize = reinterpret_cast<uint64_t*>(buf + current)[0];
-  current += sizeof(size_t) / sizeof(char);
-
-  for(size_t i = 0; i < statesSize; ++i) {
-    localsize = reinterpret_cast<uint64_t*>(buf + current)[0];
-    current += sizeof(size_t) / sizeof(char);
-    Fragment* state = boundaryDeserialize(buf + current, localsize);
-    Timestamp ts = tuple<uint64_t, uint64_t>(state->_viteration, state->_vprogress);
-    fragment->_vstates.insert(pair<Timestamp, Fragment*>(ts, state));
-    current += localsize;
-  }
 
   return fragment;
 }

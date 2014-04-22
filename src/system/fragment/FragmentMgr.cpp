@@ -244,7 +244,6 @@ void FragmentMgr::startMoveFragment(Fragment* fragment, NodeID node) {
   movingFragmentAccept.emplace(id, vector<NodeID>());
 
   for(auto i : neighbours) {
-  std::cout << "HERE" << std::endl;
     movingFragmentAccept.at(id).push_back(i);
   }
 
