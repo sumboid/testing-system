@@ -2,6 +2,7 @@
 #include <iostream>
 #include <algorithm>
 #include <cassert>
+#include "../../util/easylogging++.h"
 
 using std::pair;
 using std::vector;
@@ -166,8 +167,8 @@ void FragmentMgr::unlock(Fragment* fragment) {
 }
 
 void FragmentMgr::updateExternalFragment(Fragment* fragment) {
-  std::cout << system->id() << ": NEW EXTERNAL CELL STATE: " << fragment->id().tostr() << 
-    " with stamp: " << fragment->iteration() << ":" << fragment->progress() << std::endl;
+  LOG(INFO) << "NEW EXTERNAL CELL STATE: " << fragment->id().tostr() <<
+    " with stamp: " << fragment->iteration() << ":" << fragment->progress();
   pthread_rwlock_rdlock(externalFragmentsLock);
 
   for(auto ffragment: externalFragments) {
@@ -299,17 +300,12 @@ void FragmentMgr::updateNeighbours(const ts::type::ID& id, NodeID node) {
 }
 
 void FragmentMgr::moveFragmentAccept(const ts::type::ID& id, NodeID nid) {
-  std::cout << "MOVE FRAGMENT ACCEPT" << std::endl;
   auto it = std::find(movingFragmentAccept[id].begin(), movingFragmentAccept[id].end(), nid);
-  movingFragmentAccept[id].erase(it);
   if(it == movingFragmentAccept[id].end()) {
-    std::cout << "WAT" << std::endl;
+    LOG(ERROR) << "Some node send accept without request";
   }
-  std::cout << "Ok, erase element: " <<  nid << std::endl;
-  for(auto i: movingFragmentAccept[id]) 
-    std::cout << id.tostr() << " : " << i << std::endl;
+  movingFragmentAccept[id].erase(it);
   if(movingFragmentAccept[id].empty()) {
-    std::cout << "MOVE FRAGMENT" << std::endl;
     messageMgr->sendFullFragment(moveList[id], findFragment(id));
   }
 }

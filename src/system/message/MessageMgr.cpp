@@ -4,6 +4,8 @@
 #include <cstdlib>
 #include <cstring>
 #include "MessageMgr.h"
+#include "../../util/easylogging++.h"
+#include "../../util/Arc.h"
 
 using std::thread;
 using std::this_thread::sleep_for;
@@ -12,6 +14,7 @@ using ts::type::Fragment;
 using ts::type::FragmentTools;
 using ts::type::ReduceDataTools;
 using ts::type::ReduceData;
+using ts::Arc;
 
 namespace ts {
 namespace system {
@@ -51,6 +54,7 @@ void MessageMgr::receiveLoop() {
       message.size = size;
 
       Action* action = actionBuilder->build(message);
+      delete[] message.buffer;
       sys->addAction(action);
     }
     else {
@@ -81,17 +85,24 @@ void MessageMgr::sendLoop() {
 
 void MessageMgr::sendBoundary(NodeID node, Fragment* fragment) {
   Message* message = new Message;
-  fragmentTool->boundarySerialize(fragment, message->buffer, message->size);
+  Arc* arc = fragmentTool->boundarySerialize(fragment);
+  message->size = arc->size();
+  message->buffer = arc->get();
   message->tag = UPDATE_FRAGMENT;
   message->node = node;
+  delete arc;
   push(message);
 }
 
 void MessageMgr::sendFullFragment(NodeID node, Fragment* fragment) {
   Message* message = new Message;
-  message->size = fragmentTool->fullSerialize(fragment, message->buffer);
+  LOG(INFO) << "Sending full fragment: " << fragment->id().tostr();
+  Arc* arc = fragmentTool->fullSerialize(fragment);
+  message->size = arc->size();
+  message->buffer = arc->get();
   message->tag = MOVE_FRAGMENT;
   message->node = node;
+  delete arc;
   push(message);
 }
 
@@ -100,9 +111,12 @@ void MessageMgr::sendReduce(ReduceData* reduceData) {
   for(size_t i = 0; i < _size; ++i) {
     if(i != id) {
       Message* message = new Message;
-      reduceTool->serialize(reduceData, message->buffer, message->size);
+      Arc* arc = reduceTool->serialize(reduceData);
+      message->size = arc->size();
+      message->buffer = arc->get();
       message->tag = REDUCE_DATA;
       message->node = i;
+      delete arc;
       sendQueue.push(message);
     }
   }
@@ -117,18 +131,13 @@ void MessageMgr::sendStartMove(NodeID node, const ts::type::ID& id, NodeID to) {
   Message* message = new Message;
   message->node = node;
   message->tag = START_MOVE_FRAGMENT;
-  message->size = id.serialize(message->buffer);
+  Arc* arc = new Arc;
+  id.serialize(arc);
+  message->size = arc->size();
+  message->buffer = arc->get();
 
-  int nodesize = sizeof(NodeID) / sizeof(char);
-  char* nbuf = reinterpret_cast<char*>(&to);
+  delete arc;
 
-  char* buf = new char[nodesize + message->size];
-  memcpy(buf, message->buffer, message->size);
-  memcpy(buf + message->size, nbuf, nodesize);
-
-  delete[] message->buffer;
-  message->buffer = buf;
-  message->size += nodesize;
   push(message);
 }
 
@@ -136,7 +145,11 @@ void MessageMgr::sendConfirmMove(NodeID node, const ts::type::ID& id) {
   Message* message = new Message;
   message->node = node;
   message->tag = CONFIRM_MOVE_FRAGMENT;
-  message->size = id.serialize(message->buffer);
+  Arc* arc = new Arc;
+  id.serialize(arc);
+  message->size = arc->size();
+  message->buffer = arc->get();
+  delete arc;
 
   push(message);
 }

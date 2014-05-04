@@ -13,7 +13,7 @@ private:
 public:
   Move() {}
   ~Move() override {}
-  void set(char* buffer, size_t size, ts::type::NodeID id) override;
+  void set(ts::Arc* arc, ts::type::NodeID id) override;
   void run() override;
 
   Action* copy() override;

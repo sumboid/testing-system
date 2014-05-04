@@ -53,7 +53,9 @@ Action* ActionBuilder::build(const Message& message) {
   action->setFragmentTools(fragmentTools);
   action->setReduceDataTools(reduceDataTools);
 
-  action->set(message.buffer, message.size, message.node);
+  Arc* arc = new Arc(message.buffer, message.size);
+  action->set(arc, message.node);
+  delete arc;
 
   return action;
 }

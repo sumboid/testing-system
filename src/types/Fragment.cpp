@@ -1,4 +1,5 @@
 #include "Fragment.h"
+#include "../util/easylogging++.h"
 #include <algorithm>
 #include <iostream>
 #include <cassert>
@@ -272,4 +273,31 @@ void Fragment::createExternal(Fragment* f) {
   }
   _vstatesMutex.unlock();
 }
+
+bool Fragment::equal(Fragment* another) {
+  if(!(_vid == another->_vid)) {
+    LOG(INFO) << "ID: " << _vid.tostr() << " != " << another->_vid.tostr();
+    return false;
+  }
+  if(_viteration != another->_viteration) return false;
+  if(_vprogress != another->_vprogress) return false;
+  if(_vneighboursLocation.size() != another->_vneighboursLocation.size()) return false;
+  for(auto i : _vneighboursLocation) {
+    auto j = another->_vneighboursLocation.find(i.first);
+    if(j == another->_vneighboursLocation.end()) return false;
+    if(j->second != i.second) return false;
+  }
+  if(_vreduce != another->_vreduce) return false;
+  if(_vreduced != another->_vreduced) return false;
+  if(_vupdate != another->_vupdate) return false;
+  if(_vneighbours != another->_vneighbours) return false;
+  if(_vend != another->_vend) return false;
+
+  return _equal(another);
+}
+
+bool Fragment::_equal(Fragment* another) {
+  return true;
+}
+
 }}

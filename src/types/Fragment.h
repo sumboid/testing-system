@@ -140,6 +140,8 @@ public:
   void printStates();
 #endif
 
+  bool equal(Fragment* another);
+  virtual bool _equal(Fragment* another);
   virtual Fragment* copy() = 0;
   void print();
 

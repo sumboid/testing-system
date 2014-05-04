@@ -1,6 +1,10 @@
 #include <iostream>
 #include <vector>
+#include <string>
 #include "System.h"
+#include "../util/easylogging++.h"
+
+_INITIALIZE_EASYLOGGINGPP
 
 namespace ts {
 namespace system {
@@ -34,6 +38,11 @@ System::System(FragmentTools* fragmentTools, ReduceDataTools* reduceTools):
   fragmentMgr->setFragmentTools(fragmentTools);
 
   execMgr->setSystem(this);
+
+  el::Helpers::installCustomFormatSpecifier(el::CustomFormatSpecifier("%nodeid", [&](){return std::to_string(this->id()).c_str();}));
+  el::Loggers::reconfigureAllLoggers(el::ConfigurationType::Format, "%nodeid: %msg");
+
+  LOG(INFO) << "Hello, sweety";
 
   actionLoopThread = std::thread(&System::actionLoop, this);
   msgMgr->run();
@@ -122,10 +131,8 @@ void System::actionLoop() {
     queueMutex.lock();
     if(actionQueue.empty()) {
       queueMutex.unlock();
-      std::cout << "I'M WAITING!" << std::endl;
       actionQueueListener.wait();
       if(_end) {
-        std::cout << "THAT'S END!" << std::endl;
         return;
       }
     }

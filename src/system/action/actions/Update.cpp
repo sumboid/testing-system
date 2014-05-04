@@ -1,15 +1,16 @@
 #include "Update.h"
+#include "../../../util/easylogging++.h"
 #include <iostream>
 namespace ts {
 namespace system {
 namespace action {
 
-void Update::set(char* buffer, size_t size, ts::type::NodeID) {
-  fragment = fragmentTools->boundaryDeserialize(buffer, size);
+void Update::set(ts::Arc* arc, ts::type::NodeID) {
+  fragment = fragmentTools->boundaryDeserialize(arc);
 }
 
 void Update::run() {
-  std::cout << system->id() << ": BOUNDARY UPDATED: " << fragment->id().tostr() << std::endl;
+  LOG(INFO) << "BOUNDARY UPDATED: " << fragment->id().tostr();
   fragmentMgr->updateExternalFragment(fragment);
 }
 

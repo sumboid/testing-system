@@ -4,6 +4,7 @@
 #include "../exec/ExecMgr.h"
 #include "../../types/FragmentTools.h"
 #include "../../types/ReduceDataTools.h"
+#include "../../util/Arc.h"
 
 namespace ts {
 namespace system {
@@ -23,7 +24,7 @@ public:
   virtual ~Action() {}
   virtual void run() = 0;
   virtual Action* copy() = 0;
-  virtual void set(char* buffer, size_t size, ts::type::NodeID id) = 0;
+  virtual void set(ts::Arc* arc, ts::type::NodeID id) = 0;
 
   void setSystem(System* _system);
   void setFragmentMgr(FragmentMgr* _fragmentMgr);

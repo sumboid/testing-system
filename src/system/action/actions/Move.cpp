@@ -1,16 +1,17 @@
 #include "Move.h"
+#include "../../../util/easylogging++.h"
 #include <iostream>
 
 namespace ts {
 namespace system {
 namespace action {
 
-  void Move::set(char* buffer, size_t size, ts::type::NodeID) {
-    fragment = fragmentTools->fullDeserialize(buffer, size);
+  void Move::set(ts::Arc* arc, ts::type::NodeID) {
+    fragment = fragmentTools->fullDeserialize(arc);
   }
 
   void Move::run() {
-    std::cout << system->id() << ": MOVING: " << fragment->id().tostr() << std::endl;
+    LOG(INFO) << "MOVING: " << fragment->id().tostr();
     system->addFragment(fragment);
   }
 

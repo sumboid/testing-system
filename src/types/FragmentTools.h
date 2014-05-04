@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdlib>
 #include "Fragment.h"
+#include "../util/Arc.h"
 
 namespace ts {
 namespace type {
@@ -8,15 +9,15 @@ class Fragment;
 class FragmentTools {
 public:
   virtual ~FragmentTools() {}
-  virtual void serialize(Fragment* fragment, char*& buf, size_t& size) = 0;
-  virtual Fragment* deserialize(char* buf, size_t size) = 0;
+  virtual void serialize(Fragment* fragment, ts::Arc* arc) = 0;
+  virtual Fragment* deserialize(ts::Arc* arc) = 0;
   virtual Fragment* createGap(const ID& id) = 0;
 
-  size_t fullSerialize(Fragment* fragment, char*& buf);
-  void boundarySerialize(Fragment* fragment, char*& buf, size_t& size);
+  ts::Arc* fullSerialize(Fragment* fragment);
+  ts::Arc* boundarySerialize(Fragment* fragment);
 
-  Fragment* fullDeserialize(char* buf, size_t size);
-  Fragment* boundaryDeserialize(char* buf, size_t size);
+  Fragment* fullDeserialize(ts::Arc* arc);
+  Fragment* boundaryDeserialize(ts::Arc* arc);
 };
 
 
