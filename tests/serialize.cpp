@@ -7,10 +7,9 @@ using ts::type::ID;
 int main() {
   FragmentTools ft;
   ts::type::Fragment* a = new Fragment(ID(1,0,0));
-  char* yoba;
-  size_t yobas = ft.fullSerialize(a, yoba);
+  ts::Arc* arc = ft.fullSerialize(a);
 
-  ts::type::Fragment* b = ft.fullDeserialize(yoba, yobas);
+  ts::type::Fragment* b = ft.fullDeserialize(arc);
   if(a->equal(b)) std::cout << "EQUAL" << std::endl;
   else std::cout << "NOT EQUAL" << std::endl;
 

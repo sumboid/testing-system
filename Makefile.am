@@ -93,6 +93,6 @@ tstypesutil_HEADERS = src/types/util/FragmentSerializer.h \
 											src/types/util/FragmentDeserializer.h
 
 tsutildir = $(includedir)/ts/util
-tsutil_HEADERS = src/util/RWLock.h
+tsutil_HEADERS = src/util/RWLock.h \
 								 src/util/easylogging++.h \
 								 src/util/Arc.h

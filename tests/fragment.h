@@ -25,14 +25,18 @@ public:
 class ReduceDataTools: public ts::type::ReduceDataTools {
 public:
   ~ReduceDataTools() {}
-  void serialize(ts::type::ReduceData* data, char*& buf, size_t& size) {
-    size = 1;
-    buf = new char[1];
-    buf[0] = ((ReduceData*) data)->getNumber();
+  ts::Arc* serialize(ts::type::ReduceData* data) {
+    ts::Arc* arc = new ts::Arc;
+    ts::Arc& a = *arc;
+    a << ((ReduceData*) data)->getNumber();
+    return arc;
   }
 
-  ts::type::ReduceData* deserialize(void* buf, size_t) {
-    return new ReduceData(((char*) buf)[0]);
+  ts::type::ReduceData* deserialize(ts::Arc* arc) {
+    char number;
+    ts::Arc& a = *arc;
+    a >> number;
+    return new ReduceData(number);
   }
 
   ts::type::ReduceData* reduce(ts::type::ReduceData* d1,
@@ -112,17 +116,15 @@ public:
 class FragmentTools: public ts::type::FragmentTools {
 public:
   ~FragmentTools() {}
-  void serialize(ts::type::Fragment* fragment, char*& buf, size_t& size) {
-    size = 1 * sizeof(uint64_t);
-    uint64_t* lbuf = new uint64_t[1];
-    lbuf[0] = ((Fragment*) fragment)->iter;
-    buf = reinterpret_cast<char*>(lbuf);
+  void serialize(ts::type::Fragment* fragment, ts::Arc* arc) {
+    ts::Arc& a = *arc;
+    a << ((Fragment*) fragment)->iter;
   }
 
-  ts::type::Fragment* deserialize(char* buf, size_t) {
-    uint64_t* lbuf = reinterpret_cast<uint64_t*>(buf);
+  ts::type::Fragment* deserialize(ts::Arc* arc) {
+    ts::Arc& a = *arc;
     Fragment* result = new Fragment(ts::type::ID(0, 0, 0), false);
-    result->iter = lbuf[0];
+    a >> result->iter;
     return result;
   }
 
