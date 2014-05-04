@@ -1,6 +1,6 @@
 ### Testing system
 #### Creating building script
-`./gen.sh`
+`./autogen.sh`
 
 #### Building and installing
 `./configure && make && make install`
