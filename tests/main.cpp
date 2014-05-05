@@ -16,10 +16,10 @@ int main() {
   std::ofstream file(std::to_string(system->id()));
 
   fragments.push_back(new Fragment(ts::type::ID(system->id(),0,0)));
-  //fragments.push_back(new Fragment(ts::type::ID(system->id(),1,0)));
-  //fragments.push_back(new Fragment(ts::type::ID(system->id(),2,0)));
-  //fragments.push_back(new Fragment(ts::type::ID(system->id(),3,0)));
-  //fragments.push_back(new Fragment(ts::type::ID(system->id(),4,0)));
+  fragments.push_back(new Fragment(ts::type::ID(system->id(),1,0)));
+  fragments.push_back(new Fragment(ts::type::ID(system->id(),2,0)));
+  fragments.push_back(new Fragment(ts::type::ID(system->id(),3,0)));
+  fragments.push_back(new Fragment(ts::type::ID(system->id(),4,0)));
 
   for(auto fragment : fragments) {
     ID id = fragment->id();
