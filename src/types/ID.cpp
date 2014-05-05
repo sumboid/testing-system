@@ -42,10 +42,16 @@ ID ID::deserialize(ts::Arc* arc) {
   Arc& a = *arc;
   ID result;
 
-  a >> result.c[0];
-  a >> result.c[1];
-  a >> result.c[2];
+  a >> result.c[X];
+  a >> result.c[Y];
+  a >> result.c[Z];
 
   return result;
+}
+
+void ID::operator= (const ID& another) {
+  c[X] = another.c[X];
+  c[Y] = another.c[Y];
+  c[Z] = another.c[Z];
 }
 }}

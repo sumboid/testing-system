@@ -1,7 +1,9 @@
 #pragma once
+#include <iostream>
 #include <sstream>
 #include <cstdlib>
 #include <cstring>
+#include <cassert>
 
 namespace ts {
 
@@ -21,22 +23,21 @@ public:
   Arc& operator<< (const T& something) {
     size_t size = sizeof(T) / sizeof(char);
 
-    T* data = new T;
-    *data = something;
-    char* rdata = reinterpret_cast<char*>(data);
+    T data = something;
+    char* rdata = reinterpret_cast<char*>(&data);
 
     raw.write(rdata, size);
-    delete data;
     return *this;
   }
 
   template<class T>
   Arc& operator>> (T& something) {
     size_t size = sizeof(T) / sizeof(char);
-    char* data = new char[size];
+    char data[size];
+
     raw.read(data, size);
     something = *(reinterpret_cast<T*>(data));
-    delete[] data;
+
     return *this;
   }
 

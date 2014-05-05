@@ -1,14 +1,9 @@
 #include "FragmentDeserializer.h"
-#include <tuple>
-#include <vector>
-
 
 namespace ts {
 namespace type {
 namespace util {
 
-using std::tuple;
-using std::vector;
 using ts::type::Fragment;
 
 void FragmentDeserializer::timestamp(Fragment* fragment, ts::Arc* arc) {
@@ -29,7 +24,7 @@ void FragmentDeserializer::neighbours(Fragment* fragment, ts::Arc* arc) {
     ID id = ID::deserialize(arc);
     NodeID nid;
     a >> nid;
-    fragment->updateNeighbour(id, nid);
+    fragment->addNeighbour(id, nid);
   }
 }
 void FragmentDeserializer::flags(Fragment* fragment, ts::Arc* arc) {

@@ -21,8 +21,10 @@ void FragmentSerializer::neighbours(Fragment* fragment, ts::Arc* arc) {
   Arc& a = *arc;
   a << static_cast<size_t>(fragment->_vneighboursLocation.size());
 
-  for(auto n : fragment->_vneighboursLocation)
-    a << n.first << n.second;
+  for(auto n : fragment->_vneighboursLocation) {
+    n.first.serialize(arc);
+    a << n.second;
+  }
 }
 
 void FragmentSerializer::flags(Fragment* fragment, ts::Arc* arc) {

@@ -1,17 +1,7 @@
 #include "FragmentTools.h"
-#include <iostream>
-#include <tuple>
-#include <cstring>
-#include <vector>
-#include <map>
-#include <utility>
 #include "util/FragmentDeserializer.h"
 #include "util/FragmentSerializer.h"
 
-using std::tuple;
-using std::tie;
-using std::map;
-using std::pair;
 using ts::Arc;
 
 namespace ts {
