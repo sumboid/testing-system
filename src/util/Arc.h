@@ -3,6 +3,7 @@
 #include <sstream>
 #include <cstdlib>
 #include <cstring>
+#include <cassert>
 #include <type_traits>
 
 namespace ts {
@@ -21,7 +22,7 @@ public:
 
   template<class T>
   Arc& operator<< (const T& something) {
-    static_assert(std::is_fundamental<T>::value, "Arc can process only primitive types");
+    static_assert(std::is_fundamental<T>::value, "Arc can process primitive types only");
     size_t size = sizeof(T) / sizeof(char);
 
     T data = something;
@@ -33,10 +34,9 @@ public:
 
   template<class T>
   Arc& operator>> (T& something) {
-    static_assert(std::is_fundamental<T>::value, "Arc can process only primitive types");
+    static_assert(std::is_fundamental<T>::value, "Arc can process primitive types only");
     size_t size = sizeof(T) / sizeof(char);
     char data[size];
-
     raw.read(data, size);
     something = *(reinterpret_cast<T*>(data));
 
