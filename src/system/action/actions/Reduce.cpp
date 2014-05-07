@@ -1,5 +1,5 @@
 #include "Reduce.h"
-#include "../../../util/easylogging++.h"
+#include "../../../util/Uberlogger.h"
 #include <iostream>
 namespace ts {
 namespace system {
@@ -10,7 +10,7 @@ void Reduce::set(ts::Arc* arc, ts::type::NodeID) {
 }
 
 void Reduce::run() {
-  LOG(INFO) << "REDUCE ACTION!";
+  UBERLOG() << "REDUCE ACTION!" << UBEREND();
   system->putReduceData(data);
 }
 

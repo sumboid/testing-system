@@ -1,5 +1,5 @@
 #include "StartMove.h"
-#include "../../../util/easylogging++.h"
+#include "../../../util/Uberlogger.h"
 #include <iostream>
 
 using ts::type::ID;
@@ -15,7 +15,7 @@ void StartMove::set(ts::Arc* arc, ts::type::NodeID _sender) {
 }
 
 void StartMove::run()  {
-  LOG(INFO) << "BEGIN MOVING: " << id.tostr();
+  UBERLOG() << "BEGIN MOVING: " << id.tostr() << UBEREND();
   fragmentMgr->updateNeighbours(id, node);
   fragmentMgr->confirmMove(id, sender);
 }

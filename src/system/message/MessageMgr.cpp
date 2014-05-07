@@ -4,7 +4,7 @@
 #include <cstdlib>
 #include <cstring>
 #include "MessageMgr.h"
-#include "../../util/easylogging++.h"
+#include "../../util/Uberlogger.h"
 #include "../../util/Arc.h"
 
 using std::thread;
@@ -96,7 +96,7 @@ void MessageMgr::sendBoundary(NodeID node, Fragment* fragment) {
 
 void MessageMgr::sendFullFragment(NodeID node, Fragment* fragment) {
   Message* message = new Message;
-  LOG(INFO) << "Sending full fragment: " << fragment->id().tostr();
+  UBERLOG() << "Sending full fragment: " << fragment->id().tostr() << UBEREND();
   Arc* arc = fragmentTool->fullSerialize(fragment);
   message->size = arc->size();
   message->buffer = arc->get();

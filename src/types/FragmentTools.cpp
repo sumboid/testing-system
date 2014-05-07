@@ -30,8 +30,8 @@ Arc* FragmentTools::fullSerialize(Fragment* fragment) {
   serialize(fragment, arc);
   FragmentSerializer::id(fragment, arc);
   FragmentSerializer::timestamp(fragment, arc);
-  FragmentSerializer::neighbours(fragment, arc);
   FragmentSerializer::flags(fragment, arc);
+  FragmentSerializer::neighbours(fragment, arc);
 
   return arc;
 }
@@ -42,8 +42,8 @@ Fragment* FragmentTools::fullDeserialize(Arc* arc) {
   fragment = deserialize(arc);
   FragmentDeserializer::id(fragment, arc);
   FragmentDeserializer::timestamp(fragment, arc);
-  FragmentDeserializer::neighbours(fragment, arc);
   FragmentDeserializer::flags(fragment, arc);
+  FragmentDeserializer::neighbours(fragment, arc);
 
   return fragment;
 }

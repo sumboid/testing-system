@@ -1,5 +1,5 @@
 #include "ConfirmMove.h"
-#include "../../../util/easylogging++.h"
+#include "../../../util/Uberlogger.h"
 #include <iostream>
 
 using ts::type::ID;
@@ -13,7 +13,7 @@ void ConfirmMove::set(ts::Arc* arc, ts::type::NodeID _sender) {
 }
 
 void ConfirmMove::run()  {
-  LOG(INFO) << "CONFIRM MOVING: " << id.tostr();
+  UBERLOG() << "CONFIRM MOVING: " << id.tostr() << UBEREND();
   fragmentMgr->moveFragmentAccept(id, sender);
 }
 

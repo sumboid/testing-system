@@ -1,5 +1,5 @@
 #include "Move.h"
-#include "../../../util/easylogging++.h"
+#include "../../../util/Uberlogger.h"
 #include <iostream>
 
 namespace ts {
@@ -11,7 +11,7 @@ namespace action {
   }
 
   void Move::run() {
-    LOG(INFO) << "MOVING: " << fragment->id().tostr();
+    UBERLOG() << "MOVING: " << fragment->id().tostr() << UBEREND();
     system->addFragment(fragment);
   }
 

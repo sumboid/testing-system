@@ -1,5 +1,5 @@
 #include "Update.h"
-#include "../../../util/easylogging++.h"
+#include "../../../util/Uberlogger.h"
 #include <iostream>
 namespace ts {
 namespace system {
@@ -10,7 +10,7 @@ void Update::set(ts::Arc* arc, ts::type::NodeID) {
 }
 
 void Update::run() {
-  LOG(INFO) << "BOUNDARY UPDATED: " << fragment->id().tostr();
+  UBERLOG() << "BOUNDARY UPDATED: " << fragment->id().tostr() << UBEREND();
   fragmentMgr->updateExternalFragment(fragment);
 }
 

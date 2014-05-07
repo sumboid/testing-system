@@ -1,5 +1,5 @@
 #include "Fragment.h"
-#include "../util/easylogging++.h"
+#include "../util/Uberlogger.h"
 #include <algorithm>
 #include <iostream>
 #include <cassert>
@@ -75,7 +75,7 @@ bool Fragment::isNeighbour(const ID& id) {
 }
 void Fragment::addNeighbour(ID id, NodeID node) {
   _vneighboursLocationMutex.lock();
-  LOG(INFO) << "Adding neighbour: " << id.tostr();
+  UBERLOG() << "Adding neighbour: " << id.tostr() << UBEREND();
   _vneighboursLocation.insert(std::pair<ID, NodeID>(id, node));
   _vneighboursLocationMutex.unlock();
   //_vneighboursLocation[id] = node;
@@ -277,7 +277,7 @@ void Fragment::createExternal(Fragment* f) {
 
 bool Fragment::equal(Fragment* another) {
   if(!(_vid == another->_vid)) {
-    LOG(INFO) << "ID: " << _vid.tostr() << " != " << another->_vid.tostr();
+    UBERLOG() << "ID: " << _vid.tostr() << " != " << another->_vid.tostr() << UBEREND();
     return false;
   }
   if(_viteration != another->_viteration) return false;

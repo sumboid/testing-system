@@ -47,7 +47,7 @@ libts_la_SOURCES =  src/system/fragment/FragmentMgr.cpp \
 										src/types/util/FragmentDeserializer.cpp \
 										src/util/RWLock.h \
 										src/util/RWLock.cpp \
-										src/util/easylogging++.h \
+										src/util/Uberlogger.h \
 										src/util/Arc.h
 
 tssystemdir = $(includedir)/ts/system
@@ -94,5 +94,5 @@ tstypesutil_HEADERS = src/types/util/FragmentSerializer.h \
 
 tsutildir = $(includedir)/ts/util
 tsutil_HEADERS = src/util/RWLock.h \
-								 src/util/easylogging++.h \
+								 src/util/Uberlogger.h \
 								 src/util/Arc.h

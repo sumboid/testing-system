@@ -2,9 +2,9 @@
 #include <vector>
 #include <string>
 #include "System.h"
-#include "../util/easylogging++.h"
+#include "../util/Uberlogger.h"
 
-_INITIALIZE_EASYLOGGINGPP
+UBERINIT;
 
 namespace ts {
 namespace system {
@@ -39,10 +39,10 @@ System::System(FragmentTools* fragmentTools, ReduceDataTools* reduceTools):
 
   execMgr->setSystem(this);
 
-  el::Helpers::installCustomFormatSpecifier(el::CustomFormatSpecifier("%nodeid", [&](){return std::to_string(this->id()).c_str();}));
-  el::Loggers::reconfigureAllLoggers(el::ConfigurationType::Format, "%nodeid: %msg");
+  UBERTEMPLATE("%nodeid: %msg");
+  UBERREPLACE("%nodeid", [&](){return std::to_string(this->id());});
 
-  LOG(INFO) << "Hello, sweety";
+  UBERLOG() << "Hello, sweety" << UBEREND();
 
   actionLoopThread = std::thread(&System::actionLoop, this);
   msgMgr->run();

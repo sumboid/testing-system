@@ -14,7 +14,8 @@ int main() {
 
   ts::Arc* arc = ft.fullSerialize(a);
 
-  ts::type::Fragment* b = ft.fullDeserialize(arc);
+  ts::Arc* arcc = new ts::Arc(arc->get(), arc->size());
+  ts::type::Fragment* b = ft.fullDeserialize(arcc);
 
   if(a->equal(b)) std::cout << "EQUAL" << std::endl;
   else std::cout << "NOT EQUAL" << std::endl;

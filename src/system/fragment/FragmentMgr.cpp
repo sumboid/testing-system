@@ -2,7 +2,7 @@
 #include <iostream>
 #include <algorithm>
 #include <cassert>
-#include "../../util/easylogging++.h"
+#include "../../util/Uberlogger.h"
 
 using std::pair;
 using std::vector;
@@ -167,8 +167,8 @@ void FragmentMgr::unlock(Fragment* fragment) {
 }
 
 void FragmentMgr::updateExternalFragment(Fragment* fragment) {
-  LOG(INFO) << "NEW EXTERNAL CELL STATE: " << fragment->id().tostr() <<
-    " with stamp: " << fragment->iteration() << ":" << fragment->progress();
+  UBERLOG() << "NEW EXTERNAL CELL STATE: " << fragment->id().tostr() <<
+    " with stamp: " << fragment->iteration() << ":" << fragment->progress() << UBEREND();
   pthread_rwlock_rdlock(externalFragmentsLock);
 
   for(auto ffragment: externalFragments) {
@@ -302,7 +302,7 @@ void FragmentMgr::updateNeighbours(const ts::type::ID& id, NodeID node) {
 void FragmentMgr::moveFragmentAccept(const ts::type::ID& id, NodeID nid) {
   auto it = std::find(movingFragmentAccept[id].begin(), movingFragmentAccept[id].end(), nid);
   if(it == movingFragmentAccept[id].end()) {
-    LOG(ERROR) << "Some node send accept without request";
+    UBERLOG() << "Some node send accept without request" << UBEREND();
   }
   movingFragmentAccept[id].erase(it);
   if(movingFragmentAccept[id].empty()) {
