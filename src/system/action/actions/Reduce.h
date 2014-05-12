@@ -11,7 +11,7 @@ private:
   ts::type::ReduceData* data;
 
 public:
-  void set(ts::Arc* arc, ts::type::NodeID id) override;
+  void set(ts::Arc* arc, ts::NodeID id) override;
   void run() override;
 
   Action* copy() override;

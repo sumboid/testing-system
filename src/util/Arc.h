@@ -4,6 +4,8 @@
 #include <cstring>
 #include <type_traits>
 
+#include "Uberlogger.h"
+
 namespace ts {
 
 class Arc {
@@ -44,7 +46,7 @@ public:
     if(_newraw != 0) {
       _raw = _newraw;
     } else {
-      std::cout << "D'OH!" << std::endl;
+      ULOG << "D'OH!" << UEND;
     }
 
     memcpy(_raw + _size, rdata, s);
@@ -60,7 +62,7 @@ public:
     char data[s];
 
     if(s > _size - _rpos) {
-      std::cout << "Oh god" << std::endl;
+      ULOG << "(s > _size - _rpos) or (" << s << " > " << _size - _rpos  << ")" << UEND;
     }
 
     memcpy(data, _raw + _rpos, s * sizeof(char));

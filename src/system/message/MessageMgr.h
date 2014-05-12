@@ -31,7 +31,7 @@ struct Message {
   char* buffer;
   size_t size;
   Tag tag;
-  NodeID node;
+  ts::NodeID node;
   Message() {
     buffer = 0;
     size = 0;
@@ -75,13 +75,13 @@ public:
 
   size_t size() { return _size; }
 
-  void sendBoundary(NodeID node, ts::type::Fragment* fragment);
-  void sendFullFragment(NodeID node, ts::type::Fragment* fragment);
+  void sendBoundary(ts::NodeID node, ts::type::Fragment* fragment);
+  void sendFullFragment(ts::NodeID node, ts::type::Fragment* fragment);
   void sendReduce(ts::type::ReduceData* reduceData);
-  void sendStartMove(NodeID node, const ts::type::ID& id, NodeID to);
-  void sendConfirmMove(NodeID node, const ts::type::ID& id);
+  void sendStartMove(ts::NodeID node, const ts::type::ID& id, ts::NodeID to);
+  void sendConfirmMove(ts::NodeID node, const ts::type::ID& id);
 
-  NodeID getNodeID() { return id; }
+  ts::NodeID getNodeID() { return id; }
 private:
   void sendLoop();
   void receiveLoop();

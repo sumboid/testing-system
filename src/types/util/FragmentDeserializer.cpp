@@ -1,5 +1,6 @@
 #include "FragmentDeserializer.h"
 
+using ts::NodeID;
 namespace ts {
 namespace type {
 namespace util {

@@ -2,6 +2,7 @@
 
 #include "../Fragment.h"
 #include "../../util/Arc.h"
+#include "../../system/message/NodeID.h"
 
 namespace ts {
 namespace type {

@@ -154,11 +154,10 @@ void FragmentMgr::unlock(Fragment* fragment) {
     fragments[fragment] = FREE;
   fragmentsLock.unlock();
 
-  /*if(system->id() == 0)
+  if(system->id() == 0)
     startMoveFragment(fragment, 1);
   if(system->id() == 1)
     startMoveFragment(fragment, 0);
-    */
 }
 
 void FragmentMgr::updateExternalFragment(Fragment* fragment) {

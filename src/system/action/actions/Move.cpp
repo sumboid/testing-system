@@ -6,7 +6,7 @@ namespace ts {
 namespace system {
 namespace action {
 
-  void Move::set(ts::Arc* arc, ts::type::NodeID) {
+  void Move::set(ts::Arc* arc, ts::NodeID) {
     fragment = fragmentTools->fullDeserialize(arc);
   }
 

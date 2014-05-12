@@ -7,7 +7,7 @@ namespace ts {
 namespace system {
 namespace action {
 
-void StartMove::set(ts::Arc* arc, ts::type::NodeID _sender) {
+void StartMove::set(ts::Arc* arc, ts::NodeID _sender) {
   id = ID::deserialize(arc);
   Arc& a = *arc;
   a >> node;

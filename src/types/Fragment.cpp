@@ -10,6 +10,7 @@ using std::pair;
 using std::all_of;
 using std::for_each;
 using std::set;
+using ts::NodeID;
 
 
 namespace ts {

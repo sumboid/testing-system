@@ -5,7 +5,7 @@ namespace ts {
 namespace system {
 namespace action {
 
-void Reduce::set(ts::Arc* arc, ts::type::NodeID) {
+void Reduce::set(ts::Arc* arc, ts::NodeID) {
   data = reduceDataTools->deserialize(arc);
 }
 

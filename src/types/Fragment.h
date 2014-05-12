@@ -11,6 +11,7 @@
 #include "ID.h"
 #include "ReduceData.h"
 #include "../util/RWLock.h"
+#include "../system/message/NodeID.h"
 
 namespace ts {
 
@@ -19,7 +20,6 @@ class FragmentMgr;
 }
 
 namespace type {
-typedef int NodeID;
 
 namespace util {
 class FragmentDeserializer;
@@ -44,8 +44,8 @@ class Fragment {
   friend class ts::system::FragmentMgr;
 private:
   ID _vid;                                   ///< ID of fragment
-  NodeID _vnodeID;                           ///< Logic fragment location
-  std::map<ID, NodeID> _vneighboursLocation; ///< Fragment's neighbours location
+  ts::NodeID _vnodeID;                           ///< Logic fragment location
+  std::map<ID, ts::NodeID> _vneighboursLocation; ///< Fragment's neighbours location
   std::mutex _vneighboursLocationMutex;
 
   bool _vreduce;                             ///< Flag that indicate fragment need for reduce step
@@ -70,16 +70,16 @@ public:
   virtual ~Fragment();
 
   ID id();
-  void setNodeID(NodeID);
+  void setNodeID(ts::NodeID);
 
   // Neighbours and their location
-  std::set<NodeID> noticeList();
+  std::set<ts::NodeID> noticeList();
   std::vector<ID> neighbours();
-  std::vector<ID> neighbours(NodeID node);
+  std::vector<ID> neighbours(ts::NodeID node);
   bool isNeighbour(const ID& id);
-  void updateNeighbour(ID id, NodeID node);
-  std::vector<Fragment*> specialUpdateNeighbour(const ID& id, NodeID node);
-  void addNeighbour(ID id, NodeID node);
+  void updateNeighbour(ID id, ts::NodeID node);
+  std::vector<Fragment*> specialUpdateNeighbour(const ID& id, ts::NodeID node);
+  void addNeighbour(ID id, ts::NodeID node);
 
   // Fragment steps defined by user
   virtual ReduceData* reduce() = 0;

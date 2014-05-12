@@ -7,7 +7,7 @@ namespace ts {
 namespace system {
 namespace action {
 
-void ConfirmMove::set(ts::Arc* arc, ts::type::NodeID _sender) {
+void ConfirmMove::set(ts::Arc* arc, ts::NodeID _sender) {
   id = ID::deserialize(arc);
   sender = _sender;
 }

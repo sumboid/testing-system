@@ -1,6 +1,8 @@
 #include "FragmentSerializer.h"
 #include <iostream>
 #include <tuple>
+
+using ts::NodeID;
 namespace ts {
 namespace type {
 namespace util {

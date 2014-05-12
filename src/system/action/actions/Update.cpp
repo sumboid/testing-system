@@ -5,7 +5,7 @@ namespace ts {
 namespace system {
 namespace action {
 
-void Update::set(ts::Arc* arc, ts::type::NodeID) {
+void Update::set(ts::Arc* arc, ts::NodeID) {
   fragment = fragmentTools->boundaryDeserialize(arc);
 }
 

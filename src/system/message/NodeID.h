@@ -1,4 +1,5 @@
 #pragma once
 
-typedef int NodeID;
-
+namespace ts {
+  typedef int NodeID;
+}

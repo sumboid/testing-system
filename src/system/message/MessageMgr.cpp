@@ -15,6 +15,7 @@ using ts::type::FragmentTools;
 using ts::type::ReduceDataTools;
 using ts::type::ReduceData;
 using ts::Arc;
+using ts::NodeID;
 
 namespace ts {
 namespace system {
@@ -132,7 +133,9 @@ void MessageMgr::sendStartMove(NodeID node, const ts::type::ID& id, NodeID to) {
   message->node = node;
   message->tag = START_MOVE_FRAGMENT;
   Arc* arc = new Arc;
+  Arc& a = *arc;
   id.serialize(arc);
+  a << to;
   message->size = arc->size();
   message->buffer = arc->get();
 
