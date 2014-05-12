@@ -2,20 +2,19 @@ AC_INIT([ts],[0.1],[ilya.sumb@gmail.com])
 AM_INIT_AUTOMAKE([foreign silent-rules])
 AM_SILENT_RULES([yes])
 
-AC_CONFIG_MACRO_DIR([m4/])
+AC_CONFIG_MACRO_DIR([m4])
 
 AC_PROG_CXX([mpic++])
 
-CXXFLAGS="-O0 -g -pg -DNDEBUG -std=c++11 -Wall -Werror"
+CXXFLAGS="-O0 -g -pg -DNDEBUG -std=c++0x -Wall -Werror"
 
-AM_PROG_AR
+AM_PROG_LIBTOOL
 AC_ENABLE_SHARED
 AC_DISABLE_STATIC
 LT_INIT
 
 ###############################################################################
 # Checks for typedefs, structures, and compiler characteristics.
-AC_CHECK_HEADER_STDBOOL
 AC_TYPE_SIZE_T
 AC_TYPE_UINT64_T
 

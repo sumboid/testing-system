@@ -1,16 +1,17 @@
 #include "Update.h"
+#include "../../../util/Uberlogger.h"
 #include <iostream>
 namespace ts {
 namespace system {
 namespace action {
 
-void Update::set(char* buffer, size_t size, ts::type::NodeID) {
-  cell = cellTools->boundaryDeserialize(buffer, size);
+void Update::set(ts::Arc* arc, ts::type::NodeID) {
+  fragment = fragmentTools->boundaryDeserialize(arc);
 }
 
 void Update::run() {
-  std::cout << "UPDATE ACTION!" << std::endl;
-  cellMgr->updateExternalCell(cell);
+  UBERLOG() << "BOUNDARY UPDATED: " << fragment->id().tostr() << UBEREND();
+  fragmentMgr->updateExternalFragment(fragment);
 }
 
 Action* Update::copy() {

@@ -1,37 +1,45 @@
 #include <iostream>
 #include <chrono>
 #include <cassert>
+#include <cstdlib>
+#include <cstring>
 #include "MessageMgr.h"
+#include "../../util/Uberlogger.h"
+#include "../../util/Arc.h"
 
 using std::thread;
 using std::this_thread::sleep_for;
 using std::chrono::seconds;
-using ts::type::Cell;
-using ts::type::CellTools;
+using ts::type::Fragment;
+using ts::type::FragmentTools;
 using ts::type::ReduceDataTools;
 using ts::type::ReduceData;
+using ts::Arc;
 
-ts::system::MessageMgr::MessageMgr(): end(false) {
+namespace ts {
+namespace system {
+
+MessageMgr::MessageMgr(): end(false) {
   comm = new Comm(0, 0);
   id = comm->getRank();
   _size = comm->getSize();
 }
 
-ts::system::MessageMgr::~MessageMgr() {
+MessageMgr::~MessageMgr() {
   delete comm;
 }
 
-void ts::system::MessageMgr::run() {
+void MessageMgr::run() {
   sender = thread(&MessageMgr::sendLoop, this);
   receiver = thread(&MessageMgr::receiveLoop, this);
 }
 
-void ts::system::MessageMgr::join() {
+void MessageMgr::join() {
   sender.join();
   receiver.join();
 }
 
-void ts::system::MessageMgr::receiveLoop() {
+void MessageMgr::receiveLoop() {
   while(true) {
     size_t size;
     unsigned int tag;
@@ -46,6 +54,7 @@ void ts::system::MessageMgr::receiveLoop() {
       message.size = size;
 
       Action* action = actionBuilder->build(message);
+      delete[] message.buffer;
       sys->addAction(action);
     }
     else {
@@ -55,7 +64,7 @@ void ts::system::MessageMgr::receiveLoop() {
   }
 }
 
-void ts::system::MessageMgr::sendLoop() {
+void MessageMgr::sendLoop() {
   while(true) {
     if(end.load()) return;
     queueMutex.lock();
@@ -74,30 +83,88 @@ void ts::system::MessageMgr::sendLoop() {
   }
 }
 
-void ts::system::MessageMgr::send(NodeID node, Tag tag, Cell* cell) {
+void MessageMgr::sendBoundary(NodeID node, Fragment* fragment) {
   Message* message = new Message;
-  cellTool->boundarySerialize(cell, message->buffer, message->size);
-  message->tag = tag;
+  Arc* arc = fragmentTool->boundarySerialize(fragment);
+  message->size = arc->size();
+  message->buffer = arc->get();
+  message->tag = UPDATE_FRAGMENT;
   message->node = node;
-  queueMutex.lock();
-  sendQueue.push(message);
-  queueMutex.unlock();
+  delete arc;
+  push(message);
 }
 
-void ts::system::MessageMgr::send(ReduceData* reduceData) {
+void MessageMgr::sendFullFragment(NodeID node, Fragment* fragment) {
+  Message* message = new Message;
+  UBERLOG() << "Sending full fragment: " << fragment->id().tostr() << UBEREND();
+  Arc* arc = fragmentTool->fullSerialize(fragment);
+  message->size = arc->size();
+  message->buffer = arc->get();
+  message->tag = MOVE_FRAGMENT;
+  message->node = node;
+  delete arc;
+  push(message);
+}
+
+void MessageMgr::sendReduce(ReduceData* reduceData) {
   queueMutex.lock();
   for(size_t i = 0; i < _size; ++i) {
     if(i != id) {
       Message* message = new Message;
-      reduceTool->serialize(reduceData, message->buffer, message->size);
+      Arc* arc = reduceTool->serialize(reduceData);
+      message->size = arc->size();
+      message->buffer = arc->get();
       message->tag = REDUCE_DATA;
       message->node = i;
+      delete arc;
       sendQueue.push(message);
     }
   }
   queueMutex.unlock();
 }
 
-void ts::system::MessageMgr::stop() {
+void MessageMgr::stop() {
   end.store(true);
 }
+
+void MessageMgr::sendStartMove(NodeID node, const ts::type::ID& id, NodeID to) {
+  Message* message = new Message;
+  message->node = node;
+  message->tag = START_MOVE_FRAGMENT;
+  Arc* arc = new Arc;
+  id.serialize(arc);
+  message->size = arc->size();
+  message->buffer = arc->get();
+
+  delete arc;
+
+  push(message);
+}
+
+void MessageMgr::sendConfirmMove(NodeID node, const ts::type::ID& id) {
+  Message* message = new Message;
+  message->node = node;
+  message->tag = CONFIRM_MOVE_FRAGMENT;
+  Arc* arc = new Arc;
+  id.serialize(arc);
+  message->size = arc->size();
+  message->buffer = arc->get();
+  delete arc;
+
+  push(message);
+}
+
+void MessageMgr::push(Message* message) {
+  queueMutex.lock();
+  sendQueue.push(message);
+  queueMutex.unlock();
+}
+
+Message* MessageMgr::pop() {
+  queueMutex.lock();
+  Message* message = sendQueue.front();
+  sendQueue.pop();
+  queueMutex.unlock();
+  return message;
+}
+}}

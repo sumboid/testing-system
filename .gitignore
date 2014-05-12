@@ -6,6 +6,7 @@
 # Libraries
 *.lib
 *.a
+*.la
 
 # Shared objects (inc. Windows DLLs)
 *.dll
@@ -40,3 +41,20 @@ config.log
 Makefile
 .deps/
 .dirstamp
+.libs
+ar-lib
+config.guess
+configure
+libtool
+ltmain.sh
+config.sub
+m4/libtool.m4
+m4/lt~obsolete.m4
+m4/ltoptions.m4
+m4/ltsugar.m4
+m4/ltversion.m4
+
+#YouCompleteMe
+.ycm_extra_conf.py
+.ycm_extra_conf.pyc
+tags

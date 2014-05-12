@@ -1,44 +1,55 @@
 #include <iostream>
 #include <vector>
+#include <string>
+#include <unistd.h>
 #include "System.h"
+#include "../util/Uberlogger.h"
+
+UBERINIT;
 
 namespace ts {
 namespace system {
 
 using std::vector;
-using ts::type::CellTools;
-using ts::type::Cell;
+using ts::type::FragmentTools;
+using ts::type::Fragment;
 using ts::type::ReduceDataTools;
 
-System::System(CellTools* cellTools, ReduceDataTools* reduceTools):
-  inputReduceData(0), _end(false), cellListener(true) {
+System::System(FragmentTools* fragmentTools, ReduceDataTools* reduceTools):
+  inputReduceData(0), _end(false), fragmentListener(true) {
   msgMgr = new MessageMgr;
-  cellMgr = new CellMgr;
+  fragmentMgr = new FragmentMgr;
   execMgr = new ExecMgr(reduceTools);
 
   actionBuilder = new ActionBuilder();
-  actionBuilder->setCellTools(cellTools);
+  actionBuilder->setFragmentTools(fragmentTools);
   actionBuilder->setExecMgr(execMgr);
   actionBuilder->setReduceDataTools(reduceTools);
-  actionBuilder->setCellMgr(cellMgr);
+  actionBuilder->setFragmentMgr(fragmentMgr);
   actionBuilder->setSystem(this);
 
-  msgMgr->setCellMgr(cellMgr);
+  msgMgr->setFragmentMgr(fragmentMgr);
   msgMgr->setSystem(this);
-  msgMgr->setCellTool(cellTools);
+  msgMgr->setFragmentTool(fragmentTools);
   msgMgr->setReduceTool(reduceTools);
   msgMgr->setActionBuilder(actionBuilder);
 
-  cellMgr->setMessageMgr(msgMgr);
-  cellMgr->setSystem(this);
-  cellMgr->setCellTools(cellTools);
+  fragmentMgr->setMessageMgr(msgMgr);
+  fragmentMgr->setSystem(this);
+  fragmentMgr->setFragmentTools(fragmentTools);
 
   execMgr->setSystem(this);
+
+  UBERTEMPLATE("fragment", "[%nodeid][%name]: %msg");
+  UBERREPLACE("fragment", "%nodeid", [&](){return std::to_string(this->id());});
+  UBERTEMPLATE("[%nodeid][%name]: %msg");
+  UBERREPLACE("%nodeid", [&](){return std::to_string(this->id());});
+
+  UBERLOG() << "Hello, sweety" << UBEREND();
 
   actionLoopThread = std::thread(&System::actionLoop, this);
   msgMgr->run();
   execMgr->run();
-
 }
 
 System::~System() {
@@ -50,20 +61,22 @@ System::~System() {
   actionLoopThread.join();
   delete msgMgr;
   delete execMgr;
-  delete cellMgr;
+  delete fragmentMgr;
 }
 
 void System::run() {
   while(true) {
-    auto cells = cellMgr->getCells(359);
+    auto fragments = fragmentMgr->getFragments(359);
     if(_end) {
       return;
     }
-    else if(cells.empty()) {
-      cellListener.wait();
+    else if(fragments.empty()) {
+      fragmentListener.wait();
+     // sleep(1); // Sort of KOSTYL.
+      continue;
     }
 
-    execMgr->add(cells);
+    execMgr->add(fragments);
   }
 }
 
@@ -72,7 +85,7 @@ void System::spreadReduceData(ts::type::ReduceData* data) {
     execMgr->endGlobalReduce();
     return;
   }
-  msgMgr->send(data);
+  msgMgr->sendReduce(data);
 }
 
 void System::putReduceData(ts::type::ReduceData* data) {
@@ -86,9 +99,9 @@ void System::putReduceData(ts::type::ReduceData* data) {
   delete data;
 }
 
-void System::addCell(ts::type::Cell* cell) {
-  cell->setNodeID(id());
-  cellMgr->addCell(cell);
+void System::addFragment(ts::type::Fragment* fragment) {
+  fragment->setNodeID(id());
+  fragmentMgr->addFragment(fragment);
 }
 
 uint64_t System::id() {
@@ -99,16 +112,16 @@ uint64_t System::size() {
   return msgMgr->size();
 }
 
-void System::unlockCell(ts::type::Cell* cell) {
-  cellMgr->unlock(cell);
+void System::unlockFragment(ts::type::Fragment* fragment) {
+  fragmentMgr->unlock(fragment);
   notify();
 }
 
 void System::notify() {
-  cellListener.notifyAll();
+  fragmentListener.notifyAll();
 }
 
-vector<Cell*> System::getCells() { return cellMgr->getCells(); }
+vector<Fragment*> System::getFragments() { return fragmentMgr->getFragments(); }
 
 void System::addAction(Action* action) {
   queueMutex.lock();
@@ -122,10 +135,8 @@ void System::actionLoop() {
     queueMutex.lock();
     if(actionQueue.empty()) {
       queueMutex.unlock();
-      std::cout << "I'M WAITING!" << std::endl;
       actionQueueListener.wait();
       if(_end) {
-        std::cout << "THAT'S END!" << std::endl;
         return;
       }
     }
@@ -147,7 +158,7 @@ void System::actionLoop() {
 
 void System::end() {
   _end = true;
-  cellListener.notifyAll();
+  fragmentListener.notifyAll();
   actionQueueListener.notifyAll();
 }
 

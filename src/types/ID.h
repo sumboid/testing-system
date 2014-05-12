@@ -1,6 +1,8 @@
 #pragma once
 #include <cstdint>
 #include <string>
+#include "../util/Arc.h"
+
 namespace ts {
 namespace type {
 
@@ -11,10 +13,11 @@ struct ID {
   virtual ~ID();
   bool operator<(const ID&) const;
   bool operator>(const ID&) const;
-  bool operator==(const ID& other);
-  std::string tostr();
+  bool operator==(const ID& other) const;
+  void operator= (const ID& another);
+  std::string tostr() const;
 
-  size_t serialize(char*& buf);
-  static ID deserialize(char* buf, size_t size);
+  void serialize(ts::Arc* arc) const;
+  static ID deserialize(ts::Arc* arc);
 };
 }}
