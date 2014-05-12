@@ -35,7 +35,9 @@ std::string ID::tostr() const {
 
 void ID::serialize(ts::Arc* arc) const {
   Arc& a = *arc;
-  a << c[X] << c[Y] << c[Z];
+  a << c[X];
+  a << c[Y];
+  a << c[Z];
 }
 
 ID ID::deserialize(ts::Arc* arc) {

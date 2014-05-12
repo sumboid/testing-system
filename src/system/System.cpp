@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <unistd.h>
 #include "System.h"
 #include "../util/Uberlogger.h"
 
@@ -39,7 +40,9 @@ System::System(FragmentTools* fragmentTools, ReduceDataTools* reduceTools):
 
   execMgr->setSystem(this);
 
-  UBERTEMPLATE("%nodeid: %msg");
+  UBERTEMPLATE("fragment", "[%nodeid][%name]: %msg");
+  UBERREPLACE("fragment", "%nodeid", [&](){return std::to_string(this->id());});
+  UBERTEMPLATE("[%nodeid][%name]: %msg");
   UBERREPLACE("%nodeid", [&](){return std::to_string(this->id());});
 
   UBERLOG() << "Hello, sweety" << UBEREND();
@@ -47,7 +50,6 @@ System::System(FragmentTools* fragmentTools, ReduceDataTools* reduceTools):
   actionLoopThread = std::thread(&System::actionLoop, this);
   msgMgr->run();
   execMgr->run();
-
 }
 
 System::~System() {
@@ -70,6 +72,8 @@ void System::run() {
     }
     else if(fragments.empty()) {
       fragmentListener.wait();
+     // sleep(1); // Sort of KOSTYL.
+      continue;
     }
 
     execMgr->add(fragments);

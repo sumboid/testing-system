@@ -7,6 +7,7 @@
 #include <ts/types/ID.h>
 #include <ts/types/ReduceData.h>
 #include <ts/types/ReduceDataTools.h>
+#include <ts/util/Uberlogger.h>
 
 using ts::type::ID;
 class ReduceData: public ts::type::ReduceData {
@@ -79,6 +80,7 @@ public:
     } else if (iteration() != 0) {
       int buf = iter - 1;
       for(auto n: neighbours) {
+        UBERLOG("fragment") << "[" << id().tostr() << "] " <<"Get iter from: " << n->id().tostr() << ": " << ((Fragment*) n)->iter << UBEREND();
         buf += ((Fragment*) n)->iter;
       }
       file << "Reduced " << buf << " locally" << std::endl;
@@ -110,7 +112,6 @@ public:
   Fragment* copy() override {
     return new Fragment(ID(0,0,0));
   }
-
 };
 
 class FragmentTools: public ts::type::FragmentTools {

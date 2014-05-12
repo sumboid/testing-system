@@ -14,6 +14,7 @@ Arc* FragmentTools::boundarySerialize(Fragment* fragment) {
   serialize(fragment, arc);
   FragmentSerializer::id(fragment, arc);
   FragmentSerializer::timestamp(fragment, arc);
+  FragmentSerializer::neighbours(fragment, arc);
   return arc;
 }
 
@@ -21,6 +22,7 @@ Fragment* FragmentTools::boundaryDeserialize(Arc* arc) {
   Fragment* fragment = deserialize(arc);
   FragmentDeserializer::id(fragment, arc);
   FragmentDeserializer::timestamp(fragment, arc);
+  FragmentDeserializer::neighbours(fragment, arc);
 
   return fragment;
 }

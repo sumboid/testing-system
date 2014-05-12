@@ -13,6 +13,11 @@
 #include "../util/RWLock.h"
 
 namespace ts {
+
+namespace system {
+class FragmentMgr;
+}
+
 namespace type {
 typedef int NodeID;
 
@@ -36,6 +41,7 @@ class Fragment {
   friend class FragmentTools;
   friend class util::FragmentSerializer;
   friend class util::FragmentDeserializer;
+  friend class ts::system::FragmentMgr;
 private:
   ID _vid;                                   ///< ID of fragment
   NodeID _vnodeID;                           ///< Logic fragment location
@@ -74,13 +80,6 @@ public:
   void updateNeighbour(ID id, NodeID node);
   std::vector<Fragment*> specialUpdateNeighbour(const ID& id, NodeID node);
   void addNeighbour(ID id, NodeID node);
-
-  //Serialization
-  //virtual void serialize(void*& buf, size_t& size) = 0;
-  //virtual void deserialize(void* buf, size_t size) = 0;
-
-  // ID(int, int, int) (iteration, progress) (size) (data) from serialize()
-  //void _serialize(void*& buf, size_t& size);
 
   // Fragment steps defined by user
   virtual ReduceData* reduce() = 0;

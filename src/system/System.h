@@ -39,7 +39,7 @@ private:
   std::thread actionLoopThread;
   std::mutex queueMutex;
   std::queue<Action*> actionQueue;
-  Semaphore actionQueueListener;
+  Listener actionQueueListener;
 
 public:
   System(ts::type::FragmentTools*, ts::type::ReduceDataTools*);

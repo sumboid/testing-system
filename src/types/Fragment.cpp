@@ -106,7 +106,7 @@ void Fragment::_reduceStep(ReduceData* data) {
   ++_vprogress;
 }
 
-bool Fragment::needReduce() { return _vreduce;  }
+bool Fragment::needReduce() { return _vreduce; }
 bool Fragment::wasReduced() { return _vreduced; }
 bool Fragment::needUpdate() { return _vupdate; }
 
@@ -134,6 +134,9 @@ void Fragment::nextIteration() {
 void Fragment::_runStep(std::vector<Fragment*> neighbours) {
   runStep(neighbours);
   ++_vprogress;
+  if(!neighbours.empty()) {
+    _vneighbours = false;
+  }
 }
 
 void Fragment::setEnd() {
@@ -171,6 +174,8 @@ void Fragment::saveState() {
 }
 
 void Fragment::saveState(Fragment* fragment) {
+  UBERLOG() << id().tostr() << " Saved state: (" << fragment->iteration() << ", " << fragment->progress() << ")" <<
+    " from " << fragment->id().tostr() << UBEREND();
   _vstates.insert(pair<Timestamp, Fragment*>(Timestamp(fragment->iteration(), fragment->progress()), fragment));
 }
 
@@ -182,12 +187,16 @@ void Fragment::moveStates(Fragment* fragment) {
 
 Fragment* Fragment::getLastState() {
   _vupdate = false;
-  return _vlaststate;
+  Fragment* f = _vlaststate;
+  for(auto &n : _vneighboursLocation) {
+    f->addNeighbour(n.first, n.second);
+  }
+  return f;
 }
 
 Fragment* Fragment::getState(const Timestamp& timestamp, const ID& neighbour) {
   _vstatesMutex.lock();
-  Fragment* fragment = _vstates.at(timestamp);
+  Fragment* fragment = _vstates.at(timestamp)->getBoundary();
 
   _vstateGettedLock.wlock([&]() {
       _vstateGetted[timestamp].insert(neighbour);
@@ -221,15 +230,29 @@ bool Fragment::hasState(const Timestamp& timestamp) {
 }
 
 void Fragment::_tryRemoveState(Timestamp timestamp) {
+  _vstateGettedLock.rlock();
   auto checkList = _vstateGetted[timestamp];
-  if(any_of(_vneighboursLocation.begin(), _vneighboursLocation.end(), 
+  _vstateGettedLock.unlock();
+  
+  if(all_of(_vneighboursLocation.begin(), _vneighboursLocation.end(), 
       [=](const pair<ID, NodeID>& neighbour) {
-        if(neighbour.second == _vnodeID && checkList.find(neighbour.first) != checkList.end())
+        if(neighbour.second != _vnodeID)
+          return true;
+        else if(checkList.find(neighbour.first) != checkList.end())
           return true;
         else
           return false;
       })
     ) {
+
+    auto pek = UBERLOG("fragment") << _vid.tostr() << ": Remove state: (" << std::get<0>(timestamp) << ", " << std::get<1>(timestamp) << ") ";
+    pek << "because state was getted by: ";
+    for(auto &a : checkList) {
+      pek << a.tostr() << " ";
+    }
+
+    pek << UEND;
+
     auto finded = _vstates.find(timestamp);
     delete finded->second;
     _vstates.erase(finded);

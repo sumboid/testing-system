@@ -11,6 +11,7 @@
 #include "../message/MessageMgr.h"
 #include "../System.h"
 #include "../message/NodeID.h"
+#include "../../util/RWLock.h"
 
 namespace ts {
 namespace system {
@@ -33,11 +34,12 @@ namespace system {
 
     std::vector<ts::type::Fragment*> externalFragments;
     std::map<ts::type::Fragment*, State> fragments;
-    pthread_rwlock_t* fragmentsLock;
-    pthread_rwlock_t* externalFragmentsLock;
+    ts::RWLock fragmentsLock;
+    ts::RWLock externalFragmentsLock;
 
     std::map<ts::type::ID, std::vector<NodeID>> movingFragmentAccept;
     std::map<ts::type::ID, NodeID> moveList;
+
   public:
     FragmentMgr();
     FragmentMgr(MessageMgr* msgMgr);

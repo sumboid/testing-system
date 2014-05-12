@@ -38,6 +38,11 @@ public:
 
     void add (std::string msg) {
       //Need to fix
+      if(msg.empty())
+      {
+        std::cout << "It's empty!" << std::endl;
+        return;
+      }
       omutex.lock();
       std::string result = _template;
       omutex.unlock();
@@ -165,3 +170,6 @@ static inline void UBERREPLACE(const std::string& x, std::function<std::string(v
 static inline void UBERREPLACE(const std::string& logname, const std::string& x, std::function<std::string(void)> y) {
   Uberlogger::instance(logname).repl(x, y);
 }
+
+#define ULOG (UBERLOG())
+#define UEND (UBEREND())
