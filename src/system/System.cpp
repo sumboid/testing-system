@@ -40,8 +40,12 @@ System::System(FragmentTools* fragmentTools, ReduceDataTools* reduceTools):
 
   execMgr->setSystem(this);
 
-  UBERTEMPLATE("fragment", "[%nodeid][%name]: %msg");
-  UBERREPLACE("fragment", "%nodeid", [&](){return std::to_string(this->id());});
+  UTEMPLATE(fragment, "[%nodeid][%name]: %msg");
+  UTEMPLATE(arc, "[%nodeid][%name]: %msg");
+  UTEMPLATE(move, "[%nodeid][%name]: %msg");
+  UREPLACE(fragment, "%nodeid", [&](){return std::to_string(this->id());});
+  UREPLACE(arc, "%nodeid", [&](){return std::to_string(this->id());});
+  UREPLACE(move, "%nodeid", [&](){return std::to_string(this->id());});
   UBERTEMPLATE("[%nodeid][%name]: %msg");
   UBERREPLACE("%nodeid", [&](){return std::to_string(this->id());});
 

@@ -32,6 +32,7 @@ Arc* FragmentTools::fullSerialize(Fragment* fragment) {
   serialize(fragment, arc);
   FragmentSerializer::id(fragment, arc);
   FragmentSerializer::timestamp(fragment, arc);
+  FragmentSerializer::neighboursTimestamp(fragment, arc);
   FragmentSerializer::flags(fragment, arc);
   FragmentSerializer::neighbours(fragment, arc);
 
@@ -42,9 +43,15 @@ Fragment* FragmentTools::fullDeserialize(Arc* arc) {
   Fragment* fragment;
 
   fragment = deserialize(arc);
+  ULOG(arc) << "(deserialize) Reading position: " << arc->pos() << UEND;
   FragmentDeserializer::id(fragment, arc);
+  ULOG(arc) << "(id) Reading position: " << arc->pos() << UEND;
   FragmentDeserializer::timestamp(fragment, arc);
+  ULOG(arc) << "(timestamp) Reading position: " << arc->pos() << UEND;
+  FragmentDeserializer::neighboursTimestamp(fragment, arc);
+  ULOG(arc) << "(ntimestamp) Reading position: " << arc->pos() << UEND;
   FragmentDeserializer::flags(fragment, arc);
+  ULOG(arc) << "(flags) Reading position: " << arc->pos() << UEND;
   FragmentDeserializer::neighbours(fragment, arc);
 
   return fragment;

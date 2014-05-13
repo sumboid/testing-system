@@ -15,6 +15,10 @@ void FragmentSerializer::timestamp(Fragment* fragment, ts::Arc* arc) {
   a << fragment->_vprogress;
 }
 
+void FragmentSerializer::neighboursTimestamp(Fragment* fragment, ts::Arc* arc) {
+  timestamp(fragment->_vneighboursState, arc);
+}
+
 void FragmentSerializer::id(Fragment* fragment, ts::Arc* arc) {
   fragment->id().serialize(arc);
 }

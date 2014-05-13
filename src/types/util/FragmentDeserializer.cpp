@@ -1,4 +1,5 @@
 #include "FragmentDeserializer.h"
+#include <tuple>
 
 using ts::NodeID;
 namespace ts {
@@ -11,6 +12,13 @@ void FragmentDeserializer::timestamp(Fragment* fragment, ts::Arc* arc) {
   Arc& a = *arc;
   a >> fragment->_viteration;
   a >> fragment->_vprogress;
+}
+
+void FragmentDeserializer::neighboursTimestamp(Fragment* fragment, ts::Arc* arc) {
+  Arc& a = *arc;
+  uint64_t i, p;
+  a >> i >> p;
+  fragment->_vneighboursState = Timestamp(i, p);
 }
 
 void FragmentDeserializer::id(Fragment* fragment, ts::Arc* arc) {

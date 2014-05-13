@@ -46,7 +46,7 @@ public:
     if(_newraw != 0) {
       _raw = _newraw;
     } else {
-      ULOG << "D'OH!" << UEND;
+      ULOG(arc) << "D'OH!" << UEND;
     }
 
     memcpy(_raw + _size, rdata, s);
@@ -61,8 +61,11 @@ public:
     size_t s = sizeof(T) / sizeof(char);
     char data[s];
 
+    ULOG(arc) << "Trying to get " << s << " bytes" << UEND;
+
     if(s > _size - _rpos) {
-      ULOG << "(s > _size - _rpos) or (" << s << " > " << _size - _rpos  << ")" << UEND;
+      ULOG(arc) << "(s > _size - _rpos) or (" << s << " > " << _size - _rpos  << ")" <<
+              " and _size = " << _size << UEND;
     }
 
     memcpy(data, _raw + _rpos, s * sizeof(char));
@@ -81,6 +84,10 @@ public:
     char* r = new char[_size];
     memcpy(r, _raw, _size);
     return r;
+  }
+
+  size_t pos() {
+    return _rpos;
   }
 };
 }

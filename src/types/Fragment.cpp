@@ -171,6 +171,8 @@ Timestamp Fragment::neighboursState() {
 
 void Fragment::saveState() {
   _vlaststate = getBoundary();
+  _vlaststate->_viteration = _viteration;
+  _vlaststate->_vprogress = _vprogress;
   _vstates.insert(pair<Timestamp, Fragment*>(Timestamp(_viteration, _vprogress), _vlaststate));
 }
 
@@ -246,7 +248,7 @@ void Fragment::_tryRemoveState(Timestamp timestamp) {
       })
     ) {
 
-    auto pek = UBERLOG("fragment") << _vid.tostr() << ": Remove state: (" << std::get<0>(timestamp) << ", " << std::get<1>(timestamp) << ") ";
+    auto pek = ULOG(FRAGMENT) << _vid.tostr() << ": Remove state: (" << std::get<0>(timestamp) << ", " << std::get<1>(timestamp) << ") ";
     pek << "because state was getted by: ";
     for(auto &a : checkList) {
       pek << a.tostr() << " ";
@@ -275,7 +277,6 @@ bool Fragment::operator==(const ID& other) { return _vid == other; }
 #ifdef NDEBUG
   void Fragment::printStates() {
     if(_vstates.empty()) {
-      std::cout << "NO STATES LOLD" << std::endl;
       return;
     }
     for(auto state: _vstates) {
@@ -321,7 +322,7 @@ bool Fragment::equal(Fragment* another) {
   return _equal(another);
 }
 
-bool Fragment::_equal(Fragment* another) {
+bool Fragment::_equal(Fragment*) {
   return true;
 }
 

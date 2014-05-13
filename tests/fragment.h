@@ -104,8 +104,6 @@ public:
   Fragment* getBoundary() override {
     Fragment* fragment = new Fragment(id(), false);
     fragment->iter = iter;
-    fragment->iteration(iteration());
-    fragment->progress(progress());
     return fragment;
   }
 

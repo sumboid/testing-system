@@ -11,7 +11,7 @@ namespace action {
   }
 
   void Move::run() {
-    UBERLOG() << "MOVING: " << fragment->id().tostr() << UBEREND();
+    ULOG(move) << "MOVED: " << fragment->id().tostr() << UBEREND();
     system->addFragment(fragment);
   }
 

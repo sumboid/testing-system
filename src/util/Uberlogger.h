@@ -171,5 +171,7 @@ static inline void UBERREPLACE(const std::string& logname, const std::string& x,
   Uberlogger::instance(logname).repl(x, y);
 }
 
-#define ULOG (UBERLOG())
+#define UTEMPLATE(x, tmpl) (UBERTEMPLATE(#x, tmpl))
+#define UREPLACE(x, a, b) (UBERREPLACE(#x, a, b))
+#define ULOG(x) (UBERLOG(#x))
 #define UEND (UBEREND())

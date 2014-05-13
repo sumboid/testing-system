@@ -310,7 +310,7 @@ void FragmentMgr::updateNeighbours(const ts::type::ID& id, NodeID node) {
 void FragmentMgr::moveFragmentAccept(const ts::type::ID& id, NodeID nid) {
   auto it = std::find(movingFragmentAccept[id].begin(), movingFragmentAccept[id].end(), nid);
   if(it == movingFragmentAccept[id].end()) {
-    UBERLOG() << "Some node send accept without request" << UBEREND();
+    ULOG(move) << "Some node send accept without request" << UBEREND();
   }
   movingFragmentAccept[id].erase(it);
   if(movingFragmentAccept[id].empty()) {
