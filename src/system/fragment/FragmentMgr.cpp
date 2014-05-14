@@ -121,7 +121,7 @@ vector<WorkFragment> FragmentMgr::getFragments(int) {
 
     if(fwithstates.size() == neighboursID.size()) {
         for(auto &s : fwithstates) {
-          neighbours.push_back(s->getState(fragment->neighboursState(), fragment->id())); // !!!!!!!!!!
+          neighbours.push_back(s->getState(fragment->neighboursState(), fragment->id()));
         }
         result.push_back(pair<Fragment*, vector<Fragment*>>(fragment, neighbours));
     }
