@@ -57,6 +57,8 @@ private:
   uint64_t _viteration;                      ///< Current iteration
   uint64_t _vprogress;                       ///< Current progress of iteration
 
+  bool _visboundary;
+
   Timestamp _vneighboursState;
   std::map<Timestamp, Fragment*> _vstates;   ///< stored states of fragment
   std::mutex _vstatesMutex;
@@ -121,9 +123,14 @@ public:
   uint64_t iteration();
   uint64_t progress();
 
-  // State setters
-  void iteration(uint64_t i);
-  void progress(uint64_t p);
+  // Checking boundary
+  bool isBoundary() {
+    return _visboundary;
+  }
+
+  void setBoundary() {
+    _visboundary = true;
+  }
 
   // Low-level methods that changes state implicitly
   ReduceData* _reduce();

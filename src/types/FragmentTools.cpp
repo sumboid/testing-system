@@ -1,6 +1,7 @@
 #include "FragmentTools.h"
 #include "util/FragmentDeserializer.h"
 #include "util/FragmentSerializer.h"
+#include <cassert>
 
 using ts::Arc;
 
@@ -11,7 +12,7 @@ using namespace util;
 
 Arc* FragmentTools::boundarySerialize(Fragment* fragment) {
   Arc* arc = new Arc;
-  serialize(fragment, arc);
+  bserialize(fragment, arc);
   FragmentSerializer::id(fragment, arc);
   FragmentSerializer::timestamp(fragment, arc);
   FragmentSerializer::neighbours(fragment, arc);
@@ -19,7 +20,7 @@ Arc* FragmentTools::boundarySerialize(Fragment* fragment) {
 }
 
 Fragment* FragmentTools::boundaryDeserialize(Arc* arc) {
-  Fragment* fragment = deserialize(arc);
+  Fragment* fragment = bdeserialize(arc);
   FragmentDeserializer::id(fragment, arc);
   FragmentDeserializer::timestamp(fragment, arc);
   FragmentDeserializer::neighbours(fragment, arc);
@@ -29,7 +30,8 @@ Fragment* FragmentTools::boundaryDeserialize(Arc* arc) {
 
 Arc* FragmentTools::fullSerialize(Fragment* fragment) {
   Arc* arc = new Arc;
-  serialize(fragment, arc);
+  ULOG(fragment) << "Serialize fragment " << fragment->id().tostr() << " with state: " << fragment->iteration() << " and it is boundary: " << fragment->isBoundary() << UEND;
+  fserialize(fragment, arc);
   FragmentSerializer::id(fragment, arc);
   FragmentSerializer::timestamp(fragment, arc);
   FragmentSerializer::neighboursTimestamp(fragment, arc);
@@ -42,7 +44,7 @@ Arc* FragmentTools::fullSerialize(Fragment* fragment) {
 Fragment* FragmentTools::fullDeserialize(Arc* arc) {
   Fragment* fragment;
 
-  fragment = deserialize(arc);
+  fragment = fdeserialize(arc);
   ULOG(arc) << "(deserialize) Reading position: " << arc->pos() << UEND;
   FragmentDeserializer::id(fragment, arc);
   ULOG(arc) << "(id) Reading position: " << arc->pos() << UEND;
@@ -54,6 +56,7 @@ Fragment* FragmentTools::fullDeserialize(Arc* arc) {
   ULOG(arc) << "(flags) Reading position: " << arc->pos() << UEND;
   FragmentDeserializer::neighbours(fragment, arc);
 
+  ULOG(fragment) << "Deserialize fragment " << fragment->id().tostr() << " with state: " << fragment->iteration() << UEND;
   return fragment;
 }
 }}

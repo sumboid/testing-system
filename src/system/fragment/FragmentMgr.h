@@ -15,6 +15,7 @@
 
 namespace ts {
 namespace system {
+
   class System;
   class MessageMgr;
 
@@ -27,6 +28,9 @@ namespace system {
       UPDATE,
       BLOCKED
     };
+
+    typedef std::map<ts::type::Fragment*, State>::iterator internalit;
+    typedef std::vector<ts::type::Fragment*>::iterator externalit;
 
     type::FragmentTools* fragmentTools;
     MessageMgr* messageMgr;
@@ -55,7 +59,7 @@ namespace system {
     void unlock(ts::type::Fragment* fragment);
     void updateExternalFragment(ts::type::Fragment* fragment);
 
-    void specialUpdateNeighbours(const ts::type::ID& id);
+    void specialUpdateNeighbours(ts::type::Fragment* fragment);
     void confirmMove(const ts::type::ID& id, NodeID node);
     void updateNeighbours(const ts::type::ID& id, NodeID node);
     void startMoveFragment(ts::type::Fragment* fragment, NodeID node);
@@ -64,5 +68,8 @@ namespace system {
     void createExternal(ts::type::Fragment* f);
     std::vector<ts::type::Fragment*> getFragments();
     ts::type::Fragment* findFragment(const ts::type::ID& id);
+
+    internalit findInternalFragment(const ts::type::ID& id);
+    externalit findExternalFragment(const ts::type::ID& id);
   };
 }}

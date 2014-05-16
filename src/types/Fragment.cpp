@@ -26,6 +26,7 @@ Fragment::Fragment(ID id) {
   _vid = id;
   _vupdate = false;
   _vend = false;
+  _visboundary = false;
 }
 
 Fragment::~Fragment() {
@@ -119,14 +120,6 @@ uint64_t Fragment::progress() {
   return _vprogress;
 }
 
-void Fragment::iteration(uint64_t i) {
-  _viteration = i;
-}
-
-void Fragment::progress(uint64_t p) {
-  _vprogress = p;
-}
-
 void Fragment::nextIteration() {
   ++_viteration;
   _vprogress = 0;
@@ -153,6 +146,7 @@ void Fragment::setUpdate() {
 }
 
 void Fragment::setNeighbours(uint64_t iteration, uint64_t progress) {
+  ULOG(fragment) << _vid.tostr() << " [" << _viteration << ", " << _vprogress << "] " << "Set neighbours timestamp: " << iteration << ":" << progress << UEND;
   _vneighboursState = Timestamp(iteration, progress);
   _vneighbours = true;
 }
@@ -173,6 +167,7 @@ void Fragment::saveState() {
   _vlaststate = getBoundary();
   _vlaststate->_viteration = _viteration;
   _vlaststate->_vprogress = _vprogress;
+  _vlaststate->_visboundary = true;
   _vstates.insert(pair<Timestamp, Fragment*>(Timestamp(_viteration, _vprogress), _vlaststate));
 }
 

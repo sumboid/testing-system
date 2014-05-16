@@ -15,17 +15,16 @@ int main() {
   std::vector<Fragment*> fragments;
   std::ofstream file(std::to_string(system->id()));
 
-  fragments.push_back(new Fragment(ts::type::ID(system->id(),0,0)));
-//  fragments.push_back(new Fragment(ts::type::ID(system->id(),1,0)));
-//  fragments.push_back(new Fragment(ts::type::ID(system->id(),2,0)));
-//  fragments.push_back(new Fragment(ts::type::ID(system->id(),3,0)));
-//  fragments.push_back(new Fragment(ts::type::ID(system->id(),4,0)));
+  int number = 5;
+  for(int i = 0; i < number; ++i) {
+    fragments.push_back(new Fragment(ts::type::ID(system->id(),i,0)));
+  }
 
   for(auto fragment : fragments) {
     ID id = fragment->id();
-    if((id.c[1] - 1) < 1)
+    if((id.c[1] - 1) < number)
       fragment->addNeighbour(ID(id.c[0], id.c[1] - 1, id.c[2]), id.c[0]);
-    if((id.c[1] + 1) < 1)
+    if((id.c[1] + 1) < number)
       fragment->addNeighbour(ID(id.c[0], id.c[1] + 1, id.c[2]), id.c[0]);
     if((id.c[0] + 1) < system->size())
       fragment->addNeighbour(ID(id.c[0] + 1, id.c[1], id.c[2]), id.c[0] + 1);
