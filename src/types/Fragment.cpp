@@ -77,7 +77,7 @@ bool Fragment::isNeighbour(const ID& id) {
 }
 void Fragment::addNeighbour(ID id, NodeID node) {
   _vneighboursLocationMutex.lock();
-  UBERLOG() << "Adding neighbour: " << id.tostr() << UBEREND();
+  UBERLOG() << _vid.tostr() << " Adding neighbour: " << id.tostr() << UBEREND();
   _vneighboursLocation.insert(std::pair<ID, NodeID>(id, node));
   _vneighboursLocationMutex.unlock();
   //_vneighboursLocation[id] = node;

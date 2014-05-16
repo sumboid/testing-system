@@ -137,16 +137,19 @@ void System::addAction(Action* action) {
 void System::actionLoop() {
   while(true) {
     queueMutex.lock();
-    if(actionQueue.empty()) {
+    size_t queueSize = actionQueue.size();
+    queueMutex.unlock();
+
+    if(queueSize == 0) {
       queueMutex.unlock();
-      actionQueueListener.wait();
+      //actionQueueListener.wait();
+      sleep(1);
+      continue;
+
       if(_end) {
         return;
       }
     }
-
-    size_t queueSize = actionQueue.size();
-    queueMutex.unlock();
 
     for(size_t i = 0; i < queueSize; ++i) {
       queueMutex.lock();

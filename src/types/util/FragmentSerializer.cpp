@@ -1,6 +1,7 @@
 #include "FragmentSerializer.h"
 #include <iostream>
 #include <tuple>
+#include "../../util/Arc.h"
 
 using ts::NodeID;
 namespace ts {
@@ -25,7 +26,11 @@ void FragmentSerializer::id(Fragment* fragment, ts::Arc* arc) {
 
 void FragmentSerializer::neighbours(Fragment* fragment, ts::Arc* arc) {
   Arc& a = *arc;
-  a << static_cast<size_t>(fragment->_vneighboursLocation.size());
+  size_t actualSize = 0;
+
+  for(auto n : fragment->_vneighboursLocation) ++actualSize; // HELP! HE-ELP ME-E!
+
+  a << actualSize;
 
   for(auto n : fragment->_vneighboursLocation) {
     n.first.serialize(arc);

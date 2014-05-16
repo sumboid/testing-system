@@ -2,7 +2,9 @@
 #include <iostream>
 #include <cstdlib>
 #include <cstring>
+#include <cassert>
 #include <type_traits>
+#include <vector>
 
 #include "Uberlogger.h"
 
@@ -15,12 +17,16 @@ private:
   size_t wpos;
   size_t _rpos;
 
+  std::vector<size_t> vput;
+  std::vector<size_t> vget;
+
 public:
   Arc(const char* data, size_t __size) {
     _raw = (char*) malloc(__size * sizeof(char));
     memcpy(_raw, data, __size * sizeof(char));
     _size = __size;
     _rpos = 0;
+    vput.push_back(__size);
   }
 
   Arc() {
@@ -52,6 +58,7 @@ public:
     memcpy(_raw + _size, rdata, s);
     _size += s;
 
+    vput.push_back(s);
     return *this;
   }
 
@@ -61,11 +68,24 @@ public:
     size_t s = sizeof(T) / sizeof(char);
     char data[s];
 
-    ULOG(arc) << "Trying to get " << s << " bytes" << UEND;
+    vget.push_back(s);
 
     if(s > _size - _rpos) {
-      ULOG(arc) << "(s > _size - _rpos) or (" << s << " > " << _size - _rpos  << ")" <<
-              " and _size = " << _size << UEND;
+      auto message = ULOG(arc);
+      message << "(s > _size - _rpos) or (" << s << " > " << _size - _rpos  << ")" <<
+                 " and _size = " << _size << "\n";
+
+      message << "put: ";
+      for(auto i : vput)
+        message << i << ", ";
+
+      message << "\n";
+      message << "get: ";
+      for(auto i : vget)
+        message << i << ", ";
+
+      message << UEND;
+      assert(0);
     }
 
     memcpy(data, _raw + _rpos, s * sizeof(char));
