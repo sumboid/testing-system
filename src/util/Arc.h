@@ -52,7 +52,7 @@ public:
     if(_newraw != 0) {
       _raw = _newraw;
     } else {
-      ULOG(arc) << "D'OH!" << UEND;
+      ULOG(error) << "D'OH!" << UEND;
     }
 
     memcpy(_raw + _size, rdata, s);
@@ -71,7 +71,7 @@ public:
     vget.push_back(s);
 
     if(s > _size - _rpos) {
-      auto message = ULOG(arc);
+      auto message = ULOG(error);
       message << "(s > _size - _rpos) or (" << s << " > " << _size - _rpos  << ")" <<
                  " and _size = " << _size << "\n";
 

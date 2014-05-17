@@ -15,7 +15,7 @@ int main() {
   std::vector<Fragment*> fragments;
   std::ofstream file(std::to_string(system->id()));
 
-  int number = 2;
+  int number = 5;
   for(int i = 0; i < number; ++i) {
     fragments.push_back(new Fragment(ts::type::ID(system->id(),i,0)));
   }

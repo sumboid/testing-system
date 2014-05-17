@@ -57,14 +57,17 @@ vector<WorkFragment> FragmentMgr::getFragments(int) {
     }
 
   /// If all of fragments are free with end state shut down the System
-  if(endCount == fragments.size()) {
-    system->end();
-    fragmentsLock.unlock();
-    return vector<WorkFragment>();
-  }
+//  if(endCount == fragments.size()) {
+//    //system->end();
+//    fragmentsLock.unlock();
+//    return vector<WorkFragment>();
+//  }
 
   fragmentsLock.unlock();
 
+  if(ffragments.size() == 0) {
+    ULOG(default) << "There is nothing. Ok?" << UEND;
+  }
   for(auto fragment: ffragments) {
     /// Check fragment waiting for final reduce step
     if(!fragment->needReduce() && !fragment->wasReduced()) {
@@ -117,7 +120,7 @@ vector<WorkFragment> FragmentMgr::getFragments(int) {
       if(!findedFragment->hasState(fragment->neighboursState())) {
         /// It means that finded copy of external fragment has
         /// too old state
-        ULOG("fragment") << "OLD STATE: " << fragment->id().tostr() <<
+        ULOG(fragment) << "OLD STATE: " << fragment->id().tostr() <<
                             " need state: " <<
                             std::get<0>(fragment->neighboursState()) <<
                             ":" <<
@@ -159,12 +162,12 @@ void FragmentMgr::unlock(Fragment* fragment) {
   if(fragment->needUpdate()) {
     auto nodes = fragment->noticeList();
     for(auto node: nodes) messageMgr->sendBoundary(node,
-                                                   fragment->getLastState());
+                                                    fragment->getLastState());
   }
 
   fragmentsLock.wlock();
   if(fragments[fragment] == EXEC)
-    fragments[fragment] = FREE;
+     fragments[fragment] = FREE;
   fragmentsLock.unlock();
 
   if(system->id() == 0)
@@ -174,7 +177,7 @@ void FragmentMgr::unlock(Fragment* fragment) {
 }
 
 void FragmentMgr::updateExternalFragment(Fragment* fragment) {
-  ULOG("fragment") << "NEW EXTERNAL CELL STATE: " <<
+  ULOG(fragment) << "NEW EXTERNAL CELL STATE: " <<
                       fragment->id().tostr() << " with stamp: " <<
                       fragment->iteration() << ":" << fragment->progress() <<
                       UEND;
@@ -227,11 +230,11 @@ vector<Fragment*> FragmentMgr::getFragments() {
 }
 
 void FragmentMgr::moveFragment(Fragment* fragment) {
-  if(fragment->isBoundary()) ULOG("fragment") << "WTF REALLY" << UEND;
+  if(fragment->isBoundary()) ULOG(error) << "WTF REALLY" << UEND;
   ID id = fragment->id();
 
   /// Send Fragment to node
-  messageMgr->sendFullFragment(moveList[id], fragment);
+  messageMgr->sendFullFragment(moveList.at(id), fragment);
 
   /// Remove Fragment from list
   fragmentsLock.rlock();
@@ -247,6 +250,10 @@ void FragmentMgr::moveFragment(Fragment* fragment) {
                                 [&id](pair<ID, NodeID> f) {
                                   return f.first == id;
                                 });
+  if(movefragmentit == moveList.end()) {
+    ULOG(default) << "That is not cool" << UEND;
+    assert(0);
+  }
   moveList.erase(movefragmentit);
 
   auto movefragmentacceptit = find_if(movingFragmentAccept.begin(),
@@ -269,7 +276,12 @@ void FragmentMgr::startMoveFragment(Fragment* fragment, NodeID node) {
   movingFragmentAccept.emplace(id, vector<NodeID>());
 
   for(auto i : neighbours) {
-    movingFragmentAccept.at(id).push_back(i);
+    try {
+      movingFragmentAccept.at(id).push_back(i);
+    } catch (...) {
+      ULOG(error) << "Shit happens: " << "movingFragmentAccept doesn't have fragment with id: " << id.tostr() << UEND;
+      exit(1);
+    }
   }
 
   fragmentsLock.wlock();
@@ -328,7 +340,8 @@ void FragmentMgr::moveFragmentAccept(const ts::type::ID& id, NodeID nid) {
   auto it = std::find(movingFragmentAccept[id].begin(),
                       movingFragmentAccept[id].end(), nid);
   if(it == movingFragmentAccept[id].end()) {
-    ULOG(move) << "Some node send accept without request" << UBEREND();
+    ULOG(move) << "Some node send accept without request for id: " << id.tostr() << UEND;
+    return;
   }
 
   movingFragmentAccept[id].erase(it);

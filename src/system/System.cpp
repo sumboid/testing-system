@@ -41,11 +41,14 @@ System::System(FragmentTools* fragmentTools, ReduceDataTools* reduceTools):
   execMgr->setSystem(this);
 
   UTEMPLATE(fragment, "[%nodeid][%name]: %msg");
+  UTEMPLATE(error, "[%nodeid][%name]: %msg");
   UTEMPLATE(arc, "[%nodeid][%name]: %msg");
   UTEMPLATE(move, "[%nodeid][%name]: %msg");
   UREPLACE(fragment, "%nodeid", [&](){return std::to_string(this->id());});
+  UREPLACE(error, "%nodeid", [&](){return std::to_string(this->id());});
   UREPLACE(arc, "%nodeid", [&](){return std::to_string(this->id());});
   UREPLACE(move, "%nodeid", [&](){return std::to_string(this->id());});
+  USTYLE(error, UBOLD | UCOLOR(RED));
   UBERTEMPLATE("[%nodeid][%name]: %msg");
   UBERREPLACE("%nodeid", [&](){return std::to_string(this->id());});
 
@@ -75,8 +78,9 @@ void System::run() {
       return;
     }
     else if(fragments.empty()) {
-      fragmentListener.wait();
-     // sleep(1); // Sort of KOSTYL.
+      ULOG(default) << "Trying to get fragments" << UEND;
+      //fragmentListener.wait();
+      sleep(1); // Sort of KOSTYL.
       continue;
     }
 
@@ -142,13 +146,13 @@ void System::actionLoop() {
 
     if(queueSize == 0) {
       queueMutex.unlock();
-      //actionQueueListener.wait();
-      sleep(1);
-      continue;
+      actionQueueListener.wait();
 
       if(_end) {
         return;
       }
+
+      continue;
     }
 
     for(size_t i = 0; i < queueSize; ++i) {
