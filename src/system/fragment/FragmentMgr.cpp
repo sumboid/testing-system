@@ -237,13 +237,8 @@ void FragmentMgr::moveFragment(Fragment* fragment) {
   messageMgr->sendFullFragment(moveList.at(id), fragment);
 
   /// Remove Fragment from list
-  fragmentsLock.rlock();
-  auto fragmentit = findInternalFragment(id);
-  fragmentsLock.unlock();
   fragmentsLock.wlock();
-
-  fragments.erase(fragmentit);
-
+  fragments.erase(fragment);
   fragmentsLock.unlock();
 
   auto movefragmentit = find_if(moveList.begin(), moveList.end(),
@@ -252,7 +247,7 @@ void FragmentMgr::moveFragment(Fragment* fragment) {
                                 });
   if(movefragmentit == moveList.end()) {
     ULOG(default) << "That is not cool" << UEND;
-    assert(0);
+    exit(2);
   }
   moveList.erase(movefragmentit);
 
