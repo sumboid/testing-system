@@ -43,5 +43,6 @@ void FragmentDeserializer::flags(Fragment* fragment, ts::Arc* arc) {
   a >> fragment->_vupdate;
   a >> fragment->_vneighbours;
   a >> fragment->_vend;
+  a >> fragment->_vlaststateWasSaved;
 }
 }}}

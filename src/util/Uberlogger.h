@@ -92,15 +92,14 @@ public:
     Uberstyle _style;
 
   public:
-    Logger(std::string logname = UBERDEFAULT) {
+    Logger(std::string logname = UBERDEFAULT):
+      _logname(logname),
+      _style(Uberstyle()) {
       templ("[%name] %msg");
-      _logname = logname;
       repl("%name", [=]() { return _logname; });
     }
 
-    Logger(const Logger& logger) {
-      _logname = logger._logname;
-    }
+    Logger(const Logger& logger): _logname(logger._logname) {}
 
     void add (std::string msg) {
       //Need to fix
@@ -128,8 +127,10 @@ public:
         result.replace(begin, 5, _logname);
 
       omutex.lock();
-      std::cout << _style.translate(result) << std::endl;
+      result = _style.translate(result);
       omutex.unlock();
+
+      Uberlogger::print(result);
     }
 
     void templ(const std::string& _t) {
@@ -159,7 +160,14 @@ public:
     return loggers[logname];
   }
 
+  static void print(const std::string& message) {
+    coutmutex.lock();
+    std::cout << message << std::endl;
+    coutmutex.unlock();
+  }
+
 private:
+  static std::mutex coutmutex;
   static std::map<std::string, Logger> loggers;
 };
 
@@ -172,9 +180,9 @@ private:
 public:
   class End {};
 
-  Message(const Message& m) {
-    end = m.end;
-    logname = m.logname;
+  Message(const Message& m):
+    logname(m.logname),
+    end(m.end) {
     msg << m.msg.str();
   }
 
@@ -183,16 +191,15 @@ public:
   }
 
   template<class T>
-  Message(const T& some) {
-    logname = UBERDEFAULT;
+  Message(const T& some):
+    logname(UBERDEFAULT),
+    end(false) {
     msg << some;
-    end = false;
   }
 
-  Message() {
-    end = false;
-    logname = UBERDEFAULT;
-  }
+  Message():
+    logname(UBERDEFAULT),
+    end(false) {}
 
   Message& operator<< (const Message& some) {
     if(some.end) {
@@ -213,7 +220,8 @@ public:
   }
 };
 
-#define UBERINIT std::map<std::string, Uberlogger::Logger> Uberlogger::loggers
+#define UBERINIT std::map<std::string, Uberlogger::Logger> Uberlogger::loggers; \
+                 std::mutex Uberlogger::coutmutex
 
 static inline Message UBERLOG() {
   return Message();

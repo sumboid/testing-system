@@ -11,7 +11,7 @@ private:
   ts::type::Fragment* fragment;
 
 public:
-  Move() {}
+  Move(): fragment(0) {}
   ~Move() override {}
   void set(ts::Arc* arc, ts::NodeID id) override;
   void run() override;

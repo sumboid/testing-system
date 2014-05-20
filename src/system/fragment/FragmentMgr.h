@@ -42,6 +42,7 @@ namespace system {
     ts::RWLock externalFragmentsLock;
 
     std::map<ts::type::ID, std::vector<NodeID>> movingFragmentAccept;
+
     std::map<ts::type::ID, NodeID> moveList;
 
   public:
@@ -61,11 +62,17 @@ namespace system {
 
     void specialUpdateNeighbours(ts::type::Fragment* fragment);
     void confirmMove(const ts::type::ID& id, NodeID node);
+    void globalConfirmMove(const ts::type::ID& id, NodeID node);
     void updateNeighbours(const ts::type::ID& id, NodeID node);
-    void startMoveFragment(ts::type::Fragment* fragment, NodeID node);
-    void moveFragment(ts::type::Fragment* fragment);
-    void moveFragmentAccept(const ts::type::ID& id, NodeID nid);
     void createExternal(ts::type::Fragment* f);
+
+    void startMoveFragment(ts::type::Fragment* fragment, NodeID node);
+    void noticeMoveFragment(const type::ID& id);
+    void moveFragment(ts::type::Fragment* fragment);
+
+    void moveFragmentAccept(const ts::type::ID& id);
+    void moveFragmentGlobalAccept(const ts::type::ID& id, NodeID nid);
+
     std::vector<ts::type::Fragment*> getFragments();
     ts::type::Fragment* findFragment(const ts::type::ID& id);
 

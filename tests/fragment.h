@@ -69,7 +69,7 @@ public:
     }
 
     ULOG(fragment) << id().tostr() << " [" << iteration() << ", " << progress() << "] " << "checkpoint" << UEND;
-/*
+
     iter = iteration();
     if(iteration() % 2 == 1) {
       saveState();
@@ -78,14 +78,14 @@ public:
     } else if (iteration() != 0) {
       int buf = iter - 1;
       for(auto n: neighbours) {
-        UBERLOG("fragment") << "[" << id().tostr() << "] " <<"Get iter from: " << n->id().tostr() << ": " << ((Fragment*) n)->iter << UBEREND();
+        ULOG(success) << "[" << id().tostr() << "] " <<"Get iter from: " << n->id().tostr() << ": " << ((Fragment*) n)->iter << UBEREND();
         buf += ((Fragment*) n)->iter;
       }
-      ULOG(fragment) << id().tostr() << " [" << iteration() << ", " << progress() << "] " << "Reduced " << buf << " locally" << UEND;
+      ULOG(success) << id().tostr() << " [" << iteration() << ", " << progress() << "] " << "Reduced " << buf << " locally" << UEND;
     }
-*/
+
     nextIteration();
-    ULOG(fragment) << id().tostr() << " [" << iteration() << ", " << progress() << "] " << "checkpoint" << UEND;
+    ULOG(success) << id().tostr() << " [" << iteration() << ", " << progress() << "] " << "checkpoint" << UEND;
   }
 
   ReduceData* reduce() override {

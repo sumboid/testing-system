@@ -13,8 +13,8 @@ void ConfirmMove::set(ts::Arc* arc, ts::NodeID _sender) {
 }
 
 void ConfirmMove::run()  {
-  UBERLOG() << "Move was confirmed: " << id.tostr() << UBEREND();
-  fragmentMgr->moveFragmentAccept(id, sender);
+  //UBERLOG() << "Move was confirmed: " << id.tostr() << UBEREND();
+  fragmentMgr->moveFragmentAccept(id);
 }
 
 Action* ConfirmMove::copy() {

@@ -20,7 +20,13 @@ using ts::NodeID;
 namespace ts {
 namespace system {
 
-MessageMgr::MessageMgr(): end(false) {
+MessageMgr::MessageMgr():
+  fragmentMgr(0),
+  sys(0),
+  actionBuilder(0),
+  fragmentTool(0),
+  reduceTool(0),
+  end(false) {
   comm = new Comm(0, 0);
   id = comm->getRank();
   _size = comm->getSize();
@@ -97,7 +103,7 @@ void MessageMgr::sendBoundary(NodeID node, Fragment* fragment) {
 
 void MessageMgr::sendFullFragment(NodeID node, Fragment* fragment) {
   Message* message = new Message;
-  UBERLOG() << "Sending full fragment: " << fragment->id().tostr() << UBEREND();
+  //UBERLOG() << "Sending full fragment: " << fragment->id().tostr() << UBEREND();
   Arc* arc = fragmentTool->fullSerialize(fragment);
   message->size = arc->size();
   message->buffer = arc->get();
@@ -144,10 +150,39 @@ void MessageMgr::sendStartMove(NodeID node, const ts::type::ID& id, NodeID to) {
   push(message);
 }
 
+void MessageMgr::sendNoticeMove(NodeID node, const ts::type::ID& id, NodeID to) {
+  Message* message = new Message;
+  message->node = node;
+  message->tag = NOTICE_MOVE_FRAGMENT;
+  Arc* arc = new Arc;
+  Arc& a = *arc;
+  id.serialize(arc);
+  a << to;
+  message->size = arc->size();
+  message->buffer = arc->get();
+
+  delete arc;
+
+  push(message);
+}
+
 void MessageMgr::sendConfirmMove(NodeID node, const ts::type::ID& id) {
   Message* message = new Message;
   message->node = node;
   message->tag = CONFIRM_MOVE_FRAGMENT;
+  Arc* arc = new Arc;
+  id.serialize(arc);
+  message->size = arc->size();
+  message->buffer = arc->get();
+  delete arc;
+
+  push(message);
+}
+
+void MessageMgr::sendGlobalConfirmMove(NodeID node, const ts::type::ID& id) {
+  Message* message = new Message;
+  message->node = node;
+  message->tag = GLOBAL_CONFIRM_MOVE_FRAGMENT;
   Arc* arc = new Arc;
   id.serialize(arc);
   message->size = arc->size();

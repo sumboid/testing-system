@@ -49,6 +49,7 @@ public:
     externalReduceData = 0;
     storedReduceData = 0;
     localReduceData = 0;
+    system = 0;
   }
 
   ~ExecMgr() {

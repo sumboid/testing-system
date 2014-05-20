@@ -41,14 +41,20 @@ System::System(FragmentTools* fragmentTools, ReduceDataTools* reduceTools):
   execMgr->setSystem(this);
 
   UTEMPLATE(fragment, "[%nodeid][%name]: %msg");
+  UTEMPLATE(state, "[%nodeid][%name]: %msg");
+  UTEMPLATE(success, "[%nodeid][%name]: %msg");
   UTEMPLATE(error, "[%nodeid][%name]: %msg");
   UTEMPLATE(arc, "[%nodeid][%name]: %msg");
   UTEMPLATE(move, "[%nodeid][%name]: %msg");
   UREPLACE(fragment, "%nodeid", [&](){return std::to_string(this->id());});
+  UREPLACE(state, "%nodeid", [&](){return std::to_string(this->id());});
+  UREPLACE(success, "%nodeid", [&](){return std::to_string(this->id());});
   UREPLACE(error, "%nodeid", [&](){return std::to_string(this->id());});
   UREPLACE(arc, "%nodeid", [&](){return std::to_string(this->id());});
   UREPLACE(move, "%nodeid", [&](){return std::to_string(this->id());});
   USTYLE(error, UBOLD | UCOLOR(RED));
+  USTYLE(success, UCOLOR(BLUE));
+  USTYLE(state, UCOLOR(GREEN));
   UBERTEMPLATE("[%nodeid][%name]: %msg");
   UBERREPLACE("%nodeid", [&](){return std::to_string(this->id());});
 
@@ -145,7 +151,6 @@ void System::actionLoop() {
     queueMutex.unlock();
 
     if(queueSize == 0) {
-      queueMutex.unlock();
       actionQueueListener.wait();
 
       if(_end) {

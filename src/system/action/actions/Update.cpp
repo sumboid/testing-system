@@ -10,7 +10,7 @@ void Update::set(ts::Arc* arc, ts::NodeID) {
 }
 
 void Update::run() {
-  UBERLOG() << "BOUNDARY UPDATED: " << fragment->id().tostr() << UBEREND();
+  //UBERLOG() << "BOUNDARY UPDATED: " << fragment->id().tostr() << UBEREND();
   fragmentMgr->updateExternalFragment(fragment);
 }
 

@@ -1,13 +1,14 @@
 #include <string>
 #include <fstream>
 #include <cassert>
+#include <cstdlib>
 
 #include "fragment.h"
 #include <ts/system/System.h>
 
 using ts::type::ID;
 
-int main() {
+int main(int argc, char** argv) {
   ts::type::FragmentTools* ct = new FragmentTools;
   ts::type::ReduceDataTools* rt = new ReduceDataTools;
   ts::system::System* system = new ts::system::System(ct, rt);
@@ -15,7 +16,7 @@ int main() {
   std::vector<Fragment*> fragments;
   std::ofstream file(std::to_string(system->id()));
 
-  int number = 5;
+  int number = ((argc == 1) ? 2 : atoi(argv[1]));
   for(int i = 0; i < number; ++i) {
     fragments.push_back(new Fragment(ts::type::ID(system->id(),i,0)));
   }

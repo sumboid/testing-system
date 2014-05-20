@@ -11,6 +11,7 @@ private:
   ts::type::ReduceData* data;
 
 public:
+  Reduce(): data(0) {}
   void set(ts::Arc* arc, ts::NodeID id) override;
   void run() override;
 

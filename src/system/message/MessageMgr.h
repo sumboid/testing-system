@@ -20,10 +20,12 @@ class ActionBuilder;
 enum Tag {
   UNDEFINED,
   UPDATE_FRAGMENT,       ///< Updating fragment from external Node.
-  REDUCE_DATA,       ///< Partial reduce data
+  REDUCE_DATA,           ///< Partial reduce data
 
   START_MOVE_FRAGMENT,   ///< Beginning of moving fragment process
+  NOTICE_MOVE_FRAGMENT,
   CONFIRM_MOVE_FRAGMENT, ///< Confirming of moving fragment
+  GLOBAL_CONFIRM_MOVE_FRAGMENT, ///< Confirming of moving fragment
   MOVE_FRAGMENT          ///< Moving fragment
 };
 
@@ -36,6 +38,7 @@ struct Message {
     buffer = 0;
     size = 0;
     tag = UNDEFINED;
+    node = 0;
   }
 };
 
@@ -59,6 +62,8 @@ private:
   std::atomic<bool> end;
   std::queue<Message*> sendQueue;
   std::mutex queueMutex;
+
+  MessageMgr(const MessageMgr&) {}
 public:
   MessageMgr();
   ~MessageMgr();
@@ -79,7 +84,9 @@ public:
   void sendFullFragment(ts::NodeID node, ts::type::Fragment* fragment);
   void sendReduce(ts::type::ReduceData* reduceData);
   void sendStartMove(ts::NodeID node, const ts::type::ID& id, ts::NodeID to);
+  void sendNoticeMove(ts::NodeID node, const ts::type::ID& id, ts::NodeID to);
   void sendConfirmMove(ts::NodeID node, const ts::type::ID& id);
+  void sendGlobalConfirmMove(ts::NodeID node, const ts::type::ID& id);
 
   ts::NodeID getNodeID() { return id; }
 private:

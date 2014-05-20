@@ -12,7 +12,7 @@ private:
   NodeID sender;
 
 public:
-  ConfirmMove() {}
+  ConfirmMove(): id(ts::type::ID(0,0,0)), sender(0) {}
   ~ConfirmMove() override {}
   void set(ts::Arc* arc, ts::NodeID id) override;
   void run() override;

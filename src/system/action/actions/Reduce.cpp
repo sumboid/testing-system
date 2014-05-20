@@ -10,7 +10,7 @@ void Reduce::set(ts::Arc* arc, ts::NodeID) {
 }
 
 void Reduce::run() {
-  UBERLOG() << "REDUCE ACTION!" << UBEREND();
+  //UBERLOG() << "REDUCE ACTION!" << UBEREND();
   system->putReduceData(data);
 }
 

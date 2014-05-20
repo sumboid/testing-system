@@ -13,8 +13,15 @@ using ts::type::ID;
 namespace ts {
 namespace system {
 
-FragmentMgr::FragmentMgr() {}
-FragmentMgr::FragmentMgr(MessageMgr* msgMgr): messageMgr(msgMgr) {}
+FragmentMgr::FragmentMgr():
+  fragmentTools(0),
+  messageMgr(0),
+  system(0) {}
+
+FragmentMgr::FragmentMgr(MessageMgr* msgMgr):
+  FragmentMgr() {
+  messageMgr = msgMgr;
+}
 FragmentMgr::~FragmentMgr() {}
 
 void FragmentMgr::addFragment(Fragment* fragment) {
@@ -162,7 +169,7 @@ void FragmentMgr::unlock(Fragment* fragment) {
   if(fragment->needUpdate()) {
     auto nodes = fragment->noticeList();
     for(auto node: nodes) messageMgr->sendBoundary(node,
-                                                    fragment->getLastState());
+                                                   fragment->getLastState());
   }
 
   fragmentsLock.wlock();
@@ -230,16 +237,19 @@ vector<Fragment*> FragmentMgr::getFragments() {
 }
 
 void FragmentMgr::moveFragment(Fragment* fragment) {
-  if(fragment->isBoundary()) ULOG(error) << "WTF REALLY" << UEND;
   ID id = fragment->id();
 
   /// Send Fragment to node
   messageMgr->sendFullFragment(moveList.at(id), fragment);
 
+  /// Send boundaries to node
+  specialUpdateNeighbours(fragment);
+
   /// Remove Fragment from list
   fragmentsLock.wlock();
   fragments.erase(fragment);
   fragmentsLock.unlock();
+  createExternal(fragment);
 
   auto movefragmentit = find_if(moveList.begin(), moveList.end(),
                                 [&id](pair<ID, NodeID> f) {
@@ -252,46 +262,21 @@ void FragmentMgr::moveFragment(Fragment* fragment) {
   moveList.erase(movefragmentit);
 
   auto movefragmentacceptit = find_if(movingFragmentAccept.begin(),
-                                      movingFragmentAccept.end(),
-                                      [&id](pair<ID, vector<NodeID> > f) {
-                                        return f.first == id;
-                                      });
+                                        movingFragmentAccept.end(),
+                                        [&id](pair<ID, vector<NodeID> > f) {
+                                          return f.first == id;
+                                        });
   movingFragmentAccept.erase(movefragmentacceptit);
 
   delete fragment;
 }
 
 void FragmentMgr::startMoveFragment(Fragment* fragment, NodeID node) {
-  fragmentsLock.rlock();
-
-  ID id = fragment->id();
-  auto neighbours = fragment->noticeList();
-  fragmentsLock.unlock();
-
-  movingFragmentAccept.emplace(id, vector<NodeID>());
-
-  for(auto i : neighbours) {
-    try {
-      movingFragmentAccept.at(id).push_back(i);
-    } catch (...) {
-      ULOG(error) << "Shit happens: " << "movingFragmentAccept doesn't have fragment with id: " << id.tostr() << UEND;
-      exit(1);
-    }
-  }
-
   fragmentsLock.wlock();
   fragments[fragment] = MOVE;
   fragmentsLock.unlock();
-
   moveList[fragment->id()] = node;
-
-  specialUpdateNeighbours(fragment);
-
-  if(neighbours.empty()) {
-    moveFragment(fragment);
-  }
-
-  for(auto i: neighbours) messageMgr->sendStartMove(i, id, node);
+  messageMgr->sendStartMove(node, fragment->id(), node); // XXX: Second node not needed.
 }
 
 void FragmentMgr::createExternal(Fragment* f) {
@@ -299,6 +284,29 @@ void FragmentMgr::createExternal(Fragment* f) {
   nf->setBoundary();
   f->createExternal(nf);
   externalFragments.push_back(nf);
+}
+
+void FragmentMgr::noticeMoveFragment(const ID& id) {
+  fragmentsLock.rlock();
+  auto neighbours = findInternalFragment(id)->first->noticeList();
+  fragmentsLock.unlock();
+
+  if(neighbours.size() == 1 && *(neighbours.begin()) == moveList[id]) {
+    moveFragment(findInternalFragment(id)->first);
+    return;
+  }
+
+  movingFragmentAccept.emplace(id, vector<NodeID>());
+
+  for(auto& i : neighbours) {
+    if(i != moveList[id])
+      movingFragmentAccept.at(id).push_back(i);
+  }
+
+  for(auto i: neighbours) {
+    if(i != moveList[id])
+      messageMgr->sendNoticeMove(i, id, moveList[id]);
+  }
 }
 
 void FragmentMgr::specialUpdateNeighbours(ts::type::Fragment* fragment) {
@@ -321,17 +329,29 @@ void FragmentMgr::confirmMove(const ts::type::ID& id, NodeID node) {
   messageMgr->sendConfirmMove(node, id);
 }
 
+void FragmentMgr::globalConfirmMove(const ts::type::ID& id, NodeID node) {
+  messageMgr->sendGlobalConfirmMove(node, id);
+}
+
 void FragmentMgr::updateNeighbours(const ts::type::ID& id, NodeID node) {
+  fragmentsLock.rlock();
   for(auto i : fragments)
     if(i.first->isNeighbour(id))
       i.first->updateNeighbour(id, node);
+  fragmentsLock.unlock();
 
+  externalFragmentsLock.rlock();
   for(auto i : externalFragments)
     if(i->isNeighbour(id))
       i->updateNeighbour(id, node);
+  externalFragmentsLock.unlock();
 }
 
-void FragmentMgr::moveFragmentAccept(const ts::type::ID& id, NodeID nid) {
+void FragmentMgr::moveFragmentAccept(const ts::type::ID& id) {
+  noticeMoveFragment(id);
+}
+
+void FragmentMgr::moveFragmentGlobalAccept(const ts::type::ID& id, NodeID nid) {
   auto it = std::find(movingFragmentAccept[id].begin(),
                       movingFragmentAccept[id].end(), nid);
   if(it == movingFragmentAccept[id].end()) {

@@ -14,20 +14,19 @@ class Arc {
 private:
   char* _raw;
   size_t _size;
-  size_t wpos;
   size_t _rpos;
 
   std::vector<size_t> vput;
   std::vector<size_t> vget;
 
 public:
-  Arc(const char* data, size_t __size) {
+  Arc(const char* data, size_t __size): _size(__size), _rpos(0) {
     _raw = (char*) malloc(__size * sizeof(char));
     memcpy(_raw, data, __size * sizeof(char));
-    _size = __size;
-    _rpos = 0;
     vput.push_back(__size);
   }
+
+  Arc(const Arc& other): Arc(other._raw, other._size) {}
 
   Arc() {
     _raw = 0;

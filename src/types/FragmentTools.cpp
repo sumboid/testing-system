@@ -30,13 +30,13 @@ Fragment* FragmentTools::boundaryDeserialize(Arc* arc) {
 
 Arc* FragmentTools::fullSerialize(Fragment* fragment) {
   Arc* arc = new Arc;
-  ULOG(fragment) << "Serialize fragment " << fragment->id().tostr() << " with state: " << fragment->iteration() << " and it is boundary: " << fragment->isBoundary() << UEND;
   fserialize(fragment, arc);
   FragmentSerializer::id(fragment, arc);
   FragmentSerializer::timestamp(fragment, arc);
   FragmentSerializer::neighboursTimestamp(fragment, arc);
   FragmentSerializer::flags(fragment, arc);
   FragmentSerializer::neighbours(fragment, arc);
+  if(fragment->_vlaststateWasSaved) bserialize(fragment->_vlaststate, arc);
 
   return arc;
 }
@@ -45,18 +45,13 @@ Fragment* FragmentTools::fullDeserialize(Arc* arc) {
   Fragment* fragment;
 
   fragment = fdeserialize(arc);
-  ULOG(arc) << "(deserialize) Reading position: " << arc->pos() << UEND;
   FragmentDeserializer::id(fragment, arc);
-  ULOG(arc) << "(id) Reading position: " << arc->pos() << UEND;
   FragmentDeserializer::timestamp(fragment, arc);
-  ULOG(arc) << "(timestamp) Reading position: " << arc->pos() << UEND;
   FragmentDeserializer::neighboursTimestamp(fragment, arc);
-  ULOG(arc) << "(ntimestamp) Reading position: " << arc->pos() << UEND;
   FragmentDeserializer::flags(fragment, arc);
-  ULOG(arc) << "(flags) Reading position: " << arc->pos() << UEND;
   FragmentDeserializer::neighbours(fragment, arc);
+  if(arc->pos() != arc->size()) fragment->_vlaststate = bdeserialize(arc);
 
-  ULOG(fragment) << "Deserialize fragment " << fragment->id().tostr() << " with state: " << fragment->iteration() << UEND;
   return fragment;
 }
 }}

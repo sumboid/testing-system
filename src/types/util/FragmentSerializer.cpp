@@ -45,6 +45,7 @@ void FragmentSerializer::flags(Fragment* fragment, ts::Arc* arc) {
   a << fragment->_vupdate;
   a << fragment->_vneighbours;
   a << fragment->_vend;
+  a << fragment->_vlaststateWasSaved;
 }
 
 void FragmentSerializer::timestamp(const ts::type::Timestamp& timestamp, ts::Arc* arc) {
