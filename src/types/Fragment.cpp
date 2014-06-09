@@ -22,6 +22,9 @@ Fragment::Fragment(ID id):
 {}
 
 Fragment::~Fragment() {
+  for(auto& state: _vstates) {
+    delete state.second;
+  }
 }
 
 ID Fragment::id() { return _vid; }
@@ -78,7 +81,6 @@ void Fragment::addNeighbour(ID id, NodeID node) {
 void Fragment::updateNeighbour(ID id, NodeID node) {
   _vneighboursLocationMutex.lock();
   _vneighboursLocation[id] = node;
-  _tryRemoveAllStates();
   _vneighboursLocationMutex.unlock();
 }
 
@@ -188,8 +190,11 @@ Fragment* Fragment::getLastState() {
     exit(3);
   }
 
-  Fragment* f = _vlaststate;
-  ULOG(state) << "Get last state from " << id().tostr() << UEND;
+  Fragment* f = _vlaststate->copy();
+  f->_vid = id();
+  f->_viteration = _vlaststate->_viteration;
+  f->_vprogress = _vlaststate->_vprogress;
+  ULOG(state) << "Get last state from " << id().tostr() << " with state: " << f->_viteration << UEND;
   _vneighboursLocationMutex.lock();
   for(auto &n : _vneighboursLocation) {
     f->addNeighbour(n.first, n.second);
@@ -208,7 +213,7 @@ Fragment* Fragment::getState(const Timestamp& timestamp, const ID& neighbour) {
       _vstateGetted[timestamp].insert(neighbour);
   });
 
-  _tryRemoveState(timestamp);
+  //_tryRemoveState(timestamp);
   _vstatesMutex.unlock();
   return fragment;
 }
@@ -216,19 +221,34 @@ Fragment* Fragment::getState(const Timestamp& timestamp, const ID& neighbour) {
 vector<Fragment*> Fragment::specialUpdateNeighbour(const ID& neighbour,
                                                    NodeID node) {
   vector<Fragment*> result;
-  _vstateGettedLock.rlock([&]() {
-    _vstatesMutex.lock();
+  _vstateGettedLock.rlock();
+  _vstatesMutex.lock();
     for(auto i : _vstateGetted)
       if(i.second.find(neighbour) == i.second.end()) {
         try {
-          result.push_back(_vstates.at(i.first)->copy());
+          Fragment* ob = _vstates.at(i.first);
+          Fragment* b = ob->copy();
+          b->_vid = _vid;
+          b->_viteration = ob->_viteration;
+          b->_vprogress = ob->_vprogress;
+          for(auto& n : _vneighboursLocation) {
+            if(!(n.first == neighbour)) {
+              b->addNeighbour(n.first, n.second);
+            } else b->addNeighbour(neighbour, node);
+          }
+
+          ULOG(error) << "SUN " << neighbour.tostr() << ": " << b->_vid.tostr() << " with iteration " << b->_viteration << UEND;
+          result.push_back(b);
         } catch(...) {
           ULOG(error) << "Oh-oh" << UEND;
         }
       }
-    _vstatesMutex.unlock();
-  });
+  _vstatesMutex.unlock();
+  _vstateGettedLock.unlock();
+  _vneighboursLocationMutex.lock();
   _vneighboursLocation[neighbour] = node;
+  _vneighboursLocationMutex.unlock();
+  //_tryRemoveAllStates();
   return result;
 }
 

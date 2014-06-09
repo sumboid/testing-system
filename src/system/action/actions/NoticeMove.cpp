@@ -1,4 +1,4 @@
-#include "StartMove.h"
+#include "NoticeMove.h"
 #include "../../../util/Uberlogger.h"
 #include <iostream>
 
@@ -7,21 +7,21 @@ namespace ts {
 namespace system {
 namespace action {
 
-void StartMove::set(ts::Arc* arc, ts::NodeID _sender) {
+void NoticeMove::set(ts::Arc* arc, ts::NodeID _sender) {
   id = ID::deserialize(arc);
   Arc& a = *arc;
   a >> node;
   sender = _sender;
 }
 
-void StartMove::run()  {
-  ULOG(move) << "Init moving: " << id.tostr() << UEND;
+void NoticeMove::run()  {
+  ULOG(move) << "Notice moving: " << id.tostr() << UEND;
   fragmentMgr->updateNeighbours(id, node);
-  fragmentMgr->confirmMove(id, sender);
+  fragmentMgr->globalConfirmMove(id, sender);
 }
 
-Action* StartMove::copy() {
-  return new StartMove;
+Action* NoticeMove::copy() {
+  return new NoticeMove;
 }
 
 }

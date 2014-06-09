@@ -37,6 +37,10 @@ libts_la_SOURCES =  src/system/fragment/FragmentMgr.cpp \
                     src/system/action/actions/GlobalConfirmMove.cpp \
                     src/system/action/actions/Move.h \
                     src/system/action/actions/Move.cpp \
+                    src/system/action/actions/Unlock.h \
+                    src/system/action/actions/Unlock.cpp \
+                    src/system/action/actions/GetFragments.h \
+                    src/system/action/actions/GetFragments.cpp \
                     src/distr/Distributor.cpp \
                     src/distr/Distributor.h \
                     src/types/Fragment.cpp \

@@ -12,6 +12,7 @@
 #include "../System.h"
 #include "../message/NodeID.h"
 #include "../../util/RWLock.h"
+#include "../util/Listener.h"
 
 namespace ts {
 namespace system {
@@ -44,6 +45,7 @@ namespace system {
     std::map<ts::type::ID, std::vector<NodeID>> movingFragmentAccept;
 
     std::map<ts::type::ID, NodeID> moveList;
+    ts::system::Listener fragmentListener;
 
   public:
     FragmentMgr();

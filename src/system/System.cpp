@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include "System.h"
 #include "../util/Uberlogger.h"
+#include "action/actions/GetFragments.h"
 
 UBERINIT;
 
@@ -39,6 +40,7 @@ System::System(FragmentTools* fragmentTools, ReduceDataTools* reduceTools):
   fragmentMgr->setFragmentTools(fragmentTools);
 
   execMgr->setSystem(this);
+  execMgr->setFragmentMgr(fragmentMgr);
 
   UTEMPLATE(fragment, "[%nodeid][%name]: %msg");
   UTEMPLATE(state, "[%nodeid][%name]: %msg");
@@ -53,6 +55,7 @@ System::System(FragmentTools* fragmentTools, ReduceDataTools* reduceTools):
   UREPLACE(arc, "%nodeid", [&](){return std::to_string(this->id());});
   UREPLACE(move, "%nodeid", [&](){return std::to_string(this->id());});
   USTYLE(error, UBOLD | UCOLOR(RED));
+  USTYLE(move, UCOLOR(MAGENTA));
   USTYLE(success, UCOLOR(BLUE));
   USTYLE(state, UCOLOR(GREEN));
   UBERTEMPLATE("[%nodeid][%name]: %msg");
@@ -79,18 +82,11 @@ System::~System() {
 
 void System::run() {
   while(true) {
-    auto fragments = fragmentMgr->getFragments(359);
-    if(_end) {
-      return;
-    }
-    else if(fragments.empty()) {
-      ULOG(default) << "Trying to get fragments" << UEND;
-      //fragmentListener.wait();
-      sleep(1); // Sort of KOSTYL.
-      continue;
-    }
-
-    execMgr->add(fragments);
+    Action* action = new action::GetFragments;
+    action->setFragmentMgr(fragmentMgr);
+    action->setExecMgr(execMgr);
+    addAction(action);
+    fragmentListener.wait();
   }
 }
 

@@ -5,6 +5,8 @@
 #include <iostream>
 #include <cassert>
 #include <cstdlib>
+#include "../action/Action.h"
+#include "../action/actions/Unlock.h"
 
 using std::vector;
 using std::thread;
@@ -103,7 +105,10 @@ void ts::system::ExecMgr::loop() {
         add(fragment);
         break;
       }
-      system->unlockFragment(fragment.first);
+      action::Unlock* action = new action::Unlock();
+      action->setFragmentMgr(fragmentMgr);
+      action->set(fragment.first);
+      system->addAction(action);
     }
   }
 }

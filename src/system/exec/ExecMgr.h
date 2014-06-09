@@ -19,6 +19,7 @@ namespace ts {
 namespace system {
 
 class System;
+class FragmentMgr;
 typedef std::pair<ts::type::Fragment*, std::vector<ts::type::Fragment*> > WorkFragment;
 class ExecMgr {
 private:
@@ -29,6 +30,7 @@ private:
   std::queue<WorkFragment> fragmentQueue;
 
   System* system;
+  FragmentMgr* fragmentMgr;
 
   std::thread loopThread;
   std::mutex queueMutex;
@@ -58,6 +60,7 @@ public:
   }
 
   void setSystem(System* _system) { system = _system; }
+  void setFragmentMgr(FragmentMgr* _fragmentMgr) { fragmentMgr = _fragmentMgr; }
 
   void run();
   void join();
