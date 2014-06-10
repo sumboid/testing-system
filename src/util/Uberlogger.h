@@ -6,7 +6,11 @@
 #include <sstream>
 #include <functional>
 #include <mutex>
-
+#include <thread>
+#include <atomic>
+#include <mutex>
+#include "../system/util/Listener.h"
+#include <queue>
 // TODO:
 //  1. Disable/enable threadsafety
 //  2. Log levels
@@ -88,8 +92,8 @@ public:
     std::string  _logname;
     std::string  _template;
     std::map<std::string, std::function<std::string(void)>> replace;
-    std::mutex omutex;
     Uberstyle _style;
+    std::mutex omutex;
 
   public:
     Logger(std::string logname = UBERDEFAULT):
@@ -160,15 +164,45 @@ public:
     return loggers[logname];
   }
 
+  static void init() {
+    messageLoopThread = std::thread(&Uberlogger::messageLoop);
+  }
+
+  static void messageLoop() {
+    while(true) {
+      queueMutex.lock();
+      size_t queueSize = messageQueue.size();
+      queueMutex.unlock();
+
+      if(queueSize == 0) {
+        messageQueueListener.wait();
+        continue;
+      }
+
+      for(size_t i = 0; i < queueSize; ++i) {
+        queueMutex.lock();
+        auto message = messageQueue.front();
+        messageQueue.pop();
+        queueMutex.unlock();
+
+        std::cout << message << std::endl;
+      }
+    }
+  }
+
   static void print(const std::string& message) {
-    coutmutex.lock();
-    std::cout << message << std::endl;
-    coutmutex.unlock();
+    queueMutex.lock();
+    messageQueue.push(message);
+    queueMutex.unlock();
+    messageQueueListener.notifyAll();
   }
 
 private:
-  static std::mutex coutmutex;
   static std::map<std::string, Logger> loggers;
+  static std::thread messageLoopThread;
+  static std::mutex queueMutex;
+  static std::queue<std::string> messageQueue;
+  static ts::system::Listener messageQueueListener;
 };
 
 class Message {
@@ -221,7 +255,12 @@ public:
 };
 
 #define UBERINIT std::map<std::string, Uberlogger::Logger> Uberlogger::loggers; \
-                 std::mutex Uberlogger::coutmutex
+                   std::thread Uberlogger::messageLoopThread; \
+                   std::mutex Uberlogger::queueMutex; \
+                   std::queue<std::string> Uberlogger::messageQueue; \
+                   ts::system::Listener Uberlogger::messageQueueListener
+
+#define UBERRUN Uberlogger::init()
 
 static inline Message UBERLOG() {
   return Message();

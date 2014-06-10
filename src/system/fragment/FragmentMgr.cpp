@@ -263,6 +263,9 @@ void FragmentMgr::moveFragment(Fragment* fragment) {
 
   /// Send Fragment to node
   messageMgr->sendFullFragment(moveList.at(id), fragment);
+  for(auto& state: fragment->_vstates) {
+    messageMgr->sendBoundary(moveList.at(id), state.second);
+  }
   /// Send boundaries to node
   specialUpdateNeighbours(fragment);
 

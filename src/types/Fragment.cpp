@@ -163,6 +163,9 @@ void Fragment::saveState() {
   _vlaststate->_vprogress = _vprogress;
   _vlaststate->_visboundary = true;
   _vstates.insert(pair<Timestamp, Fragment*>(Timestamp(_viteration, _vprogress), _vlaststate));
+  _vstateGettedLock.wlock();
+  _vstateGetted.emplace(Timestamp(_viteration, _vprogress), std::set<ID>());
+  _vstateGettedLock.unlock();
 }
 
 void Fragment::saveState(Fragment* fragment) {

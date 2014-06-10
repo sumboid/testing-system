@@ -18,6 +18,7 @@ using ts::type::ReduceDataTools;
 
 System::System(FragmentTools* fragmentTools, ReduceDataTools* reduceTools):
   inputReduceData(0), _end(false), fragmentListener(true) {
+  UBERRUN;
   msgMgr = new MessageMgr;
   fragmentMgr = new FragmentMgr;
   execMgr = new ExecMgr(reduceTools);
