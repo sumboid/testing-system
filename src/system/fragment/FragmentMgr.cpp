@@ -25,29 +25,29 @@ FragmentMgr::FragmentMgr(MessageMgr* msgMgr):
 FragmentMgr::~FragmentMgr() {}
 
 void FragmentMgr::addFragment(Fragment* fragment) {
-  externalFragmentsLock.wlock();
+  //external//fragmentsLock.wlock();
   auto b = findExternalFragment(fragment->id());
 
   if(b != externalFragments.end()) {
     (*b)->moveStates(fragment);
 
-    externalFragmentsLock.wlock();
+    //external//fragmentsLock.wlock();
     externalFragments.erase(b);
-    externalFragmentsLock.unlock();
+    //external//fragmentsLock.unlock();
   }
-  externalFragmentsLock.unlock();
+  //external//fragmentsLock.unlock();
 
-  fragmentsLock.wlock();
+  //fragmentsLock.wlock();
   fragments[fragment] = FREE;
-  fragmentsLock.unlock();
+  //fragmentsLock.unlock();
   system->notify();
 }
 
 typedef pair<Fragment*, vector<Fragment*> > WorkFragment;
 
 vector<WorkFragment> FragmentMgr::getFragments(int) {
-  externalFragmentsLock.rlock();
-  fragmentsLock.wlock();
+  //external//fragmentsLock.rlock();
+  //fragmentsLock.wlock();
 
   vector<WorkFragment> result;
   vector<WorkFragment> reduceResult;
@@ -70,7 +70,7 @@ vector<WorkFragment> FragmentMgr::getFragments(int) {
   /// If all of fragments are free with end state shut down the System
 //  if(endCount == fragments.size()) {
 //    //system->end();
-//    fragmentsLock.unlock();
+//    //fragmentsLock.unlock();
 //    return vector<WorkFragment>();
 //  }
 
@@ -149,35 +149,39 @@ vector<WorkFragment> FragmentMgr::getFragments(int) {
   }
 
   if(reduceCount == fragments.size()) {
-    for(auto i: reduceResult)
+    for(auto i: reduceResult) {
+      ULOG(move) << "Pushed back for execution fragment " << i.first->id().tostr() << UEND;
       fragments[i.first] = EXEC;
+    }
 
-    fragmentsLock.unlock();
-    externalFragmentsLock.unlock();
+    //fragmentsLock.unlock();
+    //external//fragmentsLock.unlock();
     return reduceResult;
   }
   else {
-    for(auto i: result)
+    for(auto i: result) {
+      ULOG(move) << "Pushed back for execution fragment " << i.first->id().tostr() << UEND;
       fragments[i.first] = EXEC;
-    fragmentsLock.unlock();
-    externalFragmentsLock.unlock();
+    }
+    //fragmentsLock.unlock();
+    //external//fragmentsLock.unlock();
     return result;
   }
 }
 
 void FragmentMgr::unlock(Fragment* fragment) {
-  fragmentsLock.rlock();
+  //fragmentsLock.rlock();
   if(fragment->needUpdate()) {
     auto nodes = fragment->noticeList();
     auto lastState = fragment->getLastState();
     for(auto node: nodes) messageMgr->sendBoundary(node, lastState);
   }
-  fragmentsLock.unlock();
+  //fragmentsLock.unlock();
 
-  fragmentsLock.wlock();
+  //fragmentsLock.wlock();
   if(fragments[fragment] == EXEC)
      fragments[fragment] = FREE;
-  fragmentsLock.unlock();
+  //fragmentsLock.unlock();
 
   if(system->id() == 0)
     startMoveFragment(fragment, 1);
@@ -195,30 +199,30 @@ void FragmentMgr::updateExternalFragment(Fragment* fragment) {
   auto timestamp = std::tuple<uint64_t, uint64_t>(fragment->iteration(), fragment->progress());
   // Find external fragment
   auto efr = findExternalFragment(id);
-  externalFragmentsLock.rlock();
+  //external//fragmentsLock.rlock();
   bool notFinded = (efr == externalFragments.end());
-  externalFragmentsLock.unlock();
+  //external//fragmentsLock.unlock();
   if(!notFinded) {
-    externalFragmentsLock.wlock();
+    //external//fragmentsLock.wlock();
     if(!(*efr)->hasState(timestamp)) {
       (*efr)->saveState(fragment);
     }
-    externalFragmentsLock.unlock();
+    //external//fragmentsLock.unlock();
     system->notify();
     return;
   }
 
   // Find internal fragment
   auto ifr = findInternalFragment(id);
-  fragmentsLock.rlock();
+  //fragmentsLock.rlock();
   notFinded = (ifr == fragments.end());
-  fragmentsLock.unlock();
+  //fragmentsLock.unlock();
   if(!notFinded) {
-    fragmentsLock.wlock();
+    //fragmentsLock.wlock();
     if(!ifr->first->hasState(timestamp)) {
       ifr->first->saveState(fragment);
     }
-    fragmentsLock.unlock();
+    //fragmentsLock.unlock();
     system->notify();
     return;
   }
@@ -237,9 +241,9 @@ void FragmentMgr::updateExternalFragment(Fragment* fragment) {
   newFragment->setNodeID(system->id());
   newFragment->saveState(fragment);
 
-  externalFragmentsLock.wlock();
+  //external//fragmentsLock.wlock();
   externalFragments.push_back(newFragment);
-  externalFragmentsLock.unlock();
+  //external//fragmentsLock.unlock();
 
   system->notify();
 }
@@ -259,11 +263,14 @@ void FragmentMgr::moveFragment(Fragment* fragment) {
 
   /// Send Fragment to node
   messageMgr->sendFullFragment(moveList.at(id), fragment);
+  /// Send boundaries to node
+  specialUpdateNeighbours(fragment);
 
   /// Remove Fragment from list
-  fragmentsLock.wlock();
+  ULOG(move) << "Fragment " << fragment->id().tostr() << " was moved" << UEND;
+  //fragmentsLock.wlock();
   fragments.erase(fragment);
-  fragmentsLock.unlock();
+  //fragmentsLock.unlock();
   createExternal(fragment);
 
   auto movefragmentit = find_if(moveList.begin(), moveList.end(),
@@ -289,9 +296,9 @@ void FragmentMgr::moveFragment(Fragment* fragment) {
 
 void FragmentMgr::startMoveFragment(Fragment* fragment, NodeID node) {
   ULOG(move) << "I'm starting moving fragment " << fragment->id().tostr() << " to " << node << UEND;
-  fragmentsLock.wlock();
+  //fragmentsLock.wlock();
   fragments[fragment] = MOVE;
-  fragmentsLock.unlock();
+  //fragmentsLock.unlock();
   moveList[fragment->id()] = node;
   messageMgr->sendStartMove(node, fragment->id(), node); // XXX: Second node not needed.
 }
@@ -304,17 +311,14 @@ void FragmentMgr::createExternal(Fragment* f) {
 }
 
 void FragmentMgr::noticeMoveFragment(const ID& id) {
-  fragmentsLock.rlock();
+  //fragmentsLock.rlock();
   Fragment* fragment = findInternalFragment(id)->first;
-  fragmentsLock.unlock();
+  //fragmentsLock.unlock();
 
-  /// Send boundaries to node
-  specialUpdateNeighbours(fragment);
-
-  fragmentsLock.rlock();
+  //fragmentsLock.rlock();
   auto neighbours = fragment->noticeList();
   neighbours.erase(moveList[id]);
-  fragmentsLock.unlock();
+  //fragmentsLock.unlock();
 
   if(neighbours.size() == 0) {
     moveFragment(findInternalFragment(id)->first);
@@ -339,14 +343,18 @@ void FragmentMgr::specialUpdateNeighbours(ts::type::Fragment* fragment) {
   auto id = fragment->id();
 
   for(auto neighbour : neighbours) {
+    ULOG(error) << "Try to find " << id.tostr() << " neighbout with id " << neighbour.tostr() << UEND;
     auto n = findFragment(neighbour);
     if(n != 0) {
+      ULOG(error) << "Neighbour with id " << neighbour.tostr() << " was finded" << UEND;
       //XXX.
       auto states = n->specialUpdateNeighbour(id, moveList[id]);
       for(auto s : states) {
         messageMgr->sendBoundary(moveList[id], s);
         delete s;
       }
+    } else {
+      ULOG(error) << "Neighbour with id " << neighbour.tostr() << " was not finded" << UEND;
     }
   }
 }
@@ -360,17 +368,17 @@ void FragmentMgr::globalConfirmMove(const ts::type::ID& id, NodeID node) {
 }
 
 void FragmentMgr::updateNeighbours(const ts::type::ID& id, NodeID node) {
-  fragmentsLock.wlock();
+  ////fragmentsLock.wlock();
   for(auto i : fragments)
     if(i.first->isNeighbour(id))
       i.first->updateNeighbour(id, node);
-  fragmentsLock.unlock();
+  ////fragmentsLock.unlock();
 
-  externalFragmentsLock.wlock();
+  ////external//fragmentsLock.wlock();
   for(auto i : externalFragments)
     if(i->isNeighbour(id))
       i->updateNeighbour(id, node);
-  externalFragmentsLock.unlock();
+  ////external//fragmentsLock.unlock();
 }
 
 void FragmentMgr::moveFragmentAccept(const ts::type::ID& id) {
@@ -407,23 +415,23 @@ Fragment* FragmentMgr::findFragment(const ts::type::ID& id) {
 
 FragmentMgr::internalit
 FragmentMgr::findInternalFragment(const ts::type::ID& id) {
-  externalFragmentsLock.rlock();
+  //external//fragmentsLock.rlock();
   auto it = find_if(fragments.begin(), fragments.end(),
                     [&id](pair<Fragment*, bool> f) {
                       return *f.first == id;
                     });
-  externalFragmentsLock.unlock();
+  //external//fragmentsLock.unlock();
   return it;
 }
 
 FragmentMgr::externalit
 FragmentMgr::findExternalFragment(const ts::type::ID& id) {
-  externalFragmentsLock.rlock();
+  //external//fragmentsLock.rlock();
   auto it = find_if(externalFragments.begin(), externalFragments.end(),
                     [&id](Fragment* f) {
                       return *f == id;
                     });
-  externalFragmentsLock.unlock();
+  //external//fragmentsLock.unlock();
   return it;
 }
 }}

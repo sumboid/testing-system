@@ -86,7 +86,7 @@ void System::run() {
     action->setFragmentMgr(fragmentMgr);
     action->setExecMgr(execMgr);
     addAction(action);
-    fragmentListener.wait();
+    sleep(2); //fragmentListener.wait();
   }
 }
 

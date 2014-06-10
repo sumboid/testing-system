@@ -22,9 +22,6 @@ Fragment::Fragment(ID id):
 {}
 
 Fragment::~Fragment() {
-  for(auto& state: _vstates) {
-    delete state.second;
-  }
 }
 
 ID Fragment::id() { return _vid; }
@@ -174,6 +171,9 @@ void Fragment::saveState(Fragment* fragment) {
   _vstatesMutex.lock();
   _vstates.insert(pair<Timestamp, Fragment*>(Timestamp(fragment->iteration(), fragment->progress()), fragment));
   _vstatesMutex.unlock();
+  _vstateGettedLock.wlock();
+  _vstateGetted.emplace(Timestamp(fragment->iteration(), fragment->progress()), std::set<ID>());
+  _vstateGettedLock.unlock();
 }
 
 void Fragment::moveStates(Fragment* fragment) {
@@ -190,7 +190,7 @@ Fragment* Fragment::getLastState() {
     exit(3);
   }
 
-  Fragment* f = _vlaststate->copy();
+  Fragment* f = _vlaststate->getBoundary();
   f->_vid = id();
   f->_viteration = _vlaststate->_viteration;
   f->_vprogress = _vlaststate->_vprogress;
@@ -223,11 +223,15 @@ vector<Fragment*> Fragment::specialUpdateNeighbour(const ID& neighbour,
   vector<Fragment*> result;
   _vstateGettedLock.rlock();
   _vstatesMutex.lock();
-    for(auto i : _vstateGetted)
+    for(auto i : _vstateGetted) {
+      auto yoba = ULOG(error);
+      yoba << _vid.tostr() << " at " << std::get<0>(i.first) << ":" << std::get<1>(i.first) << " was getted by: ";
+      for(auto j : i.second) yoba << j.tostr() << " ";
+      yoba << UEND;
       if(i.second.find(neighbour) == i.second.end()) {
         try {
           Fragment* ob = _vstates.at(i.first);
-          Fragment* b = ob->copy();
+          Fragment* b = ob->getBoundary();
           b->_vid = _vid;
           b->_viteration = ob->_viteration;
           b->_vprogress = ob->_vprogress;
@@ -243,6 +247,7 @@ vector<Fragment*> Fragment::specialUpdateNeighbour(const ID& neighbour,
           ULOG(error) << "Oh-oh" << UEND;
         }
       }
+    }
   _vstatesMutex.unlock();
   _vstateGettedLock.unlock();
   _vneighboursLocationMutex.lock();
@@ -290,32 +295,32 @@ bool Fragment::_stateCanBeRemoved(Timestamp timestamp) {
   return false;
 }
 
-void Fragment::_tryRemoveState(Timestamp timestamp) {
-  if(_stateCanBeRemoved(timestamp)) {
-    delete _vstates.at(timestamp);
-    _vstates.erase(timestamp);
+void Fragment::_tryRemoveState(Timestamp /*timestamp*/) {
+//  if(_stateCanBeRemoved(timestamp)) {
+//    delete _vstates.at(timestamp);
+//    _vstates.erase(timestamp);
 
-    _vstateGettedLock.wlock();
-    _vstateGetted.erase(timestamp);
-    _vstateGettedLock.unlock();
-  }
+//    _vstateGettedLock.wlock();
+//    _vstateGetted.erase(timestamp);
+//    _vstateGettedLock.unlock();
+//  }
 }
 
 void Fragment::_tryRemoveAllStates() {
-  vector<Timestamp> rmlist;
-  _vstatesMutex.lock();
-  for(auto& state: _vstates)
-    if(_stateCanBeRemoved(state.first))
-      rmlist.push_back(state.first);
+//  vector<Timestamp> rmlist;
+//  _vstatesMutex.lock();
+//  for(auto& state: _vstates)
+//    if(_stateCanBeRemoved(state.first))
+//      rmlist.push_back(state.first);
 
-  _vstateGettedLock.wlock();
-  for(auto& timestamp : rmlist) {
-    delete _vstates.at(timestamp);
-    _vstates.erase(timestamp);
-    _vstateGetted.erase(timestamp);
-  }
-  _vstatesMutex.unlock();
-  _vstateGettedLock.unlock();
+//  _vstateGettedLock.wlock();
+//  for(auto& timestamp : rmlist) {
+//    delete _vstates.at(timestamp);
+//    _vstates.erase(timestamp);
+//    _vstateGetted.erase(timestamp);
+//  }
+//  _vstatesMutex.unlock();
+//  _vstateGettedLock.unlock();
 }
 
 bool Fragment::operator==(const Fragment& other) { return _vid == other._vid; }
@@ -345,6 +350,10 @@ void Fragment::createExternal(Fragment* f) {
     f->_vstates.insert(i);
   }
   _vstatesMutex.unlock();
+  _vneighboursLocationMutex.lock();
+  for(auto i: _vneighboursLocation) {
+    f->_vneighboursLocation.emplace(i);
+  }
 }
 
 bool Fragment::equal(Fragment* another) {
