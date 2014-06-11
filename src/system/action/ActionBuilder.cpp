@@ -3,20 +3,31 @@
 #include "actions/Update.h"
 #include "actions/Reduce.h"
 #include "actions/StartMove.h"
+#include "actions/NoticeMove.h"
 #include "actions/ConfirmMove.h"
+#include "actions/GlobalConfirmMove.h"
 #include "actions/Move.h"
+#include "actions/Load.h"
 
 namespace ts {
 namespace system {
 
 using std::pair;
 
-ActionBuilder::ActionBuilder() {
+ActionBuilder::ActionBuilder():
+  system(0),
+  fragmentMgr(0),
+  execMgr(0),
+  fragmentTools(0),
+  reduceDataTools(0) {
   actionMap.insert(pair<Tag, Action*>(Tag::UPDATE_FRAGMENT, new action::Update));
   actionMap.insert(pair<Tag, Action*>(Tag::REDUCE_DATA, new action::Reduce));
   actionMap.insert(pair<Tag, Action*>(Tag::START_MOVE_FRAGMENT, new action::StartMove));
+  actionMap.insert(pair<Tag, Action*>(Tag::NOTICE_MOVE_FRAGMENT, new action::NoticeMove));
   actionMap.insert(pair<Tag, Action*>(Tag::CONFIRM_MOVE_FRAGMENT, new action::ConfirmMove));
+  actionMap.insert(pair<Tag, Action*>(Tag::GLOBAL_CONFIRM_MOVE_FRAGMENT, new action::GlobalConfirmMove));
   actionMap.insert(pair<Tag, Action*>(Tag::MOVE_FRAGMENT, new action::Move));
+  actionMap.insert(pair<Tag, Action*>(Tag::LOAD, new action::Load));
 }
 
 ActionBuilder::~ActionBuilder() {

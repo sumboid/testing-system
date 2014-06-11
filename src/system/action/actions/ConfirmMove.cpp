@@ -7,14 +7,13 @@ namespace ts {
 namespace system {
 namespace action {
 
-void ConfirmMove::set(ts::Arc* arc, ts::type::NodeID _sender) {
+void ConfirmMove::set(ts::Arc* arc, ts::NodeID _sender) {
   id = ID::deserialize(arc);
   sender = _sender;
 }
 
 void ConfirmMove::run()  {
-  UBERLOG() << "CONFIRM MOVING: " << id.tostr() << UBEREND();
-  fragmentMgr->moveFragmentAccept(id, sender);
+  fragmentMgr->moveFragmentAccept(id);
 }
 
 Action* ConfirmMove::copy() {

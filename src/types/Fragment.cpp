@@ -10,22 +10,16 @@ using std::pair;
 using std::all_of;
 using std::for_each;
 using std::set;
+using ts::NodeID;
 
 
 namespace ts {
 namespace type {
 typedef int NodeID;
 
-Fragment::Fragment(ID id) {
-  _viteration = 0;
-  _vprogress = 0;
-  _vreduce = false;
-  _vreduced = true;
-  _vneighbours = false;
-  _vid = id;
-  _vupdate = false;
-  _vend = false;
-}
+Fragment::Fragment(ID id):
+  _vid(id)
+{}
 
 Fragment::~Fragment() {
 }
@@ -75,7 +69,7 @@ bool Fragment::isNeighbour(const ID& id) {
 }
 void Fragment::addNeighbour(ID id, NodeID node) {
   _vneighboursLocationMutex.lock();
-  UBERLOG() << "Adding neighbour: " << id.tostr() << UBEREND();
+  //UBERLOG() << _vid.tostr() << " Adding neighbour: " << id.tostr() << UBEREND();
   _vneighboursLocation.insert(std::pair<ID, NodeID>(id, node));
   _vneighboursLocationMutex.unlock();
   //_vneighboursLocation[id] = node;
@@ -84,7 +78,6 @@ void Fragment::addNeighbour(ID id, NodeID node) {
 void Fragment::updateNeighbour(ID id, NodeID node) {
   _vneighboursLocationMutex.lock();
   _vneighboursLocation[id] = node;
-  _tryRemoveAllStates();
   _vneighboursLocationMutex.unlock();
 }
 
@@ -116,14 +109,6 @@ uint64_t Fragment::iteration() {
 
 uint64_t Fragment::progress() {
   return _vprogress;
-}
-
-void Fragment::iteration(uint64_t i) {
-  _viteration = i;
-}
-
-void Fragment::progress(uint64_t p) {
-  _vprogress = p;
 }
 
 void Fragment::nextIteration() {
@@ -169,28 +154,50 @@ Timestamp Fragment::neighboursState() {
 }
 
 void Fragment::saveState() {
+  _vlaststateWasSaved = true;
   _vlaststate = getBoundary();
+  _vlaststate->_viteration = _viteration;
+  _vlaststate->_vprogress = _vprogress;
+  _vlaststate->_visboundary = true;
   _vstates.insert(pair<Timestamp, Fragment*>(Timestamp(_viteration, _vprogress), _vlaststate));
+  _vstateGettedLock.wlock();
+  _vstateGetted.emplace(Timestamp(_viteration, _vprogress), std::set<ID>());
+  _vstateGettedLock.unlock();
 }
 
 void Fragment::saveState(Fragment* fragment) {
-  UBERLOG() << id().tostr() << " Saved state: (" << fragment->iteration() << ", " << fragment->progress() << ")" <<
-    " from " << fragment->id().tostr() << UBEREND();
+  _vstatesMutex.lock();
   _vstates.insert(pair<Timestamp, Fragment*>(Timestamp(fragment->iteration(), fragment->progress()), fragment));
+  _vstatesMutex.unlock();
+  _vstateGettedLock.wlock();
+  _vstateGetted.emplace(Timestamp(fragment->iteration(), fragment->progress()), std::set<ID>());
+  _vstateGettedLock.unlock();
 }
 
 void Fragment::moveStates(Fragment* fragment) {
+  _vstatesMutex.lock();
   for(auto state: _vstates) {
     fragment->saveState(state.second);
   }
+  _vstatesMutex.unlock();
 }
 
 Fragment* Fragment::getLastState() {
-  _vupdate = false;
-  Fragment* f = _vlaststate;
+  if(!_vlaststateWasSaved) {
+    exit(3);
+  }
+
+  Fragment* f = _vlaststate->getBoundary();
+  f->_vid = id();
+  f->_viteration = _vlaststate->_viteration;
+  f->_vprogress = _vlaststate->_vprogress;
+  _vneighboursLocationMutex.lock();
   for(auto &n : _vneighboursLocation) {
     f->addNeighbour(n.first, n.second);
   }
+  _vneighboursLocationMutex.unlock();
+  _vlaststateWasSaved = false;
+  _vupdate = false;
   return f;
 }
 
@@ -202,20 +209,41 @@ Fragment* Fragment::getState(const Timestamp& timestamp, const ID& neighbour) {
       _vstateGetted[timestamp].insert(neighbour);
   });
 
-  _tryRemoveState(timestamp);
+  //_tryRemoveState(timestamp);
   _vstatesMutex.unlock();
   return fragment;
 }
 
-vector<Fragment*> Fragment::specialUpdateNeighbour(const ID& neighbour, NodeID node) {
+vector<Fragment*> Fragment::specialUpdateNeighbour(const ID& neighbour,
+                                                   NodeID node) {
   vector<Fragment*> result;
-  _vstateGettedLock.rlock([&]() {
-    for(auto i : _vstateGetted)
+  _vstateGettedLock.rlock();
+  _vstatesMutex.lock();
+    for(auto i : _vstateGetted) {
       if(i.second.find(neighbour) == i.second.end()) {
-        result.push_back(_vstates[i.first]->copy());
+        try {
+          Fragment* ob = _vstates.at(i.first);
+          Fragment* b = ob->getBoundary();
+          b->_vid = _vid;
+          b->_viteration = ob->_viteration;
+          b->_vprogress = ob->_vprogress;
+          for(auto& n : _vneighboursLocation) {
+            if(!(n.first == neighbour)) {
+              b->addNeighbour(n.first, n.second);
+            } else b->addNeighbour(neighbour, node);
+          }
+          result.push_back(b);
+        } catch(...) {
+          ULOG(error) << "Oh-oh" << UEND;
+        }
       }
-  });
+    }
+  _vstatesMutex.unlock();
+  _vstateGettedLock.unlock();
+  _vneighboursLocationMutex.lock();
   _vneighboursLocation[neighbour] = node;
+  _vneighboursLocationMutex.unlock();
+  //_tryRemoveAllStates();
   return result;
 }
 
@@ -229,12 +257,12 @@ bool Fragment::hasState(const Timestamp& timestamp) {
     return true;
 }
 
-void Fragment::_tryRemoveState(Timestamp timestamp) {
+bool Fragment::_stateCanBeRemoved(Timestamp timestamp) {
   _vstateGettedLock.rlock();
   auto checkList = _vstateGetted[timestamp];
   _vstateGettedLock.unlock();
-  
-  if(all_of(_vneighboursLocation.begin(), _vneighboursLocation.end(), 
+
+  if(all_of(_vneighboursLocation.begin(), _vneighboursLocation.end(),
       [=](const pair<ID, NodeID>& neighbour) {
         if(neighbour.second != _vnodeID)
           return true;
@@ -245,27 +273,37 @@ void Fragment::_tryRemoveState(Timestamp timestamp) {
       })
     ) {
 
-    auto pek = UBERLOG("fragment") << _vid.tostr() << ": Remove state: (" << std::get<0>(timestamp) << ", " << std::get<1>(timestamp) << ") ";
-    pek << "because state was getted by: ";
-    for(auto &a : checkList) {
-      pek << a.tostr() << " ";
-    }
-
-    pek << UEND;
-
-    auto finded = _vstates.find(timestamp);
-    delete finded->second;
-    _vstates.erase(finded);
+    return true;
   }
+  return false;
+}
+
+void Fragment::_tryRemoveState(Timestamp /*timestamp*/) {
+//  if(_stateCanBeRemoved(timestamp)) {
+//    delete _vstates.at(timestamp);
+//    _vstates.erase(timestamp);
+
+//    _vstateGettedLock.wlock();
+//    _vstateGetted.erase(timestamp);
+//    _vstateGettedLock.unlock();
+//  }
 }
 
 void Fragment::_tryRemoveAllStates() {
-  _vstatesMutex.lock();
-  for_each(_vstates.begin(), _vstates.end(),
-          [=](const pair<Timestamp, Fragment*>& state) {
-          _tryRemoveState(state.first);
-  });
-  _vstatesMutex.unlock();
+//  vector<Timestamp> rmlist;
+//  _vstatesMutex.lock();
+//  for(auto& state: _vstates)
+//    if(_stateCanBeRemoved(state.first))
+//      rmlist.push_back(state.first);
+
+//  _vstateGettedLock.wlock();
+//  for(auto& timestamp : rmlist) {
+//    delete _vstates.at(timestamp);
+//    _vstates.erase(timestamp);
+//    _vstateGetted.erase(timestamp);
+//  }
+//  _vstatesMutex.unlock();
+//  _vstateGettedLock.unlock();
 }
 
 bool Fragment::operator==(const Fragment& other) { return _vid == other._vid; }
@@ -274,7 +312,6 @@ bool Fragment::operator==(const ID& other) { return _vid == other; }
 #ifdef NDEBUG
   void Fragment::printStates() {
     if(_vstates.empty()) {
-      std::cout << "NO STATES LOLD" << std::endl;
       return;
     }
     for(auto state: _vstates) {
@@ -296,6 +333,10 @@ void Fragment::createExternal(Fragment* f) {
     f->_vstates.insert(i);
   }
   _vstatesMutex.unlock();
+  _vneighboursLocationMutex.lock();
+  for(auto i: _vneighboursLocation) {
+    f->_vneighboursLocation.emplace(i);
+  }
 }
 
 bool Fragment::equal(Fragment* another) {
@@ -320,7 +361,7 @@ bool Fragment::equal(Fragment* another) {
   return _equal(another);
 }
 
-bool Fragment::_equal(Fragment* another) {
+bool Fragment::_equal(Fragment*) {
   return true;
 }
 

@@ -1,23 +1,24 @@
 #pragma once
 #include "../Action.h"
-#include "../../../types/ReduceData.h"
+#include "../../../types/Fragment.h"
+#include <stdint.h>
 
 namespace ts {
 namespace system {
 namespace action {
 
-class Reduce : public ts::system::Action {
+class Load : public ts::system::Action {
 private:
-  ts::type::ReduceData* data;
+  uint64_t load;
+  ts::NodeID node;
 
 public:
-  Reduce(): data(0) {}
+  Load(): load(0) {}
+  ~Load() override {}
   void set(ts::Arc* arc, ts::NodeID id) override;
   void run() override;
 
   Action* copy() override;
 };
 
-}
-}
-}
+}}}

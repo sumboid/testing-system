@@ -9,8 +9,10 @@ class Fragment;
 class FragmentTools {
 public:
   virtual ~FragmentTools() {}
-  virtual void serialize(Fragment* fragment, ts::Arc* arc) = 0;
-  virtual Fragment* deserialize(ts::Arc* arc) = 0;
+  virtual void fserialize(Fragment* fragment, ts::Arc* arc) = 0;
+  virtual Fragment* fdeserialize(ts::Arc* arc) = 0;
+  virtual void bserialize(Fragment* fragment, ts::Arc* arc) = 0;
+  virtual Fragment* bdeserialize(ts::Arc* arc) = 0;
   virtual Fragment* createGap(const ID& id) = 0;
 
   ts::Arc* fullSerialize(Fragment* fragment);

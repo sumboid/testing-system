@@ -1,20 +1,21 @@
 #pragma once
 #include "../Action.h"
+#include "../../../types/Fragment.h"
 #include "../../../types/ID.h"
 
 namespace ts {
 namespace system {
 namespace action {
 
-class ConfirmMove : public ts::system::Action {
+class Unlock : public ts::system::Action {
 private:
-  ts::type::ID id;
-  NodeID sender;
+  ts::type::Fragment* fragment;
 
 public:
-  ConfirmMove(): id(ts::type::ID(0,0,0)), sender(0) {}
-  ~ConfirmMove() override {}
+  Unlock(): fragment(0) {}
+  ~Unlock() override {}
   void set(ts::Arc* arc, ts::NodeID id) override;
+  void set(ts::type::Fragment* f);
   void run() override;
 
   Action* copy() override;

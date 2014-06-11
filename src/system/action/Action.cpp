@@ -1,5 +1,6 @@
 #include "Action.h"
 
+using ts::NodeID;
 namespace ts {
 namespace system {
 

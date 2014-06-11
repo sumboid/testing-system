@@ -1,17 +1,19 @@
 #pragma once
 #include "../Action.h"
-#include "../../../types/ReduceData.h"
+#include "../../../types/ID.h"
 
 namespace ts {
 namespace system {
 namespace action {
 
-class Reduce : public ts::system::Action {
+class GlobalConfirmMove : public ts::system::Action {
 private:
-  ts::type::ReduceData* data;
+  ts::type::ID id;
+  NodeID sender;
 
 public:
-  Reduce(): data(0) {}
+  GlobalConfirmMove(): id(ts::type::ID(0,0,0)), sender(0) {}
+  ~GlobalConfirmMove() override {}
   void set(ts::Arc* arc, ts::NodeID id) override;
   void run() override;
 

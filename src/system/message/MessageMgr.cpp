@@ -15,11 +15,18 @@ using ts::type::FragmentTools;
 using ts::type::ReduceDataTools;
 using ts::type::ReduceData;
 using ts::Arc;
+using ts::NodeID;
 
 namespace ts {
 namespace system {
 
-MessageMgr::MessageMgr(): end(false) {
+MessageMgr::MessageMgr():
+  fragmentMgr(0),
+  sys(0),
+  actionBuilder(0),
+  fragmentTool(0),
+  reduceTool(0),
+  end(false) {
   comm = new Comm(0, 0);
   id = comm->getRank();
   _size = comm->getSize();
@@ -96,7 +103,7 @@ void MessageMgr::sendBoundary(NodeID node, Fragment* fragment) {
 
 void MessageMgr::sendFullFragment(NodeID node, Fragment* fragment) {
   Message* message = new Message;
-  UBERLOG() << "Sending full fragment: " << fragment->id().tostr() << UBEREND();
+  //UBERLOG() << "Sending full fragment: " << fragment->id().tostr() << UBEREND();
   Arc* arc = fragmentTool->fullSerialize(fragment);
   message->size = arc->size();
   message->buffer = arc->get();
@@ -132,7 +139,25 @@ void MessageMgr::sendStartMove(NodeID node, const ts::type::ID& id, NodeID to) {
   message->node = node;
   message->tag = START_MOVE_FRAGMENT;
   Arc* arc = new Arc;
+  Arc& a = *arc;
   id.serialize(arc);
+  a << to;
+  message->size = arc->size();
+  message->buffer = arc->get();
+
+  delete arc;
+
+  push(message);
+}
+
+void MessageMgr::sendNoticeMove(NodeID node, const ts::type::ID& id, NodeID to) {
+  Message* message = new Message;
+  message->node = node;
+  message->tag = NOTICE_MOVE_FRAGMENT;
+  Arc* arc = new Arc;
+  Arc& a = *arc;
+  id.serialize(arc);
+  a << to;
   message->size = arc->size();
   message->buffer = arc->get();
 
@@ -154,6 +179,33 @@ void MessageMgr::sendConfirmMove(NodeID node, const ts::type::ID& id) {
   push(message);
 }
 
+void MessageMgr::sendGlobalConfirmMove(NodeID node, const ts::type::ID& id) {
+  Message* message = new Message;
+  message->node = node;
+  message->tag = GLOBAL_CONFIRM_MOVE_FRAGMENT;
+  Arc* arc = new Arc;
+  id.serialize(arc);
+  message->size = arc->size();
+  message->buffer = arc->get();
+  delete arc;
+
+  push(message);
+}
+
+void MessageMgr::sendLoad(ts::NodeID node, uint64_t amount) {
+  Message* message = new Message;
+  message->node = node;
+  message->tag = LOAD;
+  Arc* arc = new Arc;
+  Arc& a = *arc;
+  a << amount;
+  message->size = arc->size();
+  message->buffer = arc->get();
+  delete arc;
+
+  push(message);
+}
+
 void MessageMgr::push(Message* message) {
   queueMutex.lock();
   sendQueue.push(message);
@@ -166,5 +218,22 @@ Message* MessageMgr::pop() {
   sendQueue.pop();
   queueMutex.unlock();
   return message;
+}
+
+std::set<ts::NodeID> MessageMgr::getNeighbours() {
+  std::set<ts::NodeID> neighbours;
+
+  if(id == 0) {
+    neighbours.emplace(id + 1);
+    if(_size != 2) neighbours.emplace(_size - 1);
+  } else if (id == _size - 1) {
+    neighbours.emplace(0);
+    if(_size != 2) neighbours.emplace(id - 1);
+  } else {
+    neighbours.emplace(id - 1);
+    neighbours.emplace(id + 1);
+  }
+
+  return neighbours;
 }
 }}

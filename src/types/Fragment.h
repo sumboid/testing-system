@@ -11,6 +11,7 @@
 #include "ID.h"
 #include "ReduceData.h"
 #include "../util/RWLock.h"
+#include "../system/message/NodeID.h"
 
 namespace ts {
 
@@ -19,7 +20,6 @@ class FragmentMgr;
 }
 
 namespace type {
-typedef int NodeID;
 
 namespace util {
 class FragmentDeserializer;
@@ -44,24 +44,27 @@ class Fragment {
   friend class ts::system::FragmentMgr;
 private:
   ID _vid;                                   ///< ID of fragment
-  NodeID _vnodeID;                           ///< Logic fragment location
-  std::map<ID, NodeID> _vneighboursLocation; ///< Fragment's neighbours location
+  ts::NodeID _vnodeID = 0;                           ///< Logic fragment location
+  std::map<ID, ts::NodeID> _vneighboursLocation; ///< Fragment's neighbours location
   std::mutex _vneighboursLocationMutex;
 
-  bool _vreduce;                             ///< Flag that indicate fragment need for reduce step
-  bool _vreduced;                            ///< Flag that indicate fragment's reduce data was used
-  bool _vupdate;                             ///< Flag that indicate external fragment data need to update on remote nodes
-  bool _vneighbours;                         ///< Flag that indicate fragment need neighbours for next step
-  bool _vend;                                ///< Flag that indicate fragment is ready to end
+  bool _vreduce = false;                             ///< Flag that indicate fragment need for reduce step
+  bool _vreduced = true;                            ///< Flag that indicate fragment's reduce data was used
+  bool _vupdate = false;                             ///< Flag that indicate external fragment data need to update on remote nodes
+  bool _vneighbours = false;                         ///< Flag that indicate fragment need neighbours for next step
+  bool _vend = false;                                ///< Flag that indicate fragment is ready to end
 
-  uint64_t _viteration;                      ///< Current iteration
-  uint64_t _vprogress;                       ///< Current progress of iteration
+  uint64_t _viteration = 0;                      ///< Current iteration
+  uint64_t _vprogress = 0;                       ///< Current progress of iteration
+
+  bool _visboundary = false;
 
   Timestamp _vneighboursState;
   std::map<Timestamp, Fragment*> _vstates;   ///< stored states of fragment
   std::mutex _vstatesMutex;
 
-  Fragment* _vlaststate;                           ///< last state
+  Fragment* _vlaststate = 0;                           ///< last state
+  bool _vlaststateWasSaved = false;
   std::map<Timestamp, std::set<ID>> _vstateGetted; ///< states getted by neighbours
   ts::RWLock _vstateGettedLock;
 public:
@@ -70,16 +73,16 @@ public:
   virtual ~Fragment();
 
   ID id();
-  void setNodeID(NodeID);
+  void setNodeID(ts::NodeID);
 
   // Neighbours and their location
-  std::set<NodeID> noticeList();
+  std::set<ts::NodeID> noticeList();
   std::vector<ID> neighbours();
-  std::vector<ID> neighbours(NodeID node);
+  std::vector<ID> neighbours(ts::NodeID node);
   bool isNeighbour(const ID& id);
-  void updateNeighbour(ID id, NodeID node);
-  std::vector<Fragment*> specialUpdateNeighbour(const ID& id, NodeID node);
-  void addNeighbour(ID id, NodeID node);
+  void updateNeighbour(ID id, ts::NodeID node);
+  std::vector<Fragment*> specialUpdateNeighbour(const ID& id, ts::NodeID node);
+  void addNeighbour(ID id, ts::NodeID node);
 
   // Fragment steps defined by user
   virtual ReduceData* reduce() = 0;
@@ -115,15 +118,21 @@ public:
   Fragment* getLastState();
   bool hasState(const Timestamp& timestamp);
   void _tryRemoveState(Timestamp timestamp);
+  bool _stateCanBeRemoved(Timestamp timestamp);
   void _tryRemoveAllStates();
 
   // State getters
   uint64_t iteration();
   uint64_t progress();
 
-  // State setters
-  void iteration(uint64_t i);
-  void progress(uint64_t p);
+  // Checking boundary
+  bool isBoundary() {
+    return _visboundary;
+  }
+
+  void setBoundary() {
+    _visboundary = true;
+  }
 
   // Low-level methods that changes state implicitly
   ReduceData* _reduce();
@@ -144,6 +153,7 @@ public:
   virtual Fragment* copy() = 0;
   void print();
 
+  virtual uint64_t weight() = 0;
 };
 
 }}

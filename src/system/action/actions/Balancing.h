@@ -1,20 +1,22 @@
 #pragma once
 #include "../Action.h"
+#include "../../../types/Fragment.h"
 #include "../../../types/ID.h"
+#include <map>
 
 namespace ts {
 namespace system {
 namespace action {
 
-class ConfirmMove : public ts::system::Action {
+class Balancing : public ts::system::Action {
 private:
-  ts::type::ID id;
-  NodeID sender;
+  std::map<ts::NodeID, double> amount;
 
 public:
-  ConfirmMove(): id(ts::type::ID(0,0,0)), sender(0) {}
-  ~ConfirmMove() override {}
+  Balancing() {}
+  ~Balancing() override {}
   void set(ts::Arc* arc, ts::NodeID id) override;
+  void set(std::map<ts::NodeID, double> _amount);
   void run() override;
 
   Action* copy() override;

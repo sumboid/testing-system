@@ -13,20 +13,14 @@ ID::ID(uint64_t x, uint64_t y, uint64_t z) {
 ID::~ID() {}
 
 bool ID::operator<(const ID& other) const {
-  return c[X] > other.c[X] ||
-         c[Y] > other.c[Y] ||
-         c[Z] > other.c[Z];
+  return tostr().compare(other.tostr()) < 0;
 }
 bool ID::operator>(const ID& other) const {
-  return c[X] < other.c[X] ||
-         c[Y] < other.c[Y] ||
-         c[Z] < other.c[Z];
+  return tostr().compare(other.tostr()) > 0;
 }
 
 bool ID::operator==(const ID& other) const {
-  return c[X] == other.c[X] &&
-         c[Y] == other.c[Y] &&
-         c[Z] == other.c[Z];
+  return tostr().compare(other.tostr()) == 0;
 }
 
 std::string ID::tostr() const {
@@ -51,9 +45,10 @@ ID ID::deserialize(ts::Arc* arc) {
   return result;
 }
 
-void ID::operator= (const ID& another) {
+ID& ID::operator= (const ID& another) {
   c[X] = another.c[X];
   c[Y] = another.c[Y];
   c[Z] = another.c[Z];
+  return *this;
 }
 }}

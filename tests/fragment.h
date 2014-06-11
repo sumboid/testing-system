@@ -52,17 +52,14 @@ public:
 class Fragment: public ts::type::Fragment {
 friend class FragmentTools;
 private:
-  std::ofstream file;
   uint64_t iter;
 
 public:
-  Fragment(ts::type::ID id, bool needFile = true): ts::type::Fragment(id) {
-    if(needFile) file.open(std::to_string(id.c[0]) + std::to_string(id.c[1]));
+  Fragment(ts::type::ID id): ts::type::Fragment(id) {
     iter = iteration();
   }
 
   ~Fragment() {
-    file.close();
   }
 
   void runStep(std::vector<ts::type::Fragment*> neighbours) override {
@@ -71,7 +68,8 @@ public:
       return;
     }
 
-    file << iteration() << " iteration" << std::endl;
+    ULOG(fragment) << id().tostr() << " [" << iteration() << ", " << progress() << "] " << "checkpoint" << UEND;
+
     iter = iteration();
     if(iteration() % 2 == 1) {
       saveState();
@@ -80,12 +78,14 @@ public:
     } else if (iteration() != 0) {
       int buf = iter - 1;
       for(auto n: neighbours) {
-        UBERLOG("fragment") << "[" << id().tostr() << "] " <<"Get iter from: " << n->id().tostr() << ": " << ((Fragment*) n)->iter << UBEREND();
+        ULOG(success) << "[" << id().tostr() << "] " <<"Get iter from: " << n->id().tostr() << ": " << ((Fragment*) n)->iter << UBEREND();
         buf += ((Fragment*) n)->iter;
       }
-      file << "Reduced " << buf << " locally" << std::endl;
+      ULOG(success) << id().tostr() << " [" << iteration() << ", " << progress() << "] " << "Reduced " << buf << " locally" << UEND;
     }
+
     nextIteration();
+    ULOG(success) << id().tostr() << " [" << iteration() << ", " << progress() << "] " << "checkpoint" << UEND;
   }
 
   ReduceData* reduce() override {
@@ -98,14 +98,12 @@ public:
 
 
   void reduceStep(ts::type::ReduceData* data) override {
-    file << (int) ((ReduceData*) data)->getNumber() << " reduced" << std::endl;
+    ULOG(fragment) << id().tostr() << " [" << iteration() << ", " << progress() << "] " << (int) ((ReduceData*) data)->getNumber() << " reduced" << UEND;
   }
 
   Fragment* getBoundary() override {
-    Fragment* fragment = new Fragment(id(), false);
+    Fragment* fragment = new Fragment(id());
     fragment->iter = iter;
-    fragment->iteration(iteration());
-    fragment->progress(progress());
     return fragment;
   }
 
@@ -117,20 +115,33 @@ public:
 class FragmentTools: public ts::type::FragmentTools {
 public:
   ~FragmentTools() {}
-  void serialize(ts::type::Fragment* fragment, ts::Arc* arc) {
+  void bserialize(ts::type::Fragment* fragment, ts::Arc* arc) {
     ts::Arc& a = *arc;
     a << ((Fragment*) fragment)->iter;
   }
 
-  ts::type::Fragment* deserialize(ts::Arc* arc) {
+  ts::type::Fragment* bdeserialize(ts::Arc* arc) {
     ts::Arc& a = *arc;
-    Fragment* result = new Fragment(ts::type::ID(0, 0, 0), false);
+    Fragment* result = new Fragment(ts::type::ID(0, 0, 0));
     a >> result->iter;
     return result;
   }
 
+  void fserialize(ts::type::Fragment* fragment, ts::Arc* arc) {
+    ts::Arc& a = *arc;
+    a << ((Fragment*) fragment)->iter;
+  }
+
+  ts::type::Fragment* fdeserialize(ts::Arc* arc) {
+    ts::Arc& a = *arc;
+    Fragment* result = new Fragment(ts::type::ID(0, 0, 0));
+    a >> result->iter;
+    return result;
+  }
+
+
   ts::type::Fragment* createGap(const ID& id) override {
-    return new Fragment(id, false);
+    return new Fragment(id);
   }
 };
 

@@ -13,9 +13,9 @@ private:
   NodeID sender;
 
 public:
-  StartMove() {}
+  StartMove(): id(ts::type::ID(0,0,0)), node(0), sender(0) {}
   ~StartMove() override {}
-  void set(ts::Arc* arc, ts::type::NodeID id) override;
+  void set(ts::Arc* arc, ts::NodeID id) override;
   void run() override;
 
   Action* copy() override;

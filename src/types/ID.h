@@ -14,7 +14,7 @@ struct ID {
   bool operator<(const ID&) const;
   bool operator>(const ID&) const;
   bool operator==(const ID& other) const;
-  void operator= (const ID& another);
+  ID& operator= (const ID& another);
   std::string tostr() const;
 
   void serialize(ts::Arc* arc) const;

@@ -4,6 +4,8 @@
 #include <unistd.h>
 #include "System.h"
 #include "../util/Uberlogger.h"
+#include "action/actions/GetFragments.h"
+#include "action/actions/Balancing.h"
 
 UBERINIT;
 
@@ -17,6 +19,7 @@ using ts::type::ReduceDataTools;
 
 System::System(FragmentTools* fragmentTools, ReduceDataTools* reduceTools):
   inputReduceData(0), _end(false), fragmentListener(true) {
+  UBERRUN;
   msgMgr = new MessageMgr;
   fragmentMgr = new FragmentMgr;
   execMgr = new ExecMgr(reduceTools);
@@ -34,20 +37,39 @@ System::System(FragmentTools* fragmentTools, ReduceDataTools* reduceTools):
   msgMgr->setReduceTool(reduceTools);
   msgMgr->setActionBuilder(actionBuilder);
 
+  auto neighbours = msgMgr->getNeighbours();
+
   fragmentMgr->setMessageMgr(msgMgr);
   fragmentMgr->setSystem(this);
   fragmentMgr->setFragmentTools(fragmentTools);
+  fragmentMgr->setNeighbours(neighbours);
 
   execMgr->setSystem(this);
+  execMgr->setFragmentMgr(fragmentMgr);
 
-  UBERTEMPLATE("fragment", "[%nodeid][%name]: %msg");
-  UBERREPLACE("fragment", "%nodeid", [&](){return std::to_string(this->id());});
+  UTEMPLATE(fragment, "[%nodeid][%name]: %msg");
+  UTEMPLATE(state, "[%nodeid][%name]: %msg");
+  UTEMPLATE(success, "[%nodeid][%name]: %msg");
+  UTEMPLATE(error, "[%nodeid][%name]: %msg");
+  UTEMPLATE(arc, "[%nodeid][%name]: %msg");
+  UTEMPLATE(move, "[%nodeid][%name]: %msg");
+  UREPLACE(fragment, "%nodeid", [&](){return std::to_string(this->id());});
+  UREPLACE(state, "%nodeid", [&](){return std::to_string(this->id());});
+  UREPLACE(success, "%nodeid", [&](){return std::to_string(this->id());});
+  UREPLACE(error, "%nodeid", [&](){return std::to_string(this->id());});
+  UREPLACE(arc, "%nodeid", [&](){return std::to_string(this->id());});
+  UREPLACE(move, "%nodeid", [&](){return std::to_string(this->id());});
+  USTYLE(error, UBOLD | UCOLOR(RED));
+  USTYLE(move, UCOLOR(MAGENTA));
+  USTYLE(success, UCOLOR(BLUE));
+  USTYLE(state, UCOLOR(GREEN));
   UBERTEMPLATE("[%nodeid][%name]: %msg");
   UBERREPLACE("%nodeid", [&](){return std::to_string(this->id());});
 
   UBERLOG() << "Hello, sweety" << UBEREND();
 
   actionLoopThread = std::thread(&System::actionLoop, this);
+  balancerLoopThread = std::thread(&System::balancerLoop, this);
   msgMgr->run();
   execMgr->run();
 }
@@ -59,6 +81,7 @@ System::~System() {
   execMgr->join();
 
   actionLoopThread.join();
+  balancerLoopThread.join();
   delete msgMgr;
   delete execMgr;
   delete fragmentMgr;
@@ -66,17 +89,11 @@ System::~System() {
 
 void System::run() {
   while(true) {
-    auto fragments = fragmentMgr->getFragments(359);
-    if(_end) {
-      return;
-    }
-    else if(fragments.empty()) {
-      fragmentListener.wait();
-     // sleep(1); // Sort of KOSTYL.
-      continue;
-    }
-
-    execMgr->add(fragments);
+    Action* action = new action::GetFragments;
+    action->setFragmentMgr(fragmentMgr);
+    action->setExecMgr(execMgr);
+    addAction(action);
+    fragmentListener.wait();
   }
 }
 
@@ -133,16 +150,18 @@ void System::addAction(Action* action) {
 void System::actionLoop() {
   while(true) {
     queueMutex.lock();
-    if(actionQueue.empty()) {
-      queueMutex.unlock();
+    size_t queueSize = actionQueue.size();
+    queueMutex.unlock();
+
+    if(queueSize == 0) {
       actionQueueListener.wait();
+
       if(_end) {
         return;
       }
-    }
 
-    size_t queueSize = actionQueue.size();
-    queueMutex.unlock();
+      continue;
+    }
 
     for(size_t i = 0; i < queueSize; ++i) {
       queueMutex.lock();
@@ -161,5 +180,27 @@ void System::end() {
   fragmentListener.notifyAll();
   actionQueueListener.notifyAll();
 }
+
+int System::weight() { return fragmentMgr->weight(); }
+
+void System::loadChange(NodeID node, uint64_t load) {
+  nload[node] = load;
+  balancerNotify();
+}
+
+void System::balancerNotify() {
+  balancerListener.notifyAll();
+}
+
+void System::balancerLoop() {
+  while(true) {
+    balancerListener.wait();
+    action::Balancing* action = new action::Balancing();
+    action->setFragmentMgr(fragmentMgr);
+    action->set(balancer(weight(), nload));
+    addAction(action);
+  }
+}
+
 
 }}

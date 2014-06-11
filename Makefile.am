@@ -29,10 +29,22 @@ libts_la_SOURCES =  src/system/fragment/FragmentMgr.cpp \
                     src/system/action/actions/Reduce.cpp \
                     src/system/action/actions/StartMove.h \
                     src/system/action/actions/StartMove.cpp \
+                    src/system/action/actions/NoticeMove.h \
+                    src/system/action/actions/NoticeMove.cpp \
                     src/system/action/actions/ConfirmMove.h \
                     src/system/action/actions/ConfirmMove.cpp \
+                    src/system/action/actions/GlobalConfirmMove.h \
+                    src/system/action/actions/GlobalConfirmMove.cpp \
                     src/system/action/actions/Move.h \
                     src/system/action/actions/Move.cpp \
+                    src/system/action/actions/Unlock.h \
+                    src/system/action/actions/Unlock.cpp \
+                    src/system/action/actions/GetFragments.h \
+                    src/system/action/actions/GetFragments.cpp \
+                    src/system/action/actions/Load.h \
+                    src/system/action/actions/Load.cpp \
+                    src/system/action/actions/Balancing.h \
+                    src/system/action/actions/Balancing.cpp \
                     src/distr/Distributor.cpp \
                     src/distr/Distributor.h \
                     src/types/Fragment.cpp \

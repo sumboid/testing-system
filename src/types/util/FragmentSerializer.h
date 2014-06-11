@@ -2,6 +2,7 @@
 
 #include "../Fragment.h"
 #include "../../util/Arc.h"
+#include "../../system/message/NodeID.h"
 
 namespace ts {
 namespace type {
@@ -10,6 +11,7 @@ namespace util {
 class FragmentSerializer {
 public:
   static void timestamp(ts::type::Fragment* fragment, ts::Arc* arc);
+  static void neighboursTimestamp(ts::type::Fragment* fragment, ts::Arc* arc);
   static void id(ts::type::Fragment* fragment, ts::Arc* arc);
   static void neighbours(ts::type::Fragment* fragment, ts::Arc* arc);
   static void flags(ts::type::Fragment* fragment, ts::Arc* arc);
