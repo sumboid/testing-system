@@ -5,6 +5,7 @@
 #include "System.h"
 #include "../util/Uberlogger.h"
 #include "action/actions/GetFragments.h"
+#include "action/actions/Balancing.h"
 
 UBERINIT;
 
@@ -36,9 +37,12 @@ System::System(FragmentTools* fragmentTools, ReduceDataTools* reduceTools):
   msgMgr->setReduceTool(reduceTools);
   msgMgr->setActionBuilder(actionBuilder);
 
+  auto neighbours = msgMgr->getNeighbours();
+
   fragmentMgr->setMessageMgr(msgMgr);
   fragmentMgr->setSystem(this);
   fragmentMgr->setFragmentTools(fragmentTools);
+  fragmentMgr->setNeighbours(neighbours);
 
   execMgr->setSystem(this);
   execMgr->setFragmentMgr(fragmentMgr);
@@ -65,6 +69,7 @@ System::System(FragmentTools* fragmentTools, ReduceDataTools* reduceTools):
   UBERLOG() << "Hello, sweety" << UBEREND();
 
   actionLoopThread = std::thread(&System::actionLoop, this);
+  balancerLoopThread = std::thread(&System::balancerLoop, this);
   msgMgr->run();
   execMgr->run();
 }
@@ -76,6 +81,7 @@ System::~System() {
   execMgr->join();
 
   actionLoopThread.join();
+  balancerLoopThread.join();
   delete msgMgr;
   delete execMgr;
   delete fragmentMgr;
@@ -174,5 +180,26 @@ void System::end() {
   fragmentListener.notifyAll();
   actionQueueListener.notifyAll();
 }
+
+int System::weight() { return fragmentMgr->weight(); }
+
+void System::loadChange(NodeID node, int load) {
+  nload[node] = load;
+  balancerNotify();
+}
+
+void System::balancerNotify() {
+  balancerListener.notifyAll();
+}
+
+void System::balancerLoop() {
+  while(true) {
+    balancerListener.wait();
+    auto action = new action::Balancing();
+    action->set(balancer(weight(), nload));
+    addAction(action);
+  }
+}
+
 
 }}

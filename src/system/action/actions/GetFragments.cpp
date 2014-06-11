@@ -9,7 +9,7 @@ void GetFragments::set(ts::Arc*, ts::NodeID) {
 }
 
 void GetFragments::run() {
-  auto fs = fragmentMgr->getFragments(359);
+  auto fs = fragmentMgr->getFragments(5);
   if(!fs.empty()) execMgr->add(fs);
 }
 

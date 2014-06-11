@@ -7,6 +7,7 @@
 #include "actions/ConfirmMove.h"
 #include "actions/GlobalConfirmMove.h"
 #include "actions/Move.h"
+#include "actions/Load.h"
 
 namespace ts {
 namespace system {
@@ -26,6 +27,7 @@ ActionBuilder::ActionBuilder():
   actionMap.insert(pair<Tag, Action*>(Tag::CONFIRM_MOVE_FRAGMENT, new action::ConfirmMove));
   actionMap.insert(pair<Tag, Action*>(Tag::GLOBAL_CONFIRM_MOVE_FRAGMENT, new action::GlobalConfirmMove));
   actionMap.insert(pair<Tag, Action*>(Tag::MOVE_FRAGMENT, new action::Move));
+  actionMap.insert(pair<Tag, Action*>(Tag::LOAD, new action::Load));
 }
 
 ActionBuilder::~ActionBuilder() {

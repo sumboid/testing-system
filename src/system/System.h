@@ -3,6 +3,7 @@
 #include <atomic>
 #include <mutex>
 #include <queue>
+#include <functional>
 
 #include "exec/ExecMgr.h"
 #include "message/MessageMgr.h"
@@ -15,6 +16,7 @@
 
 #include "action/Action.h"
 #include "action/ActionBuilder.h"
+
 
 namespace ts {
 namespace system {
@@ -41,11 +43,18 @@ private:
   std::queue<Action*> actionQueue;
   Listener actionQueueListener;
 
+  std::thread balancerLoopThread;
+  Listener balancerListener;
+  std::function<std::map<ts::NodeID, double>(int, std::map<ts::NodeID, int>)> balancer;
+
+  std::map<ts::NodeID, int> nload;
 public:
   System(ts::type::FragmentTools*, ts::type::ReduceDataTools*);
   ~System();
 
   void addFragment(ts::type::Fragment* fragment);
+  void setBalancer(std::function<std::map<ts::NodeID, double>(int, std::map<ts::NodeID, int>)> b) { balancer = b; }
+
   uint64_t id();
   uint64_t size();
   void run();
@@ -61,6 +70,10 @@ public:
   void putReduceData(ts::type::ReduceData* data);
   void unlockFragment(ts::type::Fragment* fragment);
 
+  int weight();
+  void loadChange(NodeID node, int load);
+  void balancerNotify();
+  void balancerLoop();
   //put(Message* message);
 };
 

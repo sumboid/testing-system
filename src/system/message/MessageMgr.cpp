@@ -192,6 +192,20 @@ void MessageMgr::sendGlobalConfirmMove(NodeID node, const ts::type::ID& id) {
   push(message);
 }
 
+void MessageMgr::sendLoad(ts::NodeID node, int amount) {
+  Message* message = new Message;
+  message->node = node;
+  message->tag = LOAD;
+  Arc* arc = new Arc;
+  Arc& a = *arc;
+  a << amount;
+  message->size = arc->size();
+  message->buffer = arc->get();
+  delete arc;
+
+  push(message);
+}
+
 void MessageMgr::push(Message* message) {
   queueMutex.lock();
   sendQueue.push(message);
@@ -204,5 +218,22 @@ Message* MessageMgr::pop() {
   sendQueue.pop();
   queueMutex.unlock();
   return message;
+}
+
+std::set<ts::NodeID> MessageMgr::getNeighbours() {
+  std::set<ts::NodeID> neighbours;
+
+  if(id == 0) {
+    neighbours.emplace(id + 1);
+    if(_size != 2) neighbours.emplace(_size - 1);
+  } else if (id == _size - 1) {
+    neighbours.emplace(0);
+    if(_size != 2) neighbours.emplace(id - 1);
+  } else {
+    neighbours.emplace(id - 1);
+    neighbours.emplace(id + 1);
+  }
+
+  return neighbours;
 }
 }}

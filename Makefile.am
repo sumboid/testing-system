@@ -41,6 +41,10 @@ libts_la_SOURCES =  src/system/fragment/FragmentMgr.cpp \
                     src/system/action/actions/Unlock.cpp \
                     src/system/action/actions/GetFragments.h \
                     src/system/action/actions/GetFragments.cpp \
+                    src/system/action/actions/Load.h \
+                    src/system/action/actions/Load.cpp \
+                    src/system/action/actions/Balancing.h \
+                    src/system/action/actions/Balancing.cpp \
                     src/distr/Distributor.cpp \
                     src/distr/Distributor.h \
                     src/types/Fragment.cpp \

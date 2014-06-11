@@ -39,13 +39,16 @@ void FragmentMgr::addFragment(Fragment* fragment) {
 
   //fragmentsLock.wlock();
   fragments[fragment] = FREE;
+  _weight += fragment->weight();
+  for(auto& n: neighbours) messageMgr->sendLoad(n, _weight);
   //fragmentsLock.unlock();
   system->notify();
+  system->balancerNotify();
 }
 
 typedef pair<Fragment*, vector<Fragment*> > WorkFragment;
 
-vector<WorkFragment> FragmentMgr::getFragments(int) {
+vector<WorkFragment> FragmentMgr::getFragments(int size) {
   //external//fragmentsLock.rlock();
   //fragmentsLock.wlock();
 
@@ -159,9 +162,13 @@ vector<WorkFragment> FragmentMgr::getFragments(int) {
     return reduceResult;
   }
   else {
+    int count = 0;
     for(auto i: result) {
       ULOG(move) << "Pushed back for execution fragment " << i.first->id().tostr() << UEND;
       fragments[i.first] = EXEC;
+      if(++count == size) {
+        break;
+      }
     }
     //fragmentsLock.unlock();
     //external//fragmentsLock.unlock();
@@ -181,12 +188,13 @@ void FragmentMgr::unlock(Fragment* fragment) {
   //fragmentsLock.wlock();
   if(fragments[fragment] == EXEC)
      fragments[fragment] = FREE;
-  //fragmentsLock.unlock();
 
-  if(system->id() == 0)
-    startMoveFragment(fragment, 1);
-  if(system->id() == 1)
-    startMoveFragment(fragment, 0);
+  if(fragment->isEnd()) {
+    _weight -= fragment->weight();
+    for(auto& n: neighbours) messageMgr->sendLoad(n, _weight);
+    system->balancerNotify();
+  }
+  //fragmentsLock.unlock();
 }
 
 void FragmentMgr::updateExternalFragment(Fragment* fragment) {
@@ -301,6 +309,7 @@ void FragmentMgr::startMoveFragment(Fragment* fragment, NodeID node) {
   ULOG(move) << "I'm starting moving fragment " << fragment->id().tostr() << " to " << node << UEND;
   //fragmentsLock.wlock();
   fragments[fragment] = MOVE;
+  _weight -= fragment->weight();
   //fragmentsLock.unlock();
   moveList[fragment->id()] = node;
   messageMgr->sendStartMove(node, fragment->id(), node); // XXX: Second node not needed.
@@ -436,5 +445,26 @@ FragmentMgr::findExternalFragment(const ts::type::ID& id) {
                     });
   //external//fragmentsLock.unlock();
   return it;
+}
+
+int FragmentMgr::weight() {
+  return _weight;
+}
+
+void FragmentMgr::moveFragment(const std::map<NodeID, double>& amount) {
+  int currentWeight = weight();
+  for(auto& a : amount) {
+    NodeID node = a.first;
+    double absolute = a.second * currentWeight;
+
+    for(auto& f : fragments) {
+      if(f.second == FREE && !f.first->isEnd()) {
+        startMoveFragment(f.first, node);
+        absolute -= f.first->weight();
+        if(absolute <= 0) break;
+      }
+    }
+  }
+  for(auto& n: neighbours) messageMgr->sendLoad(n, _weight);
 }
 }}

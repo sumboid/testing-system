@@ -87,10 +87,16 @@ public:
       assert(0);
     }
 
-    memcpy(data, _raw + _rpos, s * sizeof(char));
+    memcpy(&data, _raw + _rpos, s * sizeof(char));
     _rpos += s;
 
-    something = *(reinterpret_cast<T*>(data));
+    union {
+      char* c;
+      T* i;
+    } yoba;
+
+    yoba.c = data;
+    something = *(yoba.i);
 
     return *this;
   }

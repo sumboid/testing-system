@@ -153,6 +153,7 @@ public:
   virtual Fragment* copy() = 0;
   void print();
 
+  virtual uint64_t weight() = 0;
 };
 
 }}

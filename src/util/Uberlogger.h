@@ -11,10 +11,11 @@
 #include <mutex>
 #include "../system/util/Listener.h"
 #include <queue>
+
 // TODO:
 //  1. Disable/enable threadsafety
-//  2. Log levels
-//  3. COLORS! :3
+//  2. Disabled log levels
+//  3. Enable/disable separated thread
 
 #define UBERDEFAULT "default"
 

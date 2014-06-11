@@ -6,7 +6,7 @@ AC_CONFIG_MACRO_DIR([m4])
 
 AC_PROG_CXX([mpic++])
 
-CXXFLAGS="-O0 -g -pg -DNDEBUG -std=c++0x -Wall -Wextra -Werror"
+CXXFLAGS="-O3 -std=c++0x -Wall -Wextra -Werror"
 
 AM_PROG_LIBTOOL
 AC_ENABLE_SHARED

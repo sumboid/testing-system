@@ -2,6 +2,7 @@
 #include <thread>
 #include <atomic>
 #include <mutex>
+#include <set>
 
 #include "NodeID.h"
 #include "comm/Comm.h"
@@ -26,7 +27,8 @@ enum Tag {
   NOTICE_MOVE_FRAGMENT,
   CONFIRM_MOVE_FRAGMENT, ///< Confirming of moving fragment
   GLOBAL_CONFIRM_MOVE_FRAGMENT, ///< Confirming of moving fragment
-  MOVE_FRAGMENT          ///< Moving fragment
+  MOVE_FRAGMENT,          ///< Moving fragment
+  LOAD
 };
 
 struct Message {
@@ -87,8 +89,10 @@ public:
   void sendNoticeMove(ts::NodeID node, const ts::type::ID& id, ts::NodeID to);
   void sendConfirmMove(ts::NodeID node, const ts::type::ID& id);
   void sendGlobalConfirmMove(ts::NodeID node, const ts::type::ID& id);
+  void sendLoad(ts::NodeID node, int amount);
 
   ts::NodeID getNodeID() { return id; }
+  std::set<ts::NodeID> getNeighbours();
 private:
   void sendLoop();
   void receiveLoop();

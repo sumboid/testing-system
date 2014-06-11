@@ -5,6 +5,7 @@
 #include <vector>
 #include <map>
 #include <utility>
+#include <set>
 
 #include "../../types/Fragment.h"
 #include "../../types/FragmentTools.h"
@@ -47,6 +48,9 @@ namespace system {
     std::map<ts::type::ID, NodeID> moveList;
     ts::system::Listener fragmentListener;
 
+    int _weight;
+    std::set<ts::NodeID> neighbours;
+
   public:
     FragmentMgr();
     FragmentMgr(MessageMgr* msgMgr);
@@ -55,6 +59,7 @@ namespace system {
     void setMessageMgr(MessageMgr* mgr) { messageMgr = mgr; }
     void setSystem(System* _system) { system = _system; }
     void setFragmentTools(type::FragmentTools* _fragmentTools) { fragmentTools = _fragmentTools; }
+    void setNeighbours(std::set<ts::NodeID> n) { neighbours = n; }
 
     void addFragment(ts::type::Fragment* fragment);
     std::vector<std::pair<ts::type::Fragment*, std::vector<ts::type::Fragment*> > >
@@ -80,5 +85,8 @@ namespace system {
 
     internalit findInternalFragment(const ts::type::ID& id);
     externalit findExternalFragment(const ts::type::ID& id);
+
+    int weight();
+    void moveFragment(const std::map<NodeID, double>& amount);
   };
 }}
