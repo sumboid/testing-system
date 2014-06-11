@@ -192,7 +192,7 @@ void MessageMgr::sendGlobalConfirmMove(NodeID node, const ts::type::ID& id) {
   push(message);
 }
 
-void MessageMgr::sendLoad(ts::NodeID node, int amount) {
+void MessageMgr::sendLoad(ts::NodeID node, uint64_t amount) {
   Message* message = new Message;
   message->node = node;
   message->tag = LOAD;

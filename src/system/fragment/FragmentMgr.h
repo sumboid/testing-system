@@ -48,7 +48,9 @@ namespace system {
     std::map<ts::type::ID, NodeID> moveList;
     ts::system::Listener fragmentListener;
 
-    int _weight;
+    uint64_t _weight = 0;
+    uint64_t _lastweight = 0;
+    bool updateLoad = false;
     std::set<ts::NodeID> neighbours;
 
   public:
@@ -60,6 +62,7 @@ namespace system {
     void setSystem(System* _system) { system = _system; }
     void setFragmentTools(type::FragmentTools* _fragmentTools) { fragmentTools = _fragmentTools; }
     void setNeighbours(std::set<ts::NodeID> n) { neighbours = n; }
+    void setUpdateLoad() { updateLoad = true; }
 
     void addFragment(ts::type::Fragment* fragment);
     std::vector<std::pair<ts::type::Fragment*, std::vector<ts::type::Fragment*> > >
@@ -86,7 +89,7 @@ namespace system {
     internalit findInternalFragment(const ts::type::ID& id);
     externalit findExternalFragment(const ts::type::ID& id);
 
-    int weight();
+    uint64_t weight();
     void moveFragment(const std::map<NodeID, double>& amount);
   };
 }}

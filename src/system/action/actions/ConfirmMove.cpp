@@ -13,7 +13,6 @@ void ConfirmMove::set(ts::Arc* arc, ts::NodeID _sender) {
 }
 
 void ConfirmMove::run()  {
-  ULOG(move) << "Move was confirmed: " << id.tostr() << UEND;
   fragmentMgr->moveFragmentAccept(id);
 }
 

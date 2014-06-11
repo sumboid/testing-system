@@ -4,6 +4,8 @@
 #include <cassert>
 #include "../../util/Uberlogger.h"
 
+#define DELIMITER 5
+
 using std::pair;
 using std::vector;
 using std::map;
@@ -40,10 +42,14 @@ void FragmentMgr::addFragment(Fragment* fragment) {
   //fragmentsLock.wlock();
   fragments[fragment] = FREE;
   _weight += fragment->weight();
-  for(auto& n: neighbours) messageMgr->sendLoad(n, _weight);
+  uint64_t peka = (_weight >= _lastweight) ? (_weight - _lastweight) : (_lastweight - _weight);
+  if(peka >= _lastweight / DELIMITER) {
+    for(auto& n: neighbours) messageMgr->sendLoad(n, _weight);
+    _lastweight = _weight;
+    system->balancerNotify();
+  }
   //fragmentsLock.unlock();
   system->notify();
-  system->balancerNotify();
 }
 
 typedef pair<Fragment*, vector<Fragment*> > WorkFragment;
@@ -85,12 +91,12 @@ vector<WorkFragment> FragmentMgr::getFragments(int size) {
     if(!fragment->needReduce() && !fragment->wasReduced()) {
       ++reduceCount;
       reduceResult.push_back(WorkFragment(fragment, vector<Fragment*>()));
-      break;
+      continue;
     }
 
     if(!fragment->needNeighbours()) {
       result.push_back(WorkFragment(fragment, vector<Fragment*>()));
-      break;
+      continue;
     }
 
     vector<ID> neighboursID = fragment->neighbours();
@@ -129,13 +135,6 @@ vector<WorkFragment> FragmentMgr::getFragments(int size) {
       if(!findedFragment->hasState(fragment->neighboursState())) {
         /// It means that finded copy of external fragment has
         /// too old state
-        ULOG(fragment) << "OLD STATE: " << fragment->id().tostr() <<
-                            " need state: " <<
-                            std::get<0>(fragment->neighboursState()) <<
-                            ":" <<
-                            std::get<1>(fragment->neighboursState()) <<
-                            " from " << findedFragment->id().tostr() <<
-                            UEND;
         break;
       }
       fwithstates.push_back(findedFragment);
@@ -153,7 +152,6 @@ vector<WorkFragment> FragmentMgr::getFragments(int size) {
 
   if(reduceCount == fragments.size()) {
     for(auto i: reduceResult) {
-      ULOG(move) << "Pushed back for execution fragment " << i.first->id().tostr() << UEND;
       fragments[i.first] = EXEC;
     }
 
@@ -163,16 +161,17 @@ vector<WorkFragment> FragmentMgr::getFragments(int size) {
   }
   else {
     int count = 0;
+    vector<WorkFragment> r;
     for(auto i: result) {
-      ULOG(move) << "Pushed back for execution fragment " << i.first->id().tostr() << UEND;
       fragments[i.first] = EXEC;
+      r.push_back(i);
       if(++count == size) {
         break;
       }
     }
     //fragmentsLock.unlock();
     //external//fragmentsLock.unlock();
-    return result;
+    return r;
   }
 }
 
@@ -191,18 +190,17 @@ void FragmentMgr::unlock(Fragment* fragment) {
 
   if(fragment->isEnd()) {
     _weight -= fragment->weight();
-    for(auto& n: neighbours) messageMgr->sendLoad(n, _weight);
-    system->balancerNotify();
+    uint64_t peka = (_weight >= _lastweight) ? (_weight - _lastweight) : (_lastweight - _weight);
+    if(peka >= _lastweight / DELIMITER) {
+      for(auto& n: neighbours) messageMgr->sendLoad(n, _weight);
+      _lastweight = _weight;
+      system->balancerNotify();
+    }
   }
   //fragmentsLock.unlock();
 }
 
 void FragmentMgr::updateExternalFragment(Fragment* fragment) {
-  ULOG(fragment) << "NEW EXTERNAL CELL STATE: " <<
-                      fragment->id().tostr() << " with stamp: " <<
-                      fragment->iteration() << ":" << fragment->progress() <<
-                      UEND;
-
   ID id = fragment->id();
   auto timestamp = std::tuple<uint64_t, uint64_t>(fragment->iteration(), fragment->progress());
   // Find external fragment
@@ -278,7 +276,6 @@ void FragmentMgr::moveFragment(Fragment* fragment) {
   specialUpdateNeighbours(fragment);
 
   /// Remove Fragment from list
-  ULOG(move) << "Fragment " << fragment->id().tostr() << " was moved" << UEND;
   //fragmentsLock.wlock();
   fragments.erase(fragment);
   //fragmentsLock.unlock();
@@ -289,7 +286,6 @@ void FragmentMgr::moveFragment(Fragment* fragment) {
                                   return f.first == id;
                                 });
   if(movefragmentit == moveList.end()) {
-    ULOG(default) << "That is not cool" << UEND;
     exit(2);
   }
   moveList.erase(movefragmentit);
@@ -306,7 +302,6 @@ void FragmentMgr::moveFragment(Fragment* fragment) {
 }
 
 void FragmentMgr::startMoveFragment(Fragment* fragment, NodeID node) {
-  ULOG(move) << "I'm starting moving fragment " << fragment->id().tostr() << " to " << node << UEND;
   //fragmentsLock.wlock();
   fragments[fragment] = MOVE;
   _weight -= fragment->weight();
@@ -355,18 +350,14 @@ void FragmentMgr::specialUpdateNeighbours(ts::type::Fragment* fragment) {
   auto id = fragment->id();
 
   for(auto neighbour : neighbours) {
-    ULOG(error) << "Try to find " << id.tostr() << " neighbout with id " << neighbour.tostr() << UEND;
     auto n = findFragment(neighbour);
     if(n != 0) {
-      ULOG(error) << "Neighbour with id " << neighbour.tostr() << " was finded" << UEND;
       //XXX.
       auto states = n->specialUpdateNeighbour(id, moveList[id]);
       for(auto s : states) {
         messageMgr->sendBoundary(moveList[id], s);
         delete s;
       }
-    } else {
-      ULOG(error) << "Neighbour with id " << neighbour.tostr() << " was not finded" << UEND;
     }
   }
 }
@@ -401,7 +392,6 @@ void FragmentMgr::moveFragmentGlobalAccept(const ts::type::ID& id, NodeID nid) {
   auto it = std::find(movingFragmentAccept[id].begin(),
                       movingFragmentAccept[id].end(), nid);
   if(it == movingFragmentAccept[id].end()) {
-    ULOG(move) << "Some node send accept without request for id: " << id.tostr() << UEND;
     return;
   }
 
@@ -447,7 +437,7 @@ FragmentMgr::findExternalFragment(const ts::type::ID& id) {
   return it;
 }
 
-int FragmentMgr::weight() {
+uint64_t FragmentMgr::weight() {
   return _weight;
 }
 
@@ -465,6 +455,10 @@ void FragmentMgr::moveFragment(const std::map<NodeID, double>& amount) {
       }
     }
   }
-  for(auto& n: neighbours) messageMgr->sendLoad(n, _weight);
+  uint64_t peka = (_weight >= _lastweight) ? (_weight - _lastweight) : (_lastweight - _weight);
+  if(peka >= _lastweight / DELIMITER) {
+    for(auto& n: neighbours) messageMgr->sendLoad(n, _weight);
+    _lastweight = _weight;
+  }
 }
 }}

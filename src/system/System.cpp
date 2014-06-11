@@ -93,7 +93,7 @@ void System::run() {
     action->setFragmentMgr(fragmentMgr);
     action->setExecMgr(execMgr);
     addAction(action);
-    sleep(2); //fragmentListener.wait();
+    fragmentListener.wait();
   }
 }
 
@@ -183,7 +183,7 @@ void System::end() {
 
 int System::weight() { return fragmentMgr->weight(); }
 
-void System::loadChange(NodeID node, int load) {
+void System::loadChange(NodeID node, uint64_t load) {
   nload[node] = load;
   balancerNotify();
 }
@@ -195,7 +195,8 @@ void System::balancerNotify() {
 void System::balancerLoop() {
   while(true) {
     balancerListener.wait();
-    auto action = new action::Balancing();
+    action::Balancing* action = new action::Balancing();
+    action->setFragmentMgr(fragmentMgr);
     action->set(balancer(weight(), nload));
     addAction(action);
   }

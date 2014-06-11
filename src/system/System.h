@@ -4,6 +4,7 @@
 #include <mutex>
 #include <queue>
 #include <functional>
+#include <cstdint>
 
 #include "exec/ExecMgr.h"
 #include "message/MessageMgr.h"
@@ -36,7 +37,7 @@ private:
   size_t inputReduceData;
   std::atomic<bool> _end;
 
-  Semaphore fragmentListener;
+  Listener fragmentListener;
 
   std::thread actionLoopThread;
   std::mutex queueMutex;
@@ -45,15 +46,15 @@ private:
 
   std::thread balancerLoopThread;
   Listener balancerListener;
-  std::function<std::map<ts::NodeID, double>(int, std::map<ts::NodeID, int>)> balancer;
+  std::function<std::map<ts::NodeID, double>(uint64_t, std::map<ts::NodeID, uint64_t>)> balancer;
 
-  std::map<ts::NodeID, int> nload;
+  std::map<ts::NodeID, uint64_t> nload;
 public:
   System(ts::type::FragmentTools*, ts::type::ReduceDataTools*);
   ~System();
 
   void addFragment(ts::type::Fragment* fragment);
-  void setBalancer(std::function<std::map<ts::NodeID, double>(int, std::map<ts::NodeID, int>)> b) { balancer = b; }
+  void setBalancer(std::function<std::map<ts::NodeID, double>(uint64_t, std::map<ts::NodeID, uint64_t>)> b) { balancer = b; }
 
   uint64_t id();
   uint64_t size();
@@ -71,7 +72,7 @@ public:
   void unlockFragment(ts::type::Fragment* fragment);
 
   int weight();
-  void loadChange(NodeID node, int load);
+  void loadChange(NodeID node, uint64_t load);
   void balancerNotify();
   void balancerLoop();
   //put(Message* message);

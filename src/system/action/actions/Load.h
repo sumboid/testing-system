@@ -1,6 +1,7 @@
 #pragma once
 #include "../Action.h"
 #include "../../../types/Fragment.h"
+#include <stdint.h>
 
 namespace ts {
 namespace system {
@@ -8,7 +9,7 @@ namespace action {
 
 class Load : public ts::system::Action {
 private:
-  int load;
+  uint64_t load;
   ts::NodeID node;
 
 public:

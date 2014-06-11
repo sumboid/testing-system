@@ -89,7 +89,7 @@ public:
   void sendNoticeMove(ts::NodeID node, const ts::type::ID& id, ts::NodeID to);
   void sendConfirmMove(ts::NodeID node, const ts::type::ID& id);
   void sendGlobalConfirmMove(ts::NodeID node, const ts::type::ID& id);
-  void sendLoad(ts::NodeID node, int amount);
+  void sendLoad(ts::NodeID node, uint64_t amount);
 
   ts::NodeID getNodeID() { return id; }
   std::set<ts::NodeID> getNeighbours();

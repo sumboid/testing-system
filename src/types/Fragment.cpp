@@ -137,7 +137,6 @@ void Fragment::setUpdate() {
 }
 
 void Fragment::setNeighbours(uint64_t iteration, uint64_t progress) {
-  //ULOG(fragment) << _vid.tostr() << " [" << _viteration << ", " << _vprogress << "] " << "Set neighbours timestamp: " << iteration << ":" << progress << UEND;
   _vneighboursState = Timestamp(iteration, progress);
   _vneighbours = true;
 }
@@ -155,8 +154,6 @@ Timestamp Fragment::neighboursState() {
 }
 
 void Fragment::saveState() {
-  ULOG(state) << id().tostr() << " Saved state: (" << iteration() << ", " << progress() << ")" <<
-    UEND;
   _vlaststateWasSaved = true;
   _vlaststate = getBoundary();
   _vlaststate->_viteration = _viteration;
@@ -169,8 +166,6 @@ void Fragment::saveState() {
 }
 
 void Fragment::saveState(Fragment* fragment) {
-  ULOG(state) << id().tostr() << " Saved state: (" << fragment->iteration() << ", " << fragment->progress() << ")" <<
-    " from " << fragment->id().tostr() << UBEREND();
   _vstatesMutex.lock();
   _vstates.insert(pair<Timestamp, Fragment*>(Timestamp(fragment->iteration(), fragment->progress()), fragment));
   _vstatesMutex.unlock();
@@ -189,7 +184,6 @@ void Fragment::moveStates(Fragment* fragment) {
 
 Fragment* Fragment::getLastState() {
   if(!_vlaststateWasSaved) {
-    ULOG(error) << "Get last state from " << id().tostr() << ", but laststate was not saved, COOL" << UEND;
     exit(3);
   }
 
@@ -197,7 +191,6 @@ Fragment* Fragment::getLastState() {
   f->_vid = id();
   f->_viteration = _vlaststate->_viteration;
   f->_vprogress = _vlaststate->_vprogress;
-  ULOG(state) << "Get last state from " << id().tostr() << " with state: " << f->_viteration << UEND;
   _vneighboursLocationMutex.lock();
   for(auto &n : _vneighboursLocation) {
     f->addNeighbour(n.first, n.second);
@@ -227,10 +220,6 @@ vector<Fragment*> Fragment::specialUpdateNeighbour(const ID& neighbour,
   _vstateGettedLock.rlock();
   _vstatesMutex.lock();
     for(auto i : _vstateGetted) {
-      auto yoba = ULOG(error);
-      yoba << _vid.tostr() << " at " << std::get<0>(i.first) << ":" << std::get<1>(i.first) << " was getted by: ";
-      for(auto j : i.second) yoba << j.tostr() << " ";
-      yoba << UEND;
       if(i.second.find(neighbour) == i.second.end()) {
         try {
           Fragment* ob = _vstates.at(i.first);
@@ -243,8 +232,6 @@ vector<Fragment*> Fragment::specialUpdateNeighbour(const ID& neighbour,
               b->addNeighbour(n.first, n.second);
             } else b->addNeighbour(neighbour, node);
           }
-
-          ULOG(error) << "SUN " << neighbour.tostr() << ": " << b->_vid.tostr() << " with iteration " << b->_viteration << UEND;
           result.push_back(b);
         } catch(...) {
           ULOG(error) << "Oh-oh" << UEND;
@@ -285,13 +272,6 @@ bool Fragment::_stateCanBeRemoved(Timestamp timestamp) {
           return false;
       })
     ) {
-    auto pek = ULOG(fragment) << _vid.tostr() << ": Remove state: (" << std::get<0>(timestamp) << ", " << std::get<1>(timestamp) << ") ";
-    pek << "because state was getted by: ";
-    for(auto &a : checkList) {
-      pek << a.tostr() << " ";
-    }
-
-    pek << UEND;
 
     return true;
   }

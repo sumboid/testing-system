@@ -15,7 +15,6 @@ void NoticeMove::set(ts::Arc* arc, ts::NodeID _sender) {
 }
 
 void NoticeMove::run()  {
-  ULOG(move) << "Notice moving: " << id.tostr() << UEND;
   fragmentMgr->updateNeighbours(id, node);
   fragmentMgr->globalConfirmMove(id, sender);
 }

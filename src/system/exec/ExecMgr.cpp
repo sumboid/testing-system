@@ -89,6 +89,7 @@ void ts::system::ExecMgr::loop() {
     queueMutex.unlock();
 
     if(emptyQueue) {
+      system->notify();
       queueListener.wait();
       if(end.load()) {
         return;

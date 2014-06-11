@@ -12,7 +12,6 @@ void GlobalConfirmMove::set(ts::Arc* arc, ts::NodeID _sender) {
 }
 
 void GlobalConfirmMove::run()  {
-  ULOG(move) << "Move was globally confirmed: " << id.tostr() << UEND;
   fragmentMgr->moveFragmentGlobalAccept(id, sender);
 }
 
