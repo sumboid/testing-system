@@ -1,12 +1,12 @@
 AC_INIT([ts],[0.1],[ilya.sumb@gmail.com])
 AM_INIT_AUTOMAKE([foreign silent-rules])
-AM_SILENT_RULES([yes])
+AM_SILENT_RULES([no])
 
 AC_CONFIG_MACRO_DIR([m4])
 
 AC_PROG_CXX([mpic++])
 
-CXXFLAGS="-O3 -std=c++0x -Wall -Wextra -Werror"
+CXXFLAGS="-O0 -g -std=c++11 -Wall -Wextra -Werror"
 
 AM_PROG_LIBTOOL
 AC_ENABLE_SHARED
@@ -23,7 +23,7 @@ GCC_VERSION_MAJOR=$(echo $GCC_VERSION | cut -d'.' -f1)
 GCC_VERSION_MINOR=$(echo $GCC_VERSION | cut -d'.' -f2)
 
 (test "$GCC_VERSION_MAJOR" = 4 && test "$GCC_VERSION_MINOR" -ge 8) || AC_MSG_ERROR(You need GCC 4.8 or higher)
-(test "$GCC_VERSION_MAJOR" = 4 && test "$GCC_VERSION_MINOR" -ge 9) && CXXFLAGS+=" -fdiagnostics-color=always"
+# (test "$GCC_VERSION_MAJOR" = 4 && test "$GCC_VERSION_MINOR" -ge 9) && CXXFLAGS+=" -fdiagnostics-color=always"
 
 ###############################################################################
 # Checks for typedefs, structures, and compiler characteristics.

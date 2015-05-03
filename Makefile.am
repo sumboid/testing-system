@@ -45,6 +45,8 @@ libts_la_SOURCES =  src/system/fragment/FragmentMgr.cpp \
                     src/system/action/actions/Load.cpp \
                     src/system/action/actions/Balancing.h \
                     src/system/action/actions/Balancing.cpp \
+                    src/system/action/actions/Halt.h \
+                    src/system/action/actions/Halt.cpp \
                     src/distr/Distributor.cpp \
                     src/distr/Distributor.h \
                     src/types/Fragment.cpp \
@@ -89,8 +91,17 @@ tssystemactionactionsdir = $(includedir)/ts/system/action/actions
 tssystemactionactions_HEADERS = src/system/action/actions/Reduce.h \
                                 src/system/action/actions/Update.h \
                                 src/system/action/actions/StartMove.h \
+                                src/system/action/actions/NoticeMove.h \
                                 src/system/action/actions/Move.h \
-                                src/system/action/actions/ConfirmMove.h
+                                src/system/action/actions/ConfirmMove.h \
+                                src/system/action/actions/GlobalConfirmMove.h \
+                                src/system/action/actions/Unlock.h \
+                                src/system/action/actions/GetFragments.h \
+                                src/system/action/actions/Load.h \
+                                src/system/action/actions/Balancing.h \
+                                src/system/action/actions/Halt.h
+
+
 
 tstypesdir = $(includedir)/ts/types
 tstypes_HEADERS = src/types/Fragment.h \

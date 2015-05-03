@@ -1,4 +1,5 @@
 #pragma once
+#include "../message/MessageMgr.h"
 
 #include <pthread.h>
 
@@ -9,7 +10,6 @@
 
 #include "../../types/Fragment.h"
 #include "../../types/FragmentTools.h"
-#include "../message/MessageMgr.h"
 #include "../System.h"
 #include "../message/NodeID.h"
 #include "../../util/RWLock.h"
@@ -91,5 +91,6 @@ namespace system {
 
     uint64_t weight();
     void moveFragment(const std::map<NodeID, double>& amount);
+    void changeLoad(uint64_t);
   };
 }}

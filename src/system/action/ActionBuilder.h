@@ -1,7 +1,7 @@
 #pragma once
+#include "Action.h"
 #include <map>
 
-#include "Action.h"
 #include "../../types/FragmentTools.h"
 #include "../../types/ReduceDataTools.h"
 #include "../message/MessageMgr.h"
@@ -11,6 +11,7 @@ namespace system {
 
 class Action;
 class Message;
+class ExecMgr;
 
 class ActionBuilder {
 

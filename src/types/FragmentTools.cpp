@@ -12,7 +12,6 @@ using namespace util;
 
 Arc* FragmentTools::boundarySerialize(Fragment* fragment) {
   Arc* arc = new Arc;
-  ULOG(error) << "Serialize boundary: " << fragment->id().tostr() << " " << fragment->iteration() << UEND;
   bserialize(fragment, arc);
   FragmentSerializer::id(fragment, arc);
   FragmentSerializer::timestamp(fragment, arc);

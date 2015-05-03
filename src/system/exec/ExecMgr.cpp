@@ -5,6 +5,7 @@
 #include <iostream>
 #include <cassert>
 #include <cstdlib>
+#include "../../util/Uberlogger.h"
 #include "../action/Action.h"
 #include "../action/actions/Unlock.h"
 
@@ -99,6 +100,7 @@ void ts::system::ExecMgr::loop() {
     while(!fragmentQueue.empty()) {
       queueMutex.lock();
       auto fragment = fragmentQueue.front();
+      ULOG(exec) << fragment.first->id().tostr() << UEND;
       fragmentQueue.pop();
       queueMutex.unlock();
 

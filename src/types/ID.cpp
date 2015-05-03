@@ -24,7 +24,7 @@ bool ID::operator==(const ID& other) const {
 }
 
 std::string ID::tostr() const {
-  return "(" + std::to_string(c[X]) + ", " + std::to_string(c[Y]) + ", " + std::to_string(c[Z]) + ")";
+  return std::to_string(c[X]) + " " + std::to_string(c[Y]) + " " + std::to_string(c[Z]);
 }
 
 void ID::serialize(ts::Arc* arc) const {

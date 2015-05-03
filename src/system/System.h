@@ -1,4 +1,5 @@
 #pragma once
+#include "message/MessageMgr.h"
 #include <thread>
 #include <atomic>
 #include <mutex>
@@ -7,7 +8,6 @@
 #include <cstdint>
 
 #include "exec/ExecMgr.h"
-#include "message/MessageMgr.h"
 #include "fragment/FragmentMgr.h"
 #include "../types/Fragment.h"
 #include "../types/ReduceDataTools.h"

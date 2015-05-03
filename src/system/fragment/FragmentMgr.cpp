@@ -1,4 +1,5 @@
 #include "FragmentMgr.h"
+
 #include <iostream>
 #include <algorithm>
 #include <cassert>
@@ -26,38 +27,34 @@ FragmentMgr::FragmentMgr(MessageMgr* msgMgr):
 }
 FragmentMgr::~FragmentMgr() {}
 
+void FragmentMgr::changeLoad(uint64_t newLoad) {
+  _lastweight = newLoad;
+  ULOG(load) << newLoad << UEND;
+}
+
 void FragmentMgr::addFragment(Fragment* fragment) {
-  //external//fragmentsLock.wlock();
   auto b = findExternalFragment(fragment->id());
 
   if(b != externalFragments.end()) {
     (*b)->moveStates(fragment);
-
-    //external//fragmentsLock.wlock();
     externalFragments.erase(b);
-    //external//fragmentsLock.unlock();
   }
-  //external//fragmentsLock.unlock();
 
-  //fragmentsLock.wlock();
   fragments[fragment] = FREE;
   _weight += fragment->weight();
   uint64_t peka = (_weight >= _lastweight) ? (_weight - _lastweight) : (_lastweight - _weight);
   if(peka >= _lastweight / DELIMITER) {
     for(auto& n: neighbours) messageMgr->sendLoad(n, _weight);
-    _lastweight = _weight;
+    changeLoad(_weight);
     system->balancerNotify();
   }
-  //fragmentsLock.unlock();
+
   system->notify();
 }
 
 typedef pair<Fragment*, vector<Fragment*> > WorkFragment;
 
 vector<WorkFragment> FragmentMgr::getFragments(int size) {
-  //external//fragmentsLock.rlock();
-  //fragmentsLock.wlock();
-
   vector<WorkFragment> result;
   vector<WorkFragment> reduceResult;
   size_t reduceCount = 0;
@@ -83,9 +80,6 @@ vector<WorkFragment> FragmentMgr::getFragments(int size) {
 //    return vector<WorkFragment>();
 //  }
 
-  if(ffragments.size() == 0) {
-    ULOG(default) << "There is nothing. Ok?" << UEND;
-  }
   for(auto fragment: ffragments) {
     /// Check fragment waiting for final reduce step
     if(!fragment->needReduce() && !fragment->wasReduced()) {
@@ -169,35 +163,34 @@ vector<WorkFragment> FragmentMgr::getFragments(int size) {
         break;
       }
     }
-    //fragmentsLock.unlock();
-    //external//fragmentsLock.unlock();
     return r;
   }
 }
 
 void FragmentMgr::unlock(Fragment* fragment) {
-  //fragmentsLock.rlock();
   if(fragment->needUpdate()) {
     auto nodes = fragment->noticeList();
     auto lastState = fragment->getLastState();
     for(auto node: nodes) messageMgr->sendBoundary(node, lastState);
   }
-  //fragmentsLock.unlock();
 
-  //fragmentsLock.wlock();
   if(fragments[fragment] == EXEC)
      fragments[fragment] = FREE;
 
   if(fragment->isEnd()) {
+    if(fragment->isHalt()) {
+      system->end();
+      messageMgr->sendHalt();
+      return;
+    }
     _weight -= fragment->weight();
     uint64_t peka = (_weight >= _lastweight) ? (_weight - _lastweight) : (_lastweight - _weight);
     if(peka >= _lastweight / DELIMITER) {
       for(auto& n: neighbours) messageMgr->sendLoad(n, _weight);
-      _lastweight = _weight;
+      changeLoad(_weight);
       system->balancerNotify();
     }
   }
-  //fragmentsLock.unlock();
 }
 
 void FragmentMgr::updateExternalFragment(Fragment* fragment) {
@@ -448,7 +441,7 @@ void FragmentMgr::moveFragment(const std::map<NodeID, double>& amount) {
     double absolute = a.second * currentWeight;
 
     for(auto& f : fragments) {
-      if(f.second == FREE && !f.first->isEnd()) {
+      if(f.second == FREE && !f.first->isEnd() && f.first->isMovable()) {
         startMoveFragment(f.first, node);
         absolute -= f.first->weight();
         if(absolute <= 0) break;
@@ -458,7 +451,7 @@ void FragmentMgr::moveFragment(const std::map<NodeID, double>& amount) {
   uint64_t peka = (_weight >= _lastweight) ? (_weight - _lastweight) : (_lastweight - _weight);
   if(peka >= _lastweight / DELIMITER) {
     for(auto& n: neighbours) messageMgr->sendLoad(n, _weight);
-    _lastweight = _weight;
+    changeLoad(_weight);
   }
 }
 }}

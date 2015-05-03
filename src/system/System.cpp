@@ -1,8 +1,8 @@
-#include <iostream>
+#include "System.h"
 #include <vector>
 #include <string>
 #include <unistd.h>
-#include "System.h"
+#include <ctime>
 #include "../util/Uberlogger.h"
 #include "action/actions/GetFragments.h"
 #include "action/actions/Balancing.h"
@@ -20,6 +20,35 @@ using ts::type::ReduceDataTools;
 System::System(FragmentTools* fragmentTools, ReduceDataTools* reduceTools):
   inputReduceData(0), _end(false), fragmentListener(true) {
   UBERRUN;
+
+  UTEMPLATE(fragment, "[%nodeid][%name]: %msg");
+  UTEMPLATE(balancing, "[%nodeid][%name]: %msg");
+  UTEMPLATE(load, "(%name %nodeid %time %msg)");
+  UTEMPLATE(exec, "%nodeid %msg");
+  UTEMPLATE(state, "[%nodeid][%name]: %msg");
+  UTEMPLATE(success, "[%nodeid][%name]: %msg");
+  UTEMPLATE(error, "[%nodeid][%name]: %msg");
+  UTEMPLATE(arc, "[%nodeid][%name]: %msg");
+  UTEMPLATE(move, "[%nodeid][%name]: %msg");
+  UREPLACE(fragment, "%nodeid", [&](){return std::to_string(this->id());});
+  UREPLACE(load, "%nodeid", [&](){return std::to_string(this->id());});
+  UREPLACE(exec, "%nodeid", [&](){return std::to_string(this->id());});
+  UREPLACE(state, "%nodeid", [&](){return std::to_string(this->id());});
+  UREPLACE(success, "%nodeid", [&](){return std::to_string(this->id());});
+  UREPLACE(error, "%nodeid", [&](){return std::to_string(this->id());});
+  UREPLACE(arc, "%nodeid", [&](){return std::to_string(this->id());});
+  UREPLACE(move, "%nodeid", [&](){return std::to_string(this->id());});
+  UREPLACE(balancing, "%nodeid", [&](){return std::to_string(this->id());});
+
+  //auto currentTime = time(0);
+  UREPLACE(load, "%time", [&](){return std::to_string(std::chrono::system_clock::now().time_since_epoch() / std::chrono::milliseconds(1));});
+  USTYLE(error, UBOLD | UCOLOR(RED));
+  USTYLE(move, UCOLOR(MAGENTA));
+  USTYLE(success, UCOLOR(BLUE));
+  USTYLE(state, UCOLOR(GREEN));
+  UBERTEMPLATE("[%nodeid][%name]: %msg");
+  UBERREPLACE("%nodeid", [&](){return std::to_string(this->id());});
+
   msgMgr = new MessageMgr;
   fragmentMgr = new FragmentMgr;
   execMgr = new ExecMgr(reduceTools);
@@ -47,27 +76,6 @@ System::System(FragmentTools* fragmentTools, ReduceDataTools* reduceTools):
   execMgr->setSystem(this);
   execMgr->setFragmentMgr(fragmentMgr);
 
-  UTEMPLATE(fragment, "[%nodeid][%name]: %msg");
-  UTEMPLATE(state, "[%nodeid][%name]: %msg");
-  UTEMPLATE(success, "[%nodeid][%name]: %msg");
-  UTEMPLATE(error, "[%nodeid][%name]: %msg");
-  UTEMPLATE(arc, "[%nodeid][%name]: %msg");
-  UTEMPLATE(move, "[%nodeid][%name]: %msg");
-  UREPLACE(fragment, "%nodeid", [&](){return std::to_string(this->id());});
-  UREPLACE(state, "%nodeid", [&](){return std::to_string(this->id());});
-  UREPLACE(success, "%nodeid", [&](){return std::to_string(this->id());});
-  UREPLACE(error, "%nodeid", [&](){return std::to_string(this->id());});
-  UREPLACE(arc, "%nodeid", [&](){return std::to_string(this->id());});
-  UREPLACE(move, "%nodeid", [&](){return std::to_string(this->id());});
-  USTYLE(error, UBOLD | UCOLOR(RED));
-  USTYLE(move, UCOLOR(MAGENTA));
-  USTYLE(success, UCOLOR(BLUE));
-  USTYLE(state, UCOLOR(GREEN));
-  UBERTEMPLATE("[%nodeid][%name]: %msg");
-  UBERREPLACE("%nodeid", [&](){return std::to_string(this->id());});
-
-  UBERLOG() << "Hello, sweety" << UBEREND();
-
   actionLoopThread = std::thread(&System::actionLoop, this);
   balancerLoopThread = std::thread(&System::balancerLoop, this);
   msgMgr->run();
@@ -94,6 +102,10 @@ void System::run() {
     action->setExecMgr(execMgr);
     addAction(action);
     fragmentListener.wait();
+    if(_end) {
+      return;
+    }
+
   }
 }
 
@@ -179,6 +191,7 @@ void System::end() {
   _end = true;
   fragmentListener.notifyAll();
   actionQueueListener.notifyAll();
+  balancerListener.notifyAll();
 }
 
 int System::weight() { return fragmentMgr->weight(); }
@@ -195,6 +208,11 @@ void System::balancerNotify() {
 void System::balancerLoop() {
   while(true) {
     balancerListener.wait();
+    if(_end) {
+      return;
+    }
+    
+    ULOG(balancing) << "Init load balancing" << UEND;
     action::Balancing* action = new action::Balancing();
     action->setFragmentMgr(fragmentMgr);
     action->set(balancer(weight(), nload));

@@ -1,4 +1,5 @@
 #pragma once
+#include "../System.h"
 
 #include <thread>
 #include <mutex>
@@ -12,7 +13,6 @@
 #include "../../types/Fragment.h"
 #include "../../types/ReduceData.h"
 #include "../../types/ReduceDataTools.h"
-#include "../System.h"
 #include "../util/Listener.h"
 
 namespace ts {

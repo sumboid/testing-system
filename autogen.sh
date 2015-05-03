@@ -31,5 +31,9 @@ clean () {
 	rm -rf $list
 }
 
-clean
-generate
+if [ $1 == "clean" ]; then
+  clean
+else
+  clean
+  generate
+fi

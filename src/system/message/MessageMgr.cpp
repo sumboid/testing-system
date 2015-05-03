@@ -1,9 +1,9 @@
+#include "MessageMgr.h"
 #include <iostream>
 #include <chrono>
 #include <cassert>
 #include <cstdlib>
 #include <cstring>
-#include "MessageMgr.h"
 #include "../../util/Uberlogger.h"
 #include "../../util/Arc.h"
 
@@ -37,8 +37,9 @@ MessageMgr::~MessageMgr() {
 }
 
 void MessageMgr::run() {
-  sender = thread(&MessageMgr::sendLoop, this);
   receiver = thread(&MessageMgr::receiveLoop, this);
+  comm->barrier();
+  sender = thread(&MessageMgr::sendLoop, this);
 }
 
 void MessageMgr::join() {
@@ -73,10 +74,10 @@ void MessageMgr::receiveLoop() {
 
 void MessageMgr::sendLoop() {
   while(true) {
-    if(end.load()) return;
     queueMutex.lock();
     if(sendQueue.empty()) {
       queueMutex.unlock();
+      if(end.load()) return;
       sleep_for(seconds(1));
       continue;
     }
@@ -204,6 +205,23 @@ void MessageMgr::sendLoad(ts::NodeID node, uint64_t amount) {
   delete arc;
 
   push(message);
+}
+
+void MessageMgr::sendHalt() {
+  for(int i = 0; i < comm->getSize(); ++i)
+    if(i != comm->getRank()) {
+      Message* message = new Message;
+      message->node = i;
+      message->tag = HALT;
+      Arc* arc = new Arc;
+      Arc& a = *arc;
+      a << 0;
+      message->size = arc->size();
+      message->buffer = arc->get();
+      delete arc;
+
+      push(message);
+    }
 }
 
 void MessageMgr::push(Message* message) {

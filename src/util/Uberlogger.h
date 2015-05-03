@@ -46,13 +46,17 @@ public:
 
   std::string translate(std::string str) {
     std::stringstream stream;
-    stream << escape;
-    if(vbold) stream << cbold << delimiter;
-    else stream << 0 << delimiter;
-    if(vitalic) stream << citalic << delimiter;
-    if(vunderlined) stream << cunderlined << delimiter;
-    if(vflashing) stream << cflashing << delimiter;
-    stream << ccolor << "m" << str << reset;
+    if(ccolor == 29 && !vbold && !vitalic && !vunderlined && !vflashing)
+      stream << str;
+    else {
+	    stream << escape;
+	    if(vbold) stream << cbold << delimiter;
+	    else stream << 0 << delimiter;
+	    if(vitalic) stream << citalic << delimiter;
+	    if(vunderlined) stream << cunderlined << delimiter;
+	    if(vflashing) stream << cflashing << delimiter;
+	    stream << ccolor << "m" << str << reset;
+    }
 
     return stream.str();
   }

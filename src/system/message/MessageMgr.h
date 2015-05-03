@@ -1,11 +1,11 @@
 #pragma once
+#include "comm/Comm.h"
 #include <thread>
 #include <atomic>
 #include <mutex>
 #include <set>
 
 #include "NodeID.h"
-#include "comm/Comm.h"
 #include "../fragment/FragmentMgr.h"
 #include "../System.h"
 #include "../../types/Fragment.h"
@@ -28,7 +28,8 @@ enum Tag {
   CONFIRM_MOVE_FRAGMENT, ///< Confirming of moving fragment
   GLOBAL_CONFIRM_MOVE_FRAGMENT, ///< Confirming of moving fragment
   MOVE_FRAGMENT,          ///< Moving fragment
-  LOAD
+  LOAD,
+  HALT
 };
 
 struct Message {
@@ -90,6 +91,7 @@ public:
   void sendConfirmMove(ts::NodeID node, const ts::type::ID& id);
   void sendGlobalConfirmMove(ts::NodeID node, const ts::type::ID& id);
   void sendLoad(ts::NodeID node, uint64_t amount);
+  void sendHalt();
 
   ts::NodeID getNodeID() { return id; }
   std::set<ts::NodeID> getNeighbours();

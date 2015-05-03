@@ -1,5 +1,5 @@
-#include <utility>
 #include "ActionBuilder.h"
+#include <utility>
 #include "actions/Update.h"
 #include "actions/Reduce.h"
 #include "actions/StartMove.h"
@@ -8,6 +8,7 @@
 #include "actions/GlobalConfirmMove.h"
 #include "actions/Move.h"
 #include "actions/Load.h"
+#include "actions/Halt.h"
 
 namespace ts {
 namespace system {
@@ -28,6 +29,7 @@ ActionBuilder::ActionBuilder():
   actionMap.insert(pair<Tag, Action*>(Tag::GLOBAL_CONFIRM_MOVE_FRAGMENT, new action::GlobalConfirmMove));
   actionMap.insert(pair<Tag, Action*>(Tag::MOVE_FRAGMENT, new action::Move));
   actionMap.insert(pair<Tag, Action*>(Tag::LOAD, new action::Load));
+  actionMap.insert(pair<Tag, Action*>(Tag::HALT, new action::Halt));
 }
 
 ActionBuilder::~ActionBuilder() {

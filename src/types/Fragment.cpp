@@ -128,6 +128,14 @@ void Fragment::setEnd() {
   _vend = true;
 }
 
+void Fragment::setHalt() {
+  _vhalt = true;
+}
+
+void Fragment::setNotMovable() {
+  _vmovable = false;
+}
+
 void Fragment::setReduce() {
   _vreduce = true;
 }
@@ -143,6 +151,14 @@ void Fragment::setNeighbours(uint64_t iteration, uint64_t progress) {
 
 bool Fragment::isEnd() {
   return _vend;
+}
+
+bool Fragment::isHalt() {
+  return _vhalt;
+}
+
+bool Fragment::isMovable() {
+  return _vmovable;
 }
 
 bool Fragment::needNeighbours() {
@@ -187,7 +203,7 @@ Fragment* Fragment::getLastState() {
     exit(3);
   }
 
-  Fragment* f = _vlaststate->getBoundary();
+  Fragment* f = _vlaststate->copy();
   f->_vid = id();
   f->_viteration = _vlaststate->_viteration;
   f->_vprogress = _vlaststate->_vprogress;
@@ -203,7 +219,7 @@ Fragment* Fragment::getLastState() {
 
 Fragment* Fragment::getState(const Timestamp& timestamp, const ID& neighbour) {
   _vstatesMutex.lock();
-  Fragment* fragment = _vstates.at(timestamp)->getBoundary();
+  Fragment* fragment = _vstates.at(timestamp)->copy();
 
   _vstateGettedLock.wlock([&]() {
       _vstateGetted[timestamp].insert(neighbour);

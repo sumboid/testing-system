@@ -53,6 +53,8 @@ private:
   bool _vupdate = false;                             ///< Flag that indicate external fragment data need to update on remote nodes
   bool _vneighbours = false;                         ///< Flag that indicate fragment need neighbours for next step
   bool _vend = false;                                ///< Flag that indicate fragment is ready to end
+  bool _vhalt = false;
+  bool _vmovable = true;
 
   uint64_t _viteration = 0;                      ///< Current iteration
   uint64_t _vprogress = 0;                       ///< Current progress of iteration
@@ -92,6 +94,8 @@ public:
 
   // Flag setters
   void setEnd();
+  void setHalt();
+  void setNotMovable();
   void setUpdate();
   void setReduce();
   void setNeighbours(uint64_t iteration, uint64_t progress);
@@ -101,6 +105,8 @@ public:
 
   // Flag getters
   bool isEnd();
+  bool isHalt();
+  bool isMovable();
   bool needReduce();
   bool wasReduced();
   bool needUpdate();
