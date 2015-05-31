@@ -46,7 +46,9 @@ private:
   ID _vid;                                   ///< ID of fragment
   ts::NodeID _vnodeID = 0;                           ///< Logic fragment location
   std::map<ID, ts::NodeID> _vneighboursLocation; ///< Fragment's neighbours location
+  std::map<ID, ts::NodeID> _vvneighboursLocation; ///< Fragment's neighbours location
   std::mutex _vneighboursLocationMutex;
+  std::mutex _vvneighboursLocationMutex;
 
   bool _vreduce = false;                             ///< Flag that indicate fragment need for reduce step
   bool _vreduced = true;                            ///< Flag that indicate fragment's reduce data was used
@@ -56,8 +58,14 @@ private:
   bool _vhalt = false;
   bool _vmovable = true;
 
+  bool _vmaster = false;
+  bool _vvneighbours = false; // Need virtual neighbours
+  bool _vvupdate = false;
+  bool _vvirtual = false;
+
   uint64_t _viteration = 0;                      ///< Current iteration
   uint64_t _vprogress = 0;                       ///< Current progress of iteration
+  uint64_t _vvcounter = 0;
 
   bool _visboundary = false;
 
@@ -65,6 +73,7 @@ private:
   std::map<Timestamp, Fragment*> _vstates;   ///< stored states of fragment
   std::mutex _vstatesMutex;
 
+  Timestamp _vvneighboursState;
   Fragment* _vlaststate = 0;                           ///< last state
   bool _vlaststateWasSaved = false;
   std::map<Timestamp, std::set<ID>> _vstateGetted; ///< states getted by neighbours
@@ -86,6 +95,13 @@ public:
   std::vector<Fragment*> specialUpdateNeighbour(const ID& id, ts::NodeID node);
   void addNeighbour(ID id, ts::NodeID node);
 
+  std::set<ts::NodeID> vnoticeList();
+  std::vector<ID> vneighbours();
+  std::vector<ID> vneighbours(ts::NodeID node);
+  bool isVNeighbour(const ID& id);
+  std::vector<Fragment*> specialUpdateVNeighbour(const ID& id, ts::NodeID node);
+  void addVNeighbour(ID id, ts::NodeID node);
+
   // Fragment steps defined by user
   virtual ReduceData* reduce() = 0;
   virtual ReduceData* reduce(ReduceData* data) = 0;
@@ -97,8 +113,10 @@ public:
   void setHalt();
   void setNotMovable();
   void setUpdate();
+  void setVUpdate();
   void setReduce();
   void setNeighbours(uint64_t iteration, uint64_t progress);
+  void setVNeighbours(uint64_t, uint64_t);
 
   // State setters
   void nextIteration();
@@ -107,10 +125,13 @@ public:
   bool isEnd();
   bool isHalt();
   bool isMovable();
+  bool isVirtual();
   bool needReduce();
   bool wasReduced();
   bool needUpdate();
+  bool needVUpdate();
   bool needNeighbours();
+  bool needVNeighbours();
 
   Timestamp neighboursState();
 
@@ -159,7 +180,38 @@ public:
   virtual Fragment* copy() = 0;
   void print();
 
+  Fragment* _split() {
+      Fragment* s = split();
+      this->_vmaster = true;
+      ++_vvcounter;
+      ID vid = ID(id().c[0], id().c[1], id().c[2], _vvcounter);
+      s->addNeighbour(id(), _vnodeID);
+      s->_vvirtual = true;
+      s->_vvneighboursLocation.emplace(vid, _vnodeID);
+      return s;
+  }
+
+  void _merge(Fragment* f) {
+      --_vvcounter;
+      if(_vvcounter == 0) {
+          _vmaster = false;
+      }
+
+      ID finded;
+      for(auto &vn : _vvneighboursLocation) {
+        if(vn.first == f->id()) {
+            finded = vn.first;
+            break;
+        }
+      }
+
+      _vvneighboursLocation.erase(finded);
+      merge(f);
+  }
+
   virtual uint64_t weight() = 0;
+  virtual Fragment* split() = 0;
+  virtual void merge(Fragment*) = 0;
 };
 
 }}

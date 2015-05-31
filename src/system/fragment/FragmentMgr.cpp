@@ -33,14 +33,30 @@ void FragmentMgr::changeLoad(uint64_t newLoad) {
 }
 
 void FragmentMgr::addFragment(Fragment* fragment) {
+  bool tick = true;
+  if(fragment->isVirtual()) {
+     Fragment* master = 0;
+     for(auto &f : fragments) {
+       if(f.first->id().vcompare(fragment->id()))
+           master = f.first;
+     }
+
+     if(master != 0) {
+         master->merge(fragment);
+     }
+     tick = false;
+  }
+
   auto b = findExternalFragment(fragment->id());
 
   if(b != externalFragments.end()) {
     (*b)->moveStates(fragment);
     externalFragments.erase(b);
+    tick = false;
   }
 
   fragments[fragment] = FREE;
+  if(tick) normalFragmentsCounter++;
   _weight += fragment->weight();
   uint64_t peka = (_weight >= _lastweight) ? (_weight - _lastweight) : (_lastweight - _weight);
   if(peka >= _lastweight / DELIMITER) {
@@ -88,63 +104,69 @@ vector<WorkFragment> FragmentMgr::getFragments(int size) {
       continue;
     }
 
-    if(!fragment->needNeighbours()) {
+    if(!fragment->needNeighbours() && !fragment->needVNeighbours()) {
       result.push_back(WorkFragment(fragment, vector<Fragment*>()));
       continue;
     }
 
-    vector<ID> neighboursID = fragment->neighbours();
-    vector<Fragment*> fwithstates;
-    vector<Fragment*> neighbours;
-
-    /// Find all neighbours of current fragment
-    for(auto i: neighboursID) {
-      Fragment* findedFragment;
-
-      /// Find neighbour fragment in local fragments
-      auto fragmentit = find_if(fragments.begin(), fragments.end(),
-                                [&i](pair<Fragment*, bool> fragment){
-                                  return *(fragment.first) == i && (fragment.second == FREE || fragment.second == EXEC);
-                                });
-
-      if (fragments.end() == fragmentit) {
-        /// If neighbour fragment doesn't exist in local fragments
-        /// try to find it in external fragments
-
-        auto fragmentit = find_if(externalFragments.begin(),
-                                  externalFragments.end(),
-                                  [&i](Fragment* fragment) {
-          return *fragment == i;
-        });
-
-        if (externalFragments.end() == fragmentit) {
-          break;
-        }
-        else
-          findedFragment = *fragmentit;
-      } else {
-        findedFragment = fragmentit->first;
-      }
-
-      if(!findedFragment->hasState(fragment->neighboursState())) {
-        /// It means that finded copy of external fragment has
-        /// too old state
-        break;
-      }
-      fwithstates.push_back(findedFragment);
+    vector<ID> neighboursID;
+    if(fragment->needNeighbours()) {
+        neighboursID = fragment->neighbours();
+    } else if(fragment->needVNeighbours()) {
+        neighboursID = fragment->vneighbours();
     }
 
-    if(fwithstates.size() == neighboursID.size()) {
-        for(auto &s : fwithstates) {
-          neighbours.push_back(s->getState(fragment->neighboursState(),
-                                           fragment->id()));
-        }
-        result.push_back(pair<Fragment*, vector<Fragment*>>(fragment,
-                                                            neighbours));
-    }
-  }
+        vector<Fragment*> fwithstates;
+        vector<Fragment*> neighbours;
 
-  if(reduceCount == fragments.size()) {
+        /// Find all neighbours of current fragment
+        for(auto i: neighboursID) {
+          Fragment* findedFragment;
+
+          /// Find neighbour fragment in local fragments
+          auto fragmentit = find_if(fragments.begin(), fragments.end(),
+                                    [&i](pair<Fragment*, bool> fragment){
+                                      return *(fragment.first) == i && (fragment.second == FREE || fragment.second == EXEC);
+                                    });
+
+          if (fragments.end() == fragmentit) {
+            /// If neighbour fragment doesn't exist in local fragments
+            /// try to find it in external fragments
+
+            auto fragmentit = find_if(externalFragments.begin(),
+                                      externalFragments.end(),
+                                      [&i](Fragment* fragment) {
+              return *fragment == i;
+            });
+
+            if (externalFragments.end() == fragmentit) {
+              break;
+            }
+            else
+              findedFragment = *fragmentit;
+          } else {
+            findedFragment = fragmentit->first;
+          }
+
+          if(!findedFragment->hasState(fragment->neighboursState())) {
+            /// It means that finded copy of external fragment has
+            /// too old state
+            break;
+          }
+          fwithstates.push_back(findedFragment);
+        }
+
+        if(fwithstates.size() == neighboursID.size()) {
+            for(auto &s : fwithstates) {
+              neighbours.push_back(s->getState(fragment->neighboursState(),
+                                               fragment->id()));
+            }
+            result.push_back(pair<Fragment*, vector<Fragment*>>(fragment,
+                                                                neighbours));
+        }
+      }
+
+  if(reduceCount == normalFragmentsCounter) {
     for(auto i: reduceResult) {
       fragments[i.first] = EXEC;
     }
@@ -271,6 +293,7 @@ void FragmentMgr::moveFragment(Fragment* fragment) {
   /// Remove Fragment from list
   //fragmentsLock.wlock();
   fragments.erase(fragment);
+  normalFragmentsCounter--;
   //fragmentsLock.unlock();
   createExternal(fragment);
 

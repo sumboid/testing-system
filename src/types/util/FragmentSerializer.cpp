@@ -36,6 +36,16 @@ void FragmentSerializer::neighbours(Fragment* fragment, ts::Arc* arc) {
     n.first.serialize(arc);
     a << n.second;
   }
+
+  actualSize = 0;
+  for(auto n : fragment->_vvneighboursLocation) ++actualSize; // HELP! HE-ELP ME-E!
+
+  a << actualSize;
+
+  for(auto n : fragment->_vvneighboursLocation) {
+    n.first.serialize(arc);
+    a << n.second;
+  }
 }
 
 void FragmentSerializer::flags(Fragment* fragment, ts::Arc* arc) {
@@ -46,6 +56,9 @@ void FragmentSerializer::flags(Fragment* fragment, ts::Arc* arc) {
   a << fragment->_vneighbours;
   a << fragment->_vend;
   a << fragment->_vlaststateWasSaved;
+  a << fragment->_vvirtual;
+  a << fragment->_vvneighbours;
+  a << fragment->_vvupdate;
 }
 
 void FragmentSerializer::timestamp(const ts::type::Timestamp& timestamp, ts::Arc* arc) {

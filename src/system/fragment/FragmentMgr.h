@@ -40,6 +40,7 @@ namespace system {
 
     std::vector<ts::type::Fragment*> externalFragments;
     std::map<ts::type::Fragment*, State> fragments;
+    uint64_t normalFragmentsCounter = 0;
     ts::RWLock fragmentsLock;
     ts::RWLock externalFragmentsLock;
 

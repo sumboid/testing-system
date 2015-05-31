@@ -35,6 +35,14 @@ void FragmentDeserializer::neighbours(Fragment* fragment, ts::Arc* arc) {
     a >> nid;
     fragment->addNeighbour(id, nid);
   }
+
+  a >> lsize;
+  for(uint64_t i = 0; i < lsize; ++i) {
+    ID id = ID::deserialize(arc);
+    NodeID nid;
+    a >> nid;
+    fragment->addVNeighbour(id, nid);
+  }
 }
 void FragmentDeserializer::flags(Fragment* fragment, ts::Arc* arc) {
   Arc& a = *arc;
@@ -44,5 +52,8 @@ void FragmentDeserializer::flags(Fragment* fragment, ts::Arc* arc) {
   a >> fragment->_vneighbours;
   a >> fragment->_vend;
   a >> fragment->_vlaststateWasSaved;
+  a >> fragment->_vvirtual;
+  a >> fragment->_vvneighbours;
+  a >> fragment->_vvupdate;
 }
 }}}

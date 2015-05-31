@@ -75,10 +75,50 @@ void Fragment::addNeighbour(ID id, NodeID node) {
   //_vneighboursLocation[id] = node;
 }
 
-void Fragment::updateNeighbour(ID id, NodeID node) {
-  _vneighboursLocationMutex.lock();
-  _vneighboursLocation[id] = node;
-  _vneighboursLocationMutex.unlock();
+set<NodeID> Fragment::vnoticeList() {
+  set<NodeID> result;
+  _vvneighboursLocationMutex.lock();
+  for(auto neighbour: _vvneighboursLocation) {
+    if(neighbour.second != _vnodeID)
+      result.insert(neighbour.second);
+  }
+  _vvneighboursLocationMutex.unlock();
+  return result;
+}
+
+vector<ID> Fragment::vneighbours() {
+  vector<ID> result;
+  _vvneighboursLocationMutex.lock();
+  for(auto neighbour: _vvneighboursLocation)
+      result.push_back(neighbour.first);
+  _vvneighboursLocationMutex.unlock();
+  return result;
+}
+
+vector<ID> Fragment::vneighbours(NodeID node) {
+  vector<ID> result;
+  _vvneighboursLocationMutex.lock();
+  for(auto neighbour: _vvneighboursLocation)
+    if(neighbour.second == node)
+      result.push_back(neighbour.first);
+  _vvneighboursLocationMutex.unlock();
+  return result;
+}
+
+
+bool Fragment::isVNeighbour(const ID& id) {
+  for(auto n : _vvneighboursLocation) {
+    if(n.first == id)
+      return true;
+  }
+  return false;
+}
+void Fragment::addVNeighbour(ID id, NodeID node) {
+  _vvneighboursLocationMutex.lock();
+  //UBERLOG() << _vid.tostr() << " Adding neighbour: " << id.tostr() << UBEREND();
+  _vvneighboursLocation.insert(std::pair<ID, NodeID>(id, node));
+  _vvneighboursLocationMutex.unlock();
+  //_vneighboursLocation[id] = node;
 }
 
 ReduceData* Fragment::_reduce() {
@@ -102,6 +142,9 @@ void Fragment::_reduceStep(ReduceData* data) {
 bool Fragment::needReduce() { return _vreduce; }
 bool Fragment::wasReduced() { return _vreduced; }
 bool Fragment::needUpdate() { return _vupdate; }
+bool Fragment::needVNeighbours() { return _vvneighbours; }
+bool Fragment::needVUpdate() { return _vvupdate; }
+bool Fragment::isVirtual() { return _vvirtual; }
 
 uint64_t Fragment::iteration() {
   return _viteration;
@@ -144,9 +187,18 @@ void Fragment::setUpdate() {
   _vupdate = true;
 }
 
+void Fragment::setVUpdate() {
+  _vvupdate = true;
+}
+
 void Fragment::setNeighbours(uint64_t iteration, uint64_t progress) {
   _vneighboursState = Timestamp(iteration, progress);
   _vneighbours = true;
+}
+
+void Fragment::setVNeighbours(uint64_t iteration, uint64_t progress) {
+  _vvneighboursState = Timestamp(iteration, progress);
+  _vvneighbours = true;
 }
 
 bool Fragment::isEnd() {
@@ -228,6 +280,12 @@ Fragment* Fragment::getState(const Timestamp& timestamp, const ID& neighbour) {
   //_tryRemoveState(timestamp);
   _vstatesMutex.unlock();
   return fragment;
+}
+
+void Fragment::updateNeighbour(ID id, NodeID node) {
+  _vneighboursLocationMutex.lock();
+  _vneighboursLocation[id] = node;
+  _vneighboursLocationMutex.unlock();
 }
 
 vector<Fragment*> Fragment::specialUpdateNeighbour(const ID& neighbour,
