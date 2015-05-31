@@ -195,6 +195,11 @@ void FragmentMgr::unlock(Fragment* fragment) {
     auto lastState = fragment->getLastState();
     for(auto node: nodes) messageMgr->sendBoundary(node, lastState);
   }
+  if(fragment->needVUpdate()) {
+    auto nodes = fragment->vnoticeList();
+    auto lastState = fragment->getLastState();
+    for(auto node: nodes) messageMgr->sendBoundary(node, lastState);
+  }
 
   if(fragments[fragment] == EXEC)
      fragments[fragment] = FREE;
