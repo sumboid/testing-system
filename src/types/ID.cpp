@@ -29,7 +29,7 @@ bool ID::vcompare(const ID &other) const {
 }
 
 std::string ID::tostr() const {
-  return std::to_string(c[X]) + " " + std::to_string(c[Y]) + " " + std::to_string(c[Z]) + std::to_string(c[V]);
+  return std::to_string(c[X]) + " " + std::to_string(c[Y]) + " " + std::to_string(c[Z]) + " " + std::to_string(c[V]);
 }
 
 void ID::serialize(ts::Arc* arc) const {

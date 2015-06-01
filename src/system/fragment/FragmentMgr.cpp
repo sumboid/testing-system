@@ -56,6 +56,7 @@ void FragmentMgr::addFragment(Fragment* fragment) {
   }
 
   fragments[fragment] = FREE;
+  ULOG(error) << "Add fragment: " << fragment->id().tostr() << UEND;
   if(tick) normalFragmentsCounter++;
   _weight += fragment->weight();
   uint64_t peka = (_weight >= _lastweight) ? (_weight - _lastweight) : (_lastweight - _weight);
@@ -106,12 +107,15 @@ vector<WorkFragment> FragmentMgr::getFragments(int size) {
 
     if(!fragment->needNeighbours() && !fragment->needVNeighbours()) {
       result.push_back(WorkFragment(fragment, vector<Fragment*>()));
+
+    //  ULOG(error) << "NOT NEED NEIGHBOURS (" << fragment->iteration() << ", " << fragment->progress() << ")" << UEND;
       continue;
     }
 
     vector<ID> neighboursID;
     if(fragment->needNeighbours()) {
         neighboursID = fragment->neighbours();
+      //  ULOG(error) << "NEED NEIGHBOURS: " << neighboursID.size() << UEND;
     } else if(fragment->needVNeighbours()) {
         neighboursID = fragment->vneighbours();
     }
@@ -163,10 +167,13 @@ vector<WorkFragment> FragmentMgr::getFragments(int size) {
             }
             result.push_back(pair<Fragment*, vector<Fragment*>>(fragment,
                                                                 neighbours));
+          //  ULOG(error) << "ENOUGH NEIGHBOURS (" << fragment->iteration() << ", " << fragment->progress() << ")" << UEND;
+        } else {
+         //   ULOG(error) << "NOT ENOUGH NEIGHBOURS (" << fragment->iteration() << ", " << fragment->progress() << ")" << UEND;
         }
       }
 
-  if(reduceCount == normalFragmentsCounter) {
+  if(reduceCount == normalFragmentsCounter && normalFragmentsCounter != 0) {
     for(auto i: reduceResult) {
       fragments[i.first] = EXEC;
     }
@@ -196,6 +203,7 @@ void FragmentMgr::unlock(Fragment* fragment) {
     for(auto node: nodes) messageMgr->sendBoundary(node, lastState);
   }
   if(fragment->needVUpdate()) {
+    // ULOG(error) << "NEED VIRTUAL UPDATE" << UEND;
     auto nodes = fragment->vnoticeList();
     auto lastState = fragment->getLastState();
     for(auto node: nodes) messageMgr->sendBoundary(node, lastState);

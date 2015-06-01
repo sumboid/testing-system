@@ -160,11 +160,12 @@ void Fragment::nextIteration() {
 }
 
 void Fragment::_runStep(std::vector<Fragment*> neighbours) {
-  runStep(neighbours);
-  ++_vprogress;
   if(!neighbours.empty()) {
     _vneighbours = false;
+    _vvneighbours = false;
   }
+  runStep(neighbours);
+  ++_vprogress;
 }
 
 void Fragment::setEnd() {
@@ -197,7 +198,7 @@ void Fragment::setNeighbours(uint64_t iteration, uint64_t progress) {
 }
 
 void Fragment::setVNeighbours(uint64_t iteration, uint64_t progress) {
-  _vvneighboursState = Timestamp(iteration, progress);
+  _vneighboursState = Timestamp(iteration, progress);
   _vvneighbours = true;
 }
 
@@ -259,6 +260,7 @@ Fragment* Fragment::getLastState() {
   f->_vid = id();
   f->_viteration = _vlaststate->_viteration;
   f->_vprogress = _vlaststate->_vprogress;
+
   _vneighboursLocationMutex.lock();
   for(auto &n : _vneighboursLocation) {
     f->addNeighbour(n.first, n.second);
@@ -286,6 +288,12 @@ void Fragment::updateNeighbour(ID id, NodeID node) {
   _vneighboursLocationMutex.lock();
   _vneighboursLocation[id] = node;
   _vneighboursLocationMutex.unlock();
+}
+
+void Fragment::updateVNeighbour(ID id, NodeID node) {
+  _vvneighboursLocationMutex.lock();
+  _vvneighboursLocation[id] = node;
+  _vvneighboursLocationMutex.unlock();
 }
 
 vector<Fragment*> Fragment::specialUpdateNeighbour(const ID& neighbour,

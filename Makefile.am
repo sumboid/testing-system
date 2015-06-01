@@ -66,28 +66,28 @@ libts_la_SOURCES =  src/system/fragment/FragmentMgr.cpp \
                     src/util/Uberlogger.h \
                     src/util/Arc.h
 
-tssystemdir = $(includedir)/ts/system
+tssystemdir = $(includedir)/ts-ng/system
 tssystem_HEADERS =  src/system/System.h
 
-tssystemexecdir = $(includedir)/ts/system/exec
+tssystemexecdir = $(includedir)/ts-ng/system/exec
 tssystemexec_HEADERS = src/system/exec/ExecMgr.h
 
-tssystemfragmentdir = $(includedir)/ts/system/fragment
+tssystemfragmentdir = $(includedir)/ts-ng/system/fragment
 tssystemfragment_HEADERS = src/system/fragment/FragmentMgr.h \
                            src/system/fragment/FragmentStorage.h
 
-tssystemmsgdir = $(includedir)/ts/system/message
+tssystemmsgdir = $(includedir)/ts-ng/system/message
 tssystemmsg_HEADERS = src/system/message/MessageMgr.h \
                       src/system/message/NodeID.h
 
-tssystemmsgcommdir = $(includedir)/ts/system/message/comm
+tssystemmsgcommdir = $(includedir)/ts-ng/system/message/comm
 tssystemmsgcomm_HEADERS = src/system/message/comm/Comm.h
 
-tssystemactiondir = $(includedir)/ts/system/action
+tssystemactiondir = $(includedir)/ts-ng/system/action
 tssystemaction_HEADERS = src/system/action/Action.h \
                          src/system/action/ActionBuilder.h
 
-tssystemactionactionsdir = $(includedir)/ts/system/action/actions
+tssystemactionactionsdir = $(includedir)/ts-ng/system/action/actions
 tssystemactionactions_HEADERS = src/system/action/actions/Reduce.h \
                                 src/system/action/actions/Update.h \
                                 src/system/action/actions/StartMove.h \
@@ -103,22 +103,22 @@ tssystemactionactions_HEADERS = src/system/action/actions/Reduce.h \
 
 
 
-tstypesdir = $(includedir)/ts/types
+tstypesdir = $(includedir)/ts-ng/types
 tstypes_HEADERS = src/types/Fragment.h \
                   src/types/FragmentTools.h \
                   src/types/ReduceData.h \
                   src/types/ReduceDataTools.h \
                   src/types/ID.h
 
-tssystemutildir = $(includedir)/ts/system/util
+tssystemutildir = $(includedir)/ts-ng/system/util
 tssystemutil_HEADERS = src/system/util/Listener.h \
                        src/system/util/Semaphore.h
 
-tstypesutildir = $(includedir)/ts/types/util
+tstypesutildir = $(includedir)/ts-ng/types/util
 tstypesutil_HEADERS = src/types/util/FragmentSerializer.h \
                       src/types/util/FragmentDeserializer.h
 
-tsutildir = $(includedir)/ts/util
+tsutildir = $(includedir)/ts-ng/util
 tsutil_HEADERS = src/util/RWLock.h \
                  src/util/Uberlogger.h \
                  src/util/Arc.h

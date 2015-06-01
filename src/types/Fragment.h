@@ -7,6 +7,7 @@
 #include <tuple>
 #include <cstdint>
 #include <mutex>
+#include <iostream>
 
 #include "ID.h"
 #include "ReduceData.h"
@@ -99,6 +100,7 @@ public:
   std::vector<ID> vneighbours();
   std::vector<ID> vneighbours(ts::NodeID node);
   bool isVNeighbour(const ID& id);
+  void updateVNeighbour(ID id, ts::NodeID node);
   std::vector<Fragment*> specialUpdateVNeighbour(const ID& id, ts::NodeID node);
   void addVNeighbour(ID id, ts::NodeID node);
 
@@ -134,6 +136,7 @@ public:
   bool needVNeighbours();
 
   Timestamp neighboursState();
+  Timestamp vneighboursState();
 
   // Saving state
   virtual Fragment* getBoundary() = 0;
@@ -187,7 +190,11 @@ public:
       ID vid = ID(id().c[0], id().c[1], id().c[2], _vvcounter);
       s->addNeighbour(id(), _vnodeID);
       s->_vvirtual = true;
-      s->_vvneighboursLocation.emplace(vid, _vnodeID);
+      s->_vvneighboursLocation.emplace(id(), _vnodeID);
+      s->_vid = vid;
+      s->_viteration = _viteration;
+      s->_vprogress = _vprogress;
+
       return s;
   }
 
