@@ -37,6 +37,12 @@ set<NodeID> Fragment::noticeList() {
       result.insert(neighbour.second);
   }
   _vneighboursLocationMutex.unlock();
+  _vvneighboursLocationMutex.lock();
+  for(auto neighbour: _vvneighboursLocation) {
+    if(neighbour.second != _vnodeID)
+      result.insert(neighbour.second);
+  }
+  _vvneighboursLocationMutex.unlock();
   return result;
 }
 
@@ -160,12 +166,15 @@ void Fragment::nextIteration() {
 }
 
 void Fragment::_runStep(std::vector<Fragment*> neighbours) {
+  uint64_t before = weight();
   if(!neighbours.empty()) {
     _vneighbours = false;
     _vvneighbours = false;
   }
   runStep(neighbours);
   ++_vprogress;
+  uint64_t after = weight;
+  loadChange = after - before;
 }
 
 void Fragment::setEnd() {
@@ -266,6 +275,11 @@ Fragment* Fragment::getLastState() {
     f->addNeighbour(n.first, n.second);
   }
   _vneighboursLocationMutex.unlock();
+  _vvneighboursLocationMutex.lock();
+  for(auto &n : _vvneighboursLocation) {
+    f->addVNeighbour(n.first, n.second);
+  }
+  _vvneighboursLocationMutex.unlock();
   _vlaststateWasSaved = false;
   _vupdate = false;
   return f;
@@ -305,14 +319,22 @@ vector<Fragment*> Fragment::specialUpdateNeighbour(const ID& neighbour,
       if(i.second.find(neighbour) == i.second.end()) {
         try {
           Fragment* ob = _vstates.at(i.first);
-          Fragment* b = ob->getBoundary();
+          Fragment* b = ob->copy();
           b->_vid = _vid;
+          b->_visboundary = ob->_visboundary;
+          b->_vvirtual = ob->_vvirtual;
+          b->_vmaster = ob->_vmaster;
           b->_viteration = ob->_viteration;
           b->_vprogress = ob->_vprogress;
           for(auto& n : _vneighboursLocation) {
             if(!(n.first == neighbour)) {
               b->addNeighbour(n.first, n.second);
             } else b->addNeighbour(neighbour, node);
+          }
+          for(auto& n : _vvneighboursLocation) {
+            if(!(n.first == neighbour)) {
+              b->addVNeighbour(n.first, n.second);
+            } else b->addVNeighbour(neighbour, node);
           }
           result.push_back(b);
         } catch(...) {
@@ -418,6 +440,9 @@ void Fragment::createExternal(Fragment* f) {
   _vneighboursLocationMutex.lock();
   for(auto i: _vneighboursLocation) {
     f->_vneighboursLocation.emplace(i);
+  }
+  for(auto i: _vvneighboursLocation) {
+    f->_vvneighboursLocation.emplace(i);
   }
 }
 

@@ -54,6 +54,10 @@ namespace system {
     bool updateLoad = false;
     std::set<ts::NodeID> neighbours;
 
+    const int FAIL_TRESHOLD = 5;
+    int failBalance = FAIL_TRESHOLD;
+    bool balanceok = true;
+
   public:
     FragmentMgr();
     FragmentMgr(MessageMgr* msgMgr);

@@ -28,7 +28,21 @@ FragmentMgr::FragmentMgr(MessageMgr* msgMgr):
 FragmentMgr::~FragmentMgr() {}
 
 void FragmentMgr::changeLoad(uint64_t newLoad) {
-  _lastweight = newLoad;
+  bool needUpdate = false;
+  double threshold = 1/5;
+  double change = (_weight >= _lastweight) ? (_weight - _lastweight) : (_lastweight - _weight);
+  _weight += newLoad;
+
+  if(change >= _lastweight * threshold)
+  {
+      needUpdate = true;
+      _lastweight = newLoad;
+  }
+
+  if(needUpdate) {
+      for(auto& n: neighbours) messageMgr->sendLoad(n, _weight);
+      system->balancerNotify();
+  }
   ULOG(load) << newLoad << UEND;
 }
 
@@ -42,7 +56,7 @@ void FragmentMgr::addFragment(Fragment* fragment) {
      }
 
      if(master != 0) {
-         master->merge(fragment);
+         //master->merge(fragment);
      }
      tick = false;
   }
@@ -58,14 +72,8 @@ void FragmentMgr::addFragment(Fragment* fragment) {
   fragments[fragment] = FREE;
   ULOG(error) << "Add fragment: " << fragment->id().tostr() << UEND;
   if(tick) normalFragmentsCounter++;
-  _weight += fragment->weight();
-  uint64_t peka = (_weight >= _lastweight) ? (_weight - _lastweight) : (_lastweight - _weight);
-  if(peka >= _lastweight / DELIMITER) {
-    for(auto& n: neighbours) messageMgr->sendLoad(n, _weight);
-    changeLoad(_weight);
-    system->balancerNotify();
-  }
 
+  changeLoad(fragment->weight());
   system->notify();
 }
 
@@ -209,23 +217,12 @@ void FragmentMgr::unlock(Fragment* fragment) {
     for(auto node: nodes) messageMgr->sendBoundary(node, lastState);
   }
 
-  if(fragments[fragment] == EXEC)
+  if(fragments[fragment] == EXEC) {
      fragments[fragment] = FREE;
-
-  if(fragment->isEnd()) {
-    if(fragment->isHalt()) {
-      system->end();
-      messageMgr->sendHalt();
-      return;
-    }
-    _weight -= fragment->weight();
-    uint64_t peka = (_weight >= _lastweight) ? (_weight - _lastweight) : (_lastweight - _weight);
-    if(peka >= _lastweight / DELIMITER) {
-      for(auto& n: neighbours) messageMgr->sendLoad(n, _weight);
-      changeLoad(_weight);
-      system->balancerNotify();
-    }
   }
+
+
+  changeLoad(fragment->changeLoad());
 }
 
 void FragmentMgr::updateExternalFragment(Fragment* fragment) {
@@ -333,7 +330,7 @@ void FragmentMgr::moveFragment(Fragment* fragment) {
 void FragmentMgr::startMoveFragment(Fragment* fragment, NodeID node) {
   //fragmentsLock.wlock();
   fragments[fragment] = MOVE;
-  _weight -= fragment->weight();
+  changeLoad(-fragment->weight());
   //fragmentsLock.unlock();
   moveList[fragment->id()] = node;
   messageMgr->sendStartMove(node, fragment->id(), node); // XXX: Second node not needed.
@@ -389,6 +386,18 @@ void FragmentMgr::specialUpdateNeighbours(ts::type::Fragment* fragment) {
       }
     }
   }
+  auto vneighbours = fragment->vneighbours();
+  for(auto neighbour : vneighbours) {
+    auto n = findFragment(neighbour);
+    if(n != 0) {
+      //XXX.
+      auto states = n->specialUpdateNeighbour(id, moveList[id]);
+      for(auto s : states) {
+        messageMgr->sendBoundary(moveList[id], s);
+        delete s;
+      }
+    }
+  }
 }
 
 void FragmentMgr::confirmMove(const ts::type::ID& id, NodeID node) {
@@ -401,15 +410,21 @@ void FragmentMgr::globalConfirmMove(const ts::type::ID& id, NodeID node) {
 
 void FragmentMgr::updateNeighbours(const ts::type::ID& id, NodeID node) {
   ////fragmentsLock.wlock();
-  for(auto i : fragments)
+  for(auto i : fragments) {
     if(i.first->isNeighbour(id))
       i.first->updateNeighbour(id, node);
+    if(i.first->isVNeighbour(id))
+      i.first->updateVNeighbour(id, node);
+  }
   ////fragmentsLock.unlock();
 
   ////external//fragmentsLock.wlock();
-  for(auto i : externalFragments)
+  for(auto i : externalFragments) {
     if(i->isNeighbour(id))
       i->updateNeighbour(id, node);
+    if(i->isVNeighbour(id))
+      i->updateVNeighbour(id, node);
+  }
   ////external//fragmentsLock.unlock();
 }
 
@@ -478,16 +493,15 @@ void FragmentMgr::moveFragment(const std::map<NodeID, double>& amount) {
 
     for(auto& f : fragments) {
       if(f.second == FREE && !f.first->isEnd() && f.first->isMovable()) {
+        if(f.first->canSplit()) {
+            continue;
+        }
+        failed = false;
         startMoveFragment(f.first, node);
         absolute -= f.first->weight();
         if(absolute <= 0) break;
       }
     }
-  }
-  uint64_t peka = (_weight >= _lastweight) ? (_weight - _lastweight) : (_lastweight - _weight);
-  if(peka >= _lastweight / DELIMITER) {
-    for(auto& n: neighbours) messageMgr->sendLoad(n, _weight);
-    changeLoad(_weight);
   }
 }
 }}

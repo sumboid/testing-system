@@ -68,6 +68,7 @@ private:
   uint64_t _vprogress = 0;                       ///< Current progress of iteration
   uint64_t _vvcounter = 0;
 
+  uint64_t loadChange;
   bool _visboundary = false;
 
   Timestamp _vneighboursState;
@@ -86,6 +87,7 @@ public:
 
   ID id();
   void setNodeID(ts::NodeID);
+  ts::NodeID nodeID() { return _vnodeID; }
 
   // Neighbours and their location
   std::set<ts::NodeID> noticeList();
@@ -128,6 +130,7 @@ public:
   bool isHalt();
   bool isMovable();
   bool isVirtual();
+  bool isMaster() { return _vmaster; }
   bool needReduce();
   bool wasReduced();
   bool needUpdate();
@@ -219,6 +222,11 @@ public:
   virtual uint64_t weight() = 0;
   virtual Fragment* split() = 0;
   virtual void merge(Fragment*) = 0;
+  virtual bool canSplit() = 0;
+
+  int changeLoad() {
+      return loadChange;
+  }
 };
 
 }}

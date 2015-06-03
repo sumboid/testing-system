@@ -100,7 +100,7 @@ void ts::system::ExecMgr::loop() {
     while(!fragmentQueue.empty()) {
       queueMutex.lock();
       auto fragment = fragmentQueue.front();
-      ULOG(exec) << fragment.first->id().tostr() << UEND;
+      //ULOG(exec) << fragment.first->id().tostr() << UEND;
       fragmentQueue.pop();
       queueMutex.unlock();
 
