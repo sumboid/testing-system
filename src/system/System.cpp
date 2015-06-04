@@ -212,7 +212,7 @@ void System::balancerLoop() {
       return;
     }
     
-    ULOG(balancing) << "Init load balancing" << UEND;
+    //ULOG(balancing) << "Init load balancing" << UEND;
     action::Balancing* action = new action::Balancing();
     action->setFragmentMgr(fragmentMgr);
     action->set(balancer(weight(), nload));

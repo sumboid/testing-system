@@ -19,6 +19,8 @@ void FragmentDeserializer::neighboursTimestamp(Fragment* fragment, ts::Arc* arc)
   uint64_t i, p;
   a >> i >> p;
   fragment->_vneighboursState = Timestamp(i, p);
+  a >> i >> p;
+  fragment->_vvneighboursState = Timestamp(i, p);
 }
 
 void FragmentDeserializer::id(Fragment* fragment, ts::Arc* arc) {
@@ -29,6 +31,7 @@ void FragmentDeserializer::neighbours(Fragment* fragment, ts::Arc* arc) {
   Arc& a = *arc;
   size_t lsize;
   a >> lsize;
+
   for(uint64_t i = 0; i < lsize; ++i) {
     ID id = ID::deserialize(arc);
     NodeID nid;
@@ -55,5 +58,7 @@ void FragmentDeserializer::flags(Fragment* fragment, ts::Arc* arc) {
   a >> fragment->_vvirtual;
   a >> fragment->_vvneighbours;
   a >> fragment->_vvupdate;
+  a >> fragment->_vmaster;
+  a >> fragment->_vvcounter;
 }
 }}}

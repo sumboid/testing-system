@@ -173,7 +173,7 @@ void Fragment::_runStep(std::vector<Fragment*> neighbours) {
   }
   runStep(neighbours);
   ++_vprogress;
-  uint64_t after = weight;
+  uint64_t after = weight();
   loadChange = after - before;
 }
 
@@ -282,6 +282,7 @@ Fragment* Fragment::getLastState() {
   _vvneighboursLocationMutex.unlock();
   _vlaststateWasSaved = false;
   _vupdate = false;
+  _vvupdate = false;
   return f;
 }
 

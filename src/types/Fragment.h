@@ -198,6 +198,7 @@ public:
       s->_viteration = _viteration;
       s->_vprogress = _vprogress;
 
+      addVNeighbour(vid, _vnodeID);
       return s;
   }
 
@@ -223,6 +224,7 @@ public:
   virtual Fragment* split() = 0;
   virtual void merge(Fragment*) = 0;
   virtual bool canSplit() = 0;
+  virtual bool canMove() = 0;
 
   int changeLoad() {
       return loadChange;

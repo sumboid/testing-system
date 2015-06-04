@@ -18,6 +18,7 @@ void FragmentSerializer::timestamp(Fragment* fragment, ts::Arc* arc) {
 
 void FragmentSerializer::neighboursTimestamp(Fragment* fragment, ts::Arc* arc) {
   timestamp(fragment->_vneighboursState, arc);
+  timestamp(fragment->_vvneighboursState, arc);
 }
 
 void FragmentSerializer::id(Fragment* fragment, ts::Arc* arc) {
@@ -59,6 +60,8 @@ void FragmentSerializer::flags(Fragment* fragment, ts::Arc* arc) {
   a << fragment->_vvirtual;
   a << fragment->_vvneighbours;
   a << fragment->_vvupdate;
+  a << fragment->_vmaster;
+  a << fragment->_vvcounter;
 }
 
 void FragmentSerializer::timestamp(const ts::type::Timestamp& timestamp, ts::Arc* arc) {

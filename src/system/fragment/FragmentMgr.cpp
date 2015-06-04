@@ -30,20 +30,24 @@ FragmentMgr::~FragmentMgr() {}
 void FragmentMgr::changeLoad(uint64_t newLoad) {
   bool needUpdate = false;
   double threshold = 1/5;
-  double change = (_weight >= _lastweight) ? (_weight - _lastweight) : (_lastweight - _weight);
-  _weight += newLoad;
 
-  if(change >= _lastweight * threshold)
+  _weight += newLoad;
+  double change = (_weight >= _lastweight) ? (_weight - _lastweight) : (_lastweight - _weight);
+
+
+  if(change >= _lastweight * threshold && change != 0)
   {
-      needUpdate = true;
-      _lastweight = newLoad;
+
   }
 
+  needUpdate = true;
+  _lastweight = newLoad;
   if(needUpdate) {
       for(auto& n: neighbours) messageMgr->sendLoad(n, _weight);
+      //ULOG(error) << "WTF" <<UEND;
       system->balancerNotify();
   }
-  ULOG(load) << newLoad << UEND;
+  //ULOG(load) << newLoad << UEND;
 }
 
 void FragmentMgr::addFragment(Fragment* fragment) {
@@ -70,8 +74,12 @@ void FragmentMgr::addFragment(Fragment* fragment) {
   }
 
   fragments[fragment] = FREE;
-  ULOG(error) << "Add fragment: " << fragment->id().tostr() << UEND;
+  ULOG(error) << "Add fragment: " << fragment->id().tostr() << " (" << fragment->iteration() << ", " << fragment->progress() << ")" << UEND;
   if(tick) normalFragmentsCounter++;
+
+  if(fragment->canSplit()) {
+      addFragment(fragment->_split());
+  }
 
   changeLoad(fragment->weight());
   system->notify();
@@ -493,13 +501,16 @@ void FragmentMgr::moveFragment(const std::map<NodeID, double>& amount) {
 
     for(auto& f : fragments) {
       if(f.second == FREE && !f.first->isEnd() && f.first->isMovable()) {
-        if(f.first->canSplit()) {
+        if(!f.first->canMove()) {
             continue;
         }
-        failed = false;
-        startMoveFragment(f.first, node);
-        absolute -= f.first->weight();
-        if(absolute <= 0) break;
+
+
+        if(absolute - f.first->weight() > -1000) {
+            startMoveFragment(f.first, node);
+            absolute -= f.first->weight();
+            if(absolute <= 0) break;
+        }
       }
     }
   }

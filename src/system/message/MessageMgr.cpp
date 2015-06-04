@@ -252,6 +252,14 @@ std::set<ts::NodeID> MessageMgr::getNeighbours() {
     neighbours.emplace(id + 1);
   }
 
+  auto msg = ULOG(error) << "Neighbours: ";
+  for(auto& n : neighbours) {
+      msg << n << " ";
+  }
+
+  msg << UEND;
+
+
   return neighbours;
 }
 }}
